@@ -1,0 +1,16 @@
+TagNumber,OriginFarm,Name,Breed,Gender,BirthDate,PurchaseDate,Notes
+101,Smith Ranch,Bessie Mae,Angus,Heifer,01/15/2020,03/20/2021,Good temperament
+102,Smith Ranch,Rocky,Hereford,Steer,05/10/2019,08/15/2020,
+103,Johnson Farm,Daisy,,Heifer,11/22/2021,01/10/2022,First calf heifer
+104,Johnson Farm,Thunder,Black Angus,Steer,03/05/2018,06/12/2019,Handle with care
+105,Williams Cattle Co,Molly,Angus,Heifer,2022-08-14,2023-01-05,Born on farm
+106,Smith Ranch,,Charolais,Steer,07/20/2021,09/15/2021,Feedlot candidate
+107,Williams Cattle Co,Buttercup,Jersey,Heifer,12/01/2019,,Good milker
+108,Red River Ranch,Max,Red Angus,Steer,04/18/2020,11/30/2020,Registered
+109,Red River Ranch,Clover,Simmental,Heifer,09/25/2022,03/10/2023,
+110,Johnson Farm,Big Ben,Hereford,Steer,2021-02-14,2021-05-20,Large frame
+111,Smith Ranch,Penny,Angus,Heifer,06/30/2018,10/15/2019,Multiple calves
+112,Williams Cattle Co,,Limousin,Steer,11/08/2021,,Young prospect
+113,Red River Ranch,Princess,Shorthorn,Heifer,01/05/2023,04/22/2023,Show quality
+114,Johnson Farm,Duke,Angus,Steer,08/12/2017,12/01/2018,Good breeder
+115,Smith Ranch,Rosie,Red Angus,Heifer,03/22/2020,07/08/2020,Gentle disposition
