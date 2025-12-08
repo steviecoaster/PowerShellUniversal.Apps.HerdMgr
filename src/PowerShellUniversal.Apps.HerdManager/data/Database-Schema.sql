@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS Cattle (
     BirthDate DATE,
     PurchaseDate DATE,
     Location VARCHAR(50) CHECK(Location IN ('Pen 1', 'Pen 2', 'Pen 3', 'Pen 4', 'Pen 5', 'Pen 6', 'Quarantine', 'Pasture')),
+    Owner VARCHAR(100),
+    PricePerDay DECIMAL(10,2),
     Status VARCHAR(20) DEFAULT 'Active' CHECK(Status IN ('Active', 'Sold', 'Deceased', 'Transferred')),
     Notes TEXT,
     CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -72,6 +74,8 @@ SELECT
     c.Gender,
     c.BirthDate,
     c.Location,
+    c.Owner,
+    c.PricePerDay,
     c.Status,
     w.WeightDate AS LatestWeightDate,
     w.Weight AS LatestWeight,
@@ -145,4 +149,29 @@ CREATE TABLE IF NOT EXISTS FeedRecords (
 
 -- Index for feed records
 CREATE INDEX IF NOT EXISTS idx_feed_date ON FeedRecords(FeedDate);
+
+-- Table: Invoices
+-- Stores invoice information for cattle sold or transferred
+CREATE TABLE IF NOT EXISTS Invoices (
+    InvoiceID INTEGER PRIMARY KEY AUTOINCREMENT,
+    InvoiceNumber VARCHAR(50) UNIQUE NOT NULL,
+    CattleID INTEGER NOT NULL,
+    InvoiceDate DATE NOT NULL,
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
+    DaysOnFeed INTEGER NOT NULL,
+    PricePerDay DECIMAL(10,2) NOT NULL,
+    FeedingCost DECIMAL(10,2) NOT NULL,
+    HealthCost DECIMAL(10,2) DEFAULT 0,
+    TotalCost DECIMAL(10,2) NOT NULL,
+    Notes TEXT,
+    CreatedBy VARCHAR(100),
+    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (CattleID) REFERENCES Cattle(CattleID)
+);
+
+-- Index for invoices
+CREATE INDEX IF NOT EXISTS idx_invoice_number ON Invoices(InvoiceNumber);
+CREATE INDEX IF NOT EXISTS idx_invoice_cattle ON Invoices(CattleID);
+CREATE INDEX IF NOT EXISTS idx_invoice_date ON Invoices(InvoiceDate);
 

@@ -8,15 +8,22 @@ $feedRecords = New-UDPage -Name 'Feed Records' -Url '/feedrecords' -Content {
             
             New-UDDatePicker -Id 'feed-date' -Label 'Feed Date' -Value (Get-Date).ToString('yyyy-MM-dd')
             
-            New-UDTextbox -Id 'haylage-pounds' -Label 'Haylage (lbs)' -Type number -Value 0
+            New-UDSlider -Id 'haylage-pounds' -Min 0 -Max 1000 -Value 0 -ValueLabelDisplay 'on'
+            New-UDTypography -Text "Haylage (lbs)" -Variant body2 -Style @{marginBottom = '10px'; color = '#666'}
             
-            New-UDTextbox -Id 'silage-pounds' -Label 'Silage (lbs)' -Type number -Value 0
+            New-UDSlider -Id 'silage-pounds' -Min 0 -Max 1000 -Value 0 -ValueLabelDisplay 'on'
+            New-UDTypography -Text "Silage (lbs)" -Variant body2 -Style @{marginBottom = '10px'; color = '#666'}
             
-            New-UDTextbox -Id 'high-moisture-corn-pounds' -Label 'High Moisture Corn (lbs)' -Type number -Value 0
+            New-UDSlider -Id 'high-moisture-corn-pounds' -Min 0 -Max 1000 -Value 0 -ValueLabelDisplay 'on'
+            New-UDTypography -Text "High Moisture Corn (lbs)" -Variant body2 -Style @{marginBottom = '10px'; color = '#666'}
             
             New-UDTextbox -Id 'feed-notes' -Label 'Notes (Optional)' -Multiline -Rows 3
             
-            New-UDTextbox -Id 'recorded-by' -Label 'Recorded By'
+            New-UDSelect -Id 'recorded-by' -Label 'Recorded By' -DefaultValue 'Brandon' -Option {
+                New-UDSelectOption -Name 'Brandon' -Value 'Brandon'
+                New-UDSelectOption -Name 'Jerry' -Value 'Jerry'
+                New-UDSelectOption -Name 'Stephanie' -Value 'Stephanie'
+            }
             
         } -OnSubmit {
             
@@ -64,18 +71,6 @@ VALUES (@FeedDate, @HaylagePounds, @SilagePounds, @HighMoistureCornPounds, @Tota
                 Show-UDToast -Message "Error adding feed record: $($_.Exception.Message)" -MessageColor red -Duration 5000
             }
             
-        } -OnValidate {
-            $ValidationResult = @()
-            
-            if (-not $EventData.'feed-date') {
-                $ValidationResult += New-UDValidationResult -ValidationError "Feed date is required"
-            }
-            
-            if (-not $EventData.'recorded-by') {
-                $ValidationResult += New-UDValidationResult -ValidationError "Recorded By is required"
-            }
-            
-            return $ValidationResult
         }
     } -Style @{marginBottom = '30px'}
     

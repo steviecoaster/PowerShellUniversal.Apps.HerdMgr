@@ -9,7 +9,7 @@ function Get-CattleById {
     )
     
     $query = @"
-SELECT CattleID, TagNumber, OriginFarm, Name, Breed, Gender, BirthDate, PurchaseDate, Location, Status, Notes, CreatedDate, ModifiedDate
+SELECT CattleID, TagNumber, OriginFarm, Name, Breed, Gender, BirthDate, PurchaseDate, Location, Owner, PricePerDay, Status, Notes, CreatedDate, ModifiedDate
 FROM Cattle
 WHERE CattleID = @CattleID
 "@

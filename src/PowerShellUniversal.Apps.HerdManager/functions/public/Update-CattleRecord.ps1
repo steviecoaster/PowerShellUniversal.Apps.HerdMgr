@@ -31,6 +31,14 @@ function Update-CattleRecord {
         $Location,
 
         [Parameter()]
+        [String]
+        $Owner,
+
+        [Parameter()]
+        [decimal]
+        $PricePerDay,
+
+        [Parameter()]
         [DateTime]
         $BirthDate,
         
@@ -58,6 +66,8 @@ SET TagNumber = @TagNumber,
     BirthDate = @BirthDate,
     PurchaseDate = @PurchaseDate,
     Location = @Location,
+    Owner = @Owner,
+    PricePerDay = @PricePerDay,
     Status = @Status,
     Notes = @Notes,
     ModifiedDate = CURRENT_TIMESTAMP
@@ -77,6 +87,8 @@ WHERE CattleID = @CattleID
             BirthDate = $BirthDate
             PurchaseDate = $PurchaseDate
             Location = $Location
+            Owner = $Owner
+            PricePerDay = $PricePerDay
             Status = $Status
             Notes = $Notes
         }

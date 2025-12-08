@@ -16,14 +16,16 @@ function Add-CattleRecord {
         [string]$Gender,
         [ValidateSet('Pen 1', 'Pen 2', 'Pen 3', 'Pen 4', 'Pen 5', 'Pen 6', 'Quarantine', 'Pasture')]
         [string]$Location,
+        [string]$Owner,
+        [decimal]$PricePerDay,
         [DateTime]$BirthDate,
         [DateTime]$PurchaseDate,
         [string]$Notes
     )
     
     $query = @"
-INSERT INTO Cattle (TagNumber, OriginFarm, Name, Breed, Gender, Location, BirthDate, PurchaseDate, Notes)
-VALUES (@TagNumber, @OriginFarm, @Name, @Breed, @Gender, @Location, @BirthDate, @PurchaseDate, @Notes)
+INSERT INTO Cattle (TagNumber, OriginFarm, Name, Breed, Gender, Location, Owner, PricePerDay, BirthDate, PurchaseDate, Notes)
+VALUES (@TagNumber, @OriginFarm, @Name, @Breed, @Gender, @Location, @Owner, @PricePerDay, @BirthDate, @PurchaseDate, @Notes)
 "@
     
     $params = @{
@@ -36,6 +38,8 @@ VALUES (@TagNumber, @OriginFarm, @Name, @Breed, @Gender, @Location, @BirthDate, 
             Breed = $Breed
             Gender = $Gender
             Location = $Location
+            Owner = $Owner
+            PricePerDay = $PricePerDay
             BirthDate = $BirthDate
             PurchaseDate = $PurchaseDate
             Notes = $Notes

@@ -61,6 +61,10 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                     } -FullWidth
                     New-UDElement -Tag 'br'
                     New-UDElement -Tag 'br'
+                    New-UDTextbox -Id 'new-owner' -Label 'Owner (optional)' -FullWidth
+                    New-UDElement -Tag 'br'
+                    New-UDTextbox -Id 'new-price-per-day' -Label 'Price Per Day (optional)' -FullWidth
+                    New-UDElement -Tag 'br'
                     New-UDElement -Tag 'br'
                     New-UDDatePicker -Id 'new-birth-date' -Label 'Birth Date'
                     New-UDElement -Tag 'br'
@@ -77,6 +81,8 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                         $breed = (Get-UDElement -Id 'new-breed').value
                         $gender = (Get-UDElement -Id 'new-gender').value
                         $location = (Get-UDElement -Id 'new-location').value
+                        $owner = (Get-UDElement -Id 'new-owner').value
+                        $pricePerDay = (Get-UDElement -Id 'new-price-per-day').value
                         $birthDateValue = (Get-UDElement -Id 'new-birth-date').value
                         $purchaseDateValue = (Get-UDElement -Id 'new-purchase-date').value
                         $notes = (Get-UDElement -Id 'new-notes').value
@@ -101,6 +107,8 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                             if ($breed) { $params.Breed = $breed }
                             if ($gender) { $params.Gender = $gender }
                             if ($location) { $params.Location = $location }
+                            if ($owner) { $params.Owner = $owner }
+                            if ($pricePerDay) { $params.PricePerDay = [decimal]$pricePerDay }
                             if ($birthDateValue) { $params.BirthDate = [DateTime]$birthDateValue }
                             if ($purchaseDateValue) { $params.PurchaseDate = [DateTime]$purchaseDateValue }
                             if ($notes) { $params.Notes = $notes }
@@ -439,6 +447,10 @@ $($Data | ConvertTo-Json -Depth 3)
                             New-UDSelectOption -Name 'Pasture' -Value 'Pasture'
                         }
                         New-UDElement -Tag 'br'
+                        New-UDTextbox -Id 'edit-owner' -Label 'Owner (optional)' -Value $cattle.Owner -FullWidth
+                        New-UDElement -Tag 'br'
+                        New-UDTextbox -Id 'edit-price-per-day' -Label 'Price Per Day (optional)' -Value $cattle.PricePerDay -FullWidth
+                        New-UDElement -Tag 'br'
                         New-UDSelect -Id 'edit-status' -Label 'Status' -DefaultValue $(if ($cattle.Status) { $cattle.Status } else { 'Active' }) -Option {
                             New-UDSelectOption -Name 'Active' -Value 'Active'
                             New-UDSelectOption -Name 'Sold' -Value 'Sold'
@@ -461,6 +473,8 @@ $($Data | ConvertTo-Json -Depth 3)
                             $breed = (Get-UDElement -Id 'edit-breed').value
                             $gender = (Get-UDElement -Id 'edit-gender').value
                             $location = (Get-UDElement -Id 'edit-location').value
+                            $owner = (Get-UDElement -Id 'edit-owner').value
+                            $pricePerDay = (Get-UDElement -Id 'edit-price-per-day').value
                             $status = (Get-UDElement -Id 'edit-status').value
                             $birthDateValue = (Get-UDElement -Id 'edit-birth-date').value
                             $purchaseDateValue = (Get-UDElement -Id 'edit-purchase-date').value
@@ -489,6 +503,8 @@ $($Data | ConvertTo-Json -Depth 3)
                                     Notes      = $notes
                                 }
                                 
+                                if ($owner) { $params.Owner = $owner }
+                                if ($pricePerDay) { $params.PricePerDay = [decimal]$pricePerDay }
                                 if ($birthDateValue) { $params.BirthDate = [DateTime]$birthDateValue }
                                 if ($purchaseDateValue) { $params.PurchaseDate = [DateTime]$purchaseDateValue }
                                 
