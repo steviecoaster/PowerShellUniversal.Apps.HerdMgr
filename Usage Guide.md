@@ -13,6 +13,7 @@ A comprehensive guide to using all features of the Herd Manager application.
 - [Feed Records](#feed-records)
 - [Rate of Gain Tracking](#rate-of-gain-tracking)
 - [Animal Reports](#animal-reports)
+- [Accounting & Invoicing](#accounting--invoicing)
 - [Notifications Dashboard](#notifications-dashboard)
 - [Reports & Analytics](#reports--analytics)
 - [Tips & Best Practices](#tips--best-practices)
@@ -30,7 +31,7 @@ A comprehensive guide to using all features of the Herd Manager application.
 
 ### Navigation Overview
 
-The application has 8 main sections accessible from the side navigation:
+The application has 9 main sections accessible from the side navigation:
 
 - **Home**: Dashboard overview with quick stats
 - **🔔 Notifications**: Alerts for overdue health events and weight checks
@@ -40,6 +41,7 @@ The application has 8 main sections accessible from the side navigation:
 - **Feed Records**: Log daily feed mix quantities
 - **Rate of Gain**: Calculate and analyze performance metrics
 - **Animal Report**: Generate comprehensive individual animal reports
+- **Accounting**: Generate and manage invoices for cattle billing
 - **Reports**: View herd-wide analytics and summaries
 
 ---
@@ -515,6 +517,135 @@ All medical history including:
 - **Performance Reviews**: Analyze individual animal trends
 - **Record Keeping**: Archive paper copies for compliance
 - **Breeding Decisions**: Evaluate genetics and performance
+
+---
+
+## Accounting & Invoicing
+
+The Accounting module allows you to generate professional invoices for cattle billing, combining feeding costs and health expenses.
+
+### Setting Up for Invoicing
+
+Before generating invoices, ensure cattle records have the necessary billing information:
+
+1. Navigate to **Cattle Management**
+2. Edit each animal that will be invoiced
+3. Add required billing fields:
+   - **Owner**: The name of the customer/owner being billed
+   - **Price Per Day**: Daily feeding rate (e.g., $3.50, $4.00)
+4. Ensure health records with costs are entered in **Health Records**
+
+### Searching for Invoices
+
+1. Navigate to **Accounting** from the side menu
+2. In the **Search Invoice** section:
+   - Enter the **Invoice Number** (e.g., INV-2025-001)
+   - Click **🔍 Search**
+3. The invoice will open in a new tab with complete details
+
+### Generating a New Invoice
+
+1. Navigate to **Accounting**
+2. In the **Generate Invoice** section:
+   - **Select Cattle**: Use the dropdown to choose an animal with Owner set
+   - **Invoice Number**: Enter a unique invoice number (e.g., INV-2025-003)
+   - **Start Date**: Defaults to animal's purchase date (can be modified)
+   - **End Date**: Defaults to current date (can be modified)
+   - **Created By**: Your name for invoice attribution
+   - **Notes**: Optional notes about the invoice (e.g., "Final billing for contract")
+3. Review automatic calculations:
+   - **Days on Feed**: Automatically calculated from date range
+   - **Feeding Cost**: Days × Price Per Day
+   - **Health Cost**: Sum of all health record costs for the animal
+   - **Total Cost**: Feeding Cost + Health Cost
+4. Click **Generate Invoice**
+5. Success message confirms invoice creation
+
+### Viewing All Invoices
+
+The **All Invoices** table displays:
+
+- **Invoice #**: Unique invoice identifier
+- **Tag #**: Animal tag number
+- **Name**: Animal name
+- **Owner**: Customer being billed
+- **Invoice Date**: Date invoice was generated
+- **Days on Feed**: Number of days billed
+- **Total Cost**: Complete amount due
+
+**Table Features**:
+
+- **Search**: Filter invoices by any field
+- **Sort**: Click column headers to sort
+- **Actions**: 
+  - **👁️ View**: Open invoice in new tab
+  - **🖨️ Print**: Open invoice for printing
+
+### Invoice Details
+
+Invoices display in a professional format with:
+
+**Header Section**:
+
+- Company name: Gundy Ridge Farms
+- Company address and contact information
+- Invoice number and date
+- Payment terms (NET 30)
+- Due date (30 days from invoice date)
+- Created by information
+
+**Animal Information**:
+
+- Tag number
+- Animal name
+- Owner name
+- Breed
+- Origin farm
+
+**Feeding Costs**:
+
+- Start date (when billing period began)
+- End date (when billing period ended)
+- Days on feed
+- Price per day rate
+- **Total Feeding Cost**
+
+**Health & Veterinary Costs**:
+
+- Table of all health events with costs:
+  - Date
+  - Type (Vaccination, Treatment, Veterinary Visit)
+  - Description
+  - Cost (with $ and 2 decimal places)
+- **Total Health Cost**
+
+**Total Cost**:
+
+- Prominent display of total amount due
+- Combines feeding and health costs
+- Formatted as currency
+
+### Printing Invoices
+
+1. Open an invoice using Search or View button
+2. Click **🖨️ Print Invoice** button at the bottom
+3. Browser print dialog opens with optimized layout:
+   - Navigation hidden
+   - Print button hidden
+   - Clean professional appearance
+4. Print or save as PDF for:
+   - Customer delivery
+   - Record keeping
+   - Accounting records
+
+### Invoice Best Practices
+
+- **Unique Numbers**: Use sequential invoice numbers (INV-2025-001, INV-2025-002...)
+- **Accurate Dates**: Verify start/end dates match actual feeding period
+- **Cost Documentation**: Enter all health costs in Health Records before invoicing
+- **Owner Information**: Ensure owner names are consistent across cattle
+- **Timely Generation**: Generate invoices at end of billing period or upon sale
+- **Record Keeping**: Save or print invoices for tax and audit purposes
 
 ---
 

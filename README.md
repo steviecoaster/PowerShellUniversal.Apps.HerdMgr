@@ -59,6 +59,16 @@ Gundy Ridge Herd Manager is a web-based application that provides ranchers and l
 - **Weight Check Reminders**: Alerts for cattle needing weight measurements
 - **Upcoming Events**: Color-coded display of events by urgency (red: ≤7 days, orange: ≤14 days, blue: >14 days)
 
+### 💰 Accounting & Invoicing
+
+- **Invoice Generation**: Create professional invoices for cattle with automatic cost calculations
+- **Cost Tracking**: Combine feeding costs (days × daily rate) and health costs (veterinary expenses)
+- **Invoice Management**: Search, view, and print invoices in a clean, professional format
+- **Payment Terms**: NET 30 payment terms with automatic due date calculation
+- **Print-Ready Invoices**: Professional invoice layout with company branding and contact information
+- **Cost Breakdown**: Detailed itemization of feeding costs and health/veterinary expenses
+- **Owner Billing**: Associate cattle with owners for accurate billing
+
 ## 🛠️ Technical Stack
 
 - **Platform**: PowerShell Universal Dashboard v5
@@ -85,14 +95,18 @@ GundyRidgeHerdManager/
 │       │           ├── FeedRecords.ps1          # Daily feed tracking
 │       │           ├── RateOfGain.ps1           # ROG calculations
 │       │           ├── AnimalReport.ps1         # Individual animal reports
+│       │           ├── Accounting.ps1           # Invoice management
+│       │           ├── Invoice.ps1              # Invoice display page
 │       │           └── Reports.ps1              # Herd-wide analytics
 │       ├── functions/
 │       │   └── public/
 │       │       ├── Add-CattleRecord.ps1
 │       │       ├── Add-WeightRecord.ps1
+│       │       ├── Add-Invoice.ps1
 │       │       ├── Calculate-RateOfGain.ps1
 │       │       ├── Get-AllCattle.ps1
 │       │       ├── Get-CattleById.ps1
+│       │       ├── Get-Invoice.ps1
 │       │       ├── Get-RateOfGainHistory.ps1
 │       │       ├── Get-WeightHistory.ps1
 │       │       ├── Initialize-HerdDatabase.ps1
@@ -112,11 +126,12 @@ GundyRidgeHerdManager/
 
 ### Core Tables
 
-- **Cattle**: Animal profiles with demographics, location, and status
+- **Cattle**: Animal profiles with demographics, location, status, owner, and daily feeding rate
 - **WeightRecords**: Complete weight measurement history
 - **RateOfGainCalculations**: Computed performance metrics
-- **HealthRecords**: Medical history and treatments
+- **HealthRecords**: Medical history, treatments, and associated costs
 - **FeedRecords**: Daily feed mix recordings
+- **Invoices**: Invoice tracking with feeding costs, health costs, and payment terms
 
 ### Views
 
@@ -208,6 +223,22 @@ Optimized indexes on frequently queried fields for fast performance
 - Type validation (dates, numbers, enums)
 - Unique constraints (tag numbers, feed dates)
 - SQL parameter binding prevents injection
+
+### Accounting & Billing Workflow
+
+1. **Setup**: Add Owner and PricePerDay to cattle records
+2. **Track Costs**: Record health events with associated costs in HealthRecords
+3. **Generate Invoice**: 
+   - Select animal from dropdown
+   - Set start and end dates (defaults to purchase date and current date)
+   - System automatically calculates:
+     - Days on feed
+     - Feeding costs (Days × Price per day)
+     - Health costs (Sum of all health record costs)
+     - Total cost
+4. **Search Invoices**: Find invoices by invoice number
+5. **View/Print**: Open invoices in new tab with professional print-ready layout
+6. **Payment Terms**: NET 30 with automatic due date calculation
 
 ## 🔧 Configuration
 
