@@ -11,10 +11,22 @@ Gundy Ridge Herd Manager is a web-based application that provides ranchers and l
 ### 🐮 Cattle Management
 
 - **Comprehensive Animal Profiles**: Track individual animals with tag numbers, names, breed, gender, birth dates, origin farm, and current location
+- **Farm Integration**: Link cattle to farm records for origin and ownership tracking
 - **Location Tracking**: Manage cattle across 6 pens, quarantine area, and pasture
 - **Status Tracking**: Monitor animal status (Active, Sold, Deceased, Transferred)
 - **CSV Import**: Bulk import cattle records from CSV files
 - **Searchable Database**: Quick search and filter capabilities across all cattle records
+- **Dynamic Dropdowns**: Smart form fields that adapt based on available farm data
+
+### 🏡 Farm Management
+
+- **Farm Registry**: Maintain complete farm/ranch contact information
+- **Origin Tracking**: Mark farms as cattle origins for specialized filtering
+- **Contact Management**: Store addresses, phone numbers, emails, and contact persons
+- **Owner Tracking**: All farms available for cattle ownership assignment
+- **Smart Dropdowns**: Origin Farm dropdown shows only origin farms; Owner dropdown shows all farms
+- **Active/Inactive Status**: Manage farm lifecycle without data loss
+- **Edit Capabilities**: Update farm information including origin status anytime
 
 ### ⚖️ Weight Management
 
@@ -61,13 +73,15 @@ Gundy Ridge Herd Manager is a web-based application that provides ranchers and l
 
 ### 💰 Accounting & Invoicing
 
-- **Invoice Generation**: Create professional invoices for cattle with automatic cost calculations
+- **Multi-Cattle Invoicing**: Create invoices for single or multiple cattle on one invoice
+- **Invoice Generation**: Create professional invoices with automatic cost calculations
 - **Cost Tracking**: Combine feeding costs (days × daily rate) and health costs (veterinary expenses)
+- **Line Item Detail**: Each animal on multi-cattle invoices shows individual costs and subtotals
 - **Invoice Management**: Search, view, and print invoices in a clean, professional format
 - **Payment Terms**: NET 30 payment terms with automatic due date calculation
 - **Print-Ready Invoices**: Professional invoice layout with company branding and contact information
-- **Cost Breakdown**: Detailed itemization of feeding costs and health/veterinary expenses
-- **Owner Billing**: Associate cattle with owners for accurate billing
+- **Cost Breakdown**: Detailed itemization of feeding costs and health/veterinary expenses per animal
+- **Owner Billing**: Associate cattle with farm owners for accurate billing
 
 ## 🛠️ Technical Stack
 
@@ -79,7 +93,7 @@ Gundy Ridge Herd Manager is a web-based application that provides ranchers and l
 
 ## 📁 Project Structure
 
-```
+```text
 GundyRidgeHerdManager/
 ├── src/
 │   └── PowerShellUniversal.Apps.HerdManager/
@@ -93,6 +107,7 @@ GundyRidgeHerdManager/
 │       │           ├── WeightManagement.ps1     # Weight recording and history
 │       │           ├── HealthRecords.ps1        # Health tracking
 │       │           ├── FeedRecords.ps1          # Daily feed tracking
+│       │           ├── Farms.ps1                # Farm management
 │       │           ├── RateOfGain.ps1           # ROG calculations
 │       │           ├── AnimalReport.ps1         # Individual animal reports
 │       │           ├── Accounting.ps1           # Invoice management
@@ -103,6 +118,9 @@ GundyRidgeHerdManager/
 │       │       ├── Add-CattleRecord.ps1
 │       │       ├── Add-WeightRecord.ps1
 │       │       ├── Add-Invoice.ps1
+│       │       ├── Add-Farm.ps1
+│       │       ├── Get-Farm.ps1
+│       │       ├── Update-Farm.ps1
 │       │       ├── Calculate-RateOfGain.ps1
 │       │       ├── Get-AllCattle.ps1
 │       │       ├── Get-CattleById.ps1

@@ -1,12 +1,36 @@
 -- Gundy Ridge Herd Manager Database Schema
 -- SQLite Database for Cattle Weight Management and Rate of Gain Tracking
 
+-- Table: Farms
+-- Stores farm/ranch information
+CREATE TABLE IF NOT EXISTS Farms (
+    FarmID INTEGER PRIMARY KEY AUTOINCREMENT,
+    FarmName VARCHAR(200) UNIQUE NOT NULL,
+    Address TEXT,
+    City VARCHAR(100),
+    State VARCHAR(50),
+    ZipCode VARCHAR(20),
+    PhoneNumber VARCHAR(20),
+    Email VARCHAR(100),
+    ContactPerson VARCHAR(100),
+    Notes TEXT,
+    IsOrigin INTEGER DEFAULT 0,
+    IsActive INTEGER DEFAULT 1,
+    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ModifiedDate DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index for farms
+CREATE INDEX IF NOT EXISTS idx_farm_name ON Farms(FarmName);
+CREATE INDEX IF NOT EXISTS idx_farm_active ON Farms(IsActive);
+
 -- Table: Cattle
 -- Stores individual animal information
 CREATE TABLE IF NOT EXISTS Cattle (
     CattleID INTEGER PRIMARY KEY AUTOINCREMENT,
     TagNumber VARCHAR(50) UNIQUE NOT NULL,
-    OriginFarm VARCHAR(100) NOT NULL,
+    OriginFarmID INTEGER, -- Foreign key to Farms table
+    OriginFarm VARCHAR(100), -- Legacy text field, kept for backward compatibility
     Name VARCHAR(100),
     Breed VARCHAR(50),
     Gender VARCHAR(10) CHECK(Gender IN ('Steer', 'Heifer')),
@@ -18,7 +42,8 @@ CREATE TABLE IF NOT EXISTS Cattle (
     Status VARCHAR(20) DEFAULT 'Active' CHECK(Status IN ('Active', 'Sold', 'Deceased', 'Transferred')),
     Notes TEXT,
     CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-    ModifiedDate DATETIME DEFAULT CURRENT_TIMESTAMP
+    ModifiedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (OriginFarmID) REFERENCES Farms(FarmID)
 );
 
 -- Table: WeightRecords
@@ -73,6 +98,7 @@ SELECT
     c.Breed,
     c.Gender,
     c.BirthDate,
+    c.PurchaseDate,
     c.Location,
     c.Owner,
     c.PricePerDay,
@@ -151,18 +177,18 @@ CREATE TABLE IF NOT EXISTS FeedRecords (
 CREATE INDEX IF NOT EXISTS idx_feed_date ON FeedRecords(FeedDate);
 
 -- Table: Invoices
--- Stores invoice information for cattle sold or transferred
+-- Stores invoice header information (can now include multiple cattle via line items)
 CREATE TABLE IF NOT EXISTS Invoices (
     InvoiceID INTEGER PRIMARY KEY AUTOINCREMENT,
     InvoiceNumber VARCHAR(50) UNIQUE NOT NULL,
-    CattleID INTEGER NOT NULL,
+    CattleID INTEGER, -- Legacy field, kept for backward compatibility with single-cattle invoices
     InvoiceDate DATE NOT NULL,
-    StartDate DATE NOT NULL,
-    EndDate DATE NOT NULL,
-    DaysOnFeed INTEGER NOT NULL,
-    PricePerDay DECIMAL(10,2) NOT NULL,
-    FeedingCost DECIMAL(10,2) NOT NULL,
-    HealthCost DECIMAL(10,2) DEFAULT 0,
+    StartDate DATE, -- Legacy field for single-cattle invoices
+    EndDate DATE, -- Legacy field for single-cattle invoices
+    DaysOnFeed INTEGER, -- Legacy field for single-cattle invoices
+    PricePerDay DECIMAL(10,2), -- Legacy field for single-cattle invoices
+    FeedingCost DECIMAL(10,2), -- Legacy field for single-cattle invoices
+    HealthCost DECIMAL(10,2) DEFAULT 0, -- Legacy field for single-cattle invoices
     TotalCost DECIMAL(10,2) NOT NULL,
     Notes TEXT,
     CreatedBy VARCHAR(100),
@@ -170,8 +196,30 @@ CREATE TABLE IF NOT EXISTS Invoices (
     FOREIGN KEY (CattleID) REFERENCES Cattle(CattleID)
 );
 
+-- Table: InvoiceLineItems
+-- Stores individual cattle line items for multi-cattle invoices
+CREATE TABLE IF NOT EXISTS InvoiceLineItems (
+    LineItemID INTEGER PRIMARY KEY AUTOINCREMENT,
+    InvoiceID INTEGER NOT NULL,
+    CattleID INTEGER NOT NULL,
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
+    DaysOnFeed INTEGER NOT NULL,
+    PricePerDay DECIMAL(10,2) NOT NULL,
+    FeedingCost DECIMAL(10,2) NOT NULL,
+    HealthCost DECIMAL(10,2) DEFAULT 0,
+    LineItemTotal DECIMAL(10,2) NOT NULL,
+    Notes TEXT,
+    FOREIGN KEY (InvoiceID) REFERENCES Invoices(InvoiceID) ON DELETE CASCADE,
+    FOREIGN KEY (CattleID) REFERENCES Cattle(CattleID)
+);
+
 -- Index for invoices
 CREATE INDEX IF NOT EXISTS idx_invoice_number ON Invoices(InvoiceNumber);
 CREATE INDEX IF NOT EXISTS idx_invoice_cattle ON Invoices(CattleID);
 CREATE INDEX IF NOT EXISTS idx_invoice_date ON Invoices(InvoiceDate);
+
+-- Index for invoice line items
+CREATE INDEX IF NOT EXISTS idx_line_item_invoice ON InvoiceLineItems(InvoiceID);
+CREATE INDEX IF NOT EXISTS idx_line_item_cattle ON InvoiceLineItems(CattleID);
 

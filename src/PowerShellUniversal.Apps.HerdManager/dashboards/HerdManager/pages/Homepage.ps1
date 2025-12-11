@@ -475,6 +475,45 @@ WHERE c.Status = 'Active'
                 }
             }
         }
+
+        # Farm Management
+        New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -LargeSize 4 -Content {
+            New-UDCard -Style @{
+                height = '100%'
+                borderRadius = '8px'
+                boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+            } -Content {
+                New-UDElement -Tag 'div' -Content {
+                    New-UDTypography -Text "🚜 Farm Management" -Variant h5 -Style @{
+                        color = '#2e7d32'
+                        fontWeight = 'bold'
+                        marginBottom = '15px'
+                    }
+                    New-UDElement -Tag 'br'
+                    New-UDElement -Tag 'div' -Content {
+                        New-UDTypography -Text "Manage cattle origin and owner farm information" -Variant body1 -Style @{
+                            marginBottom = '15px'
+                            color = '#555'
+                        }
+                        
+                        New-UDElement -Tag 'ul' -Content {
+                            New-UDElement -Tag 'li' -Content { "📈 Herd overview & status" }
+                            New-UDElement -Tag 'li' -Content { "💰 Cost analysis" }
+                            New-UDElement -Tag 'li' -Content { "� Performance metrics" }
+                            New-UDElement -Tag 'li' -Content { "🩺 Health summaries" }
+                        } -Attributes @{style = 'color: #666; margin-bottom: 20px;'}
+                        
+                        New-UDButton -Text "Manage Farms" -Variant contained -Style @{
+                            backgroundColor = '#2e7d32'
+                            color = 'white'
+                            width = '100%'
+                        } -OnClick {
+                            Invoke-UDRedirect -Url '/farms'
+                        }
+                    }
+                }
+            }
+        }
     }
     
     New-UDElement -Tag 'br'

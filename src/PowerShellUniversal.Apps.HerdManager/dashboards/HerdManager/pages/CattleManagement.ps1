@@ -37,7 +37,15 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
             
                     New-UDTextbox -Id 'new-tag-number' -Label 'Tag Number *' -FullWidth
                     New-UDElement -Tag 'br'
-                    New-UDTextbox -Id 'new-origin-farm' -Label 'Origin Farm *' -FullWidth
+                    New-UDAutoComplete -Id 'new-origin-farm' -Label 'Origin Farm *' -Options {
+                        $farms = Get-Farm -OriginOnly
+                        $farms | ForEach-Object { $_.FarmName }
+                    } -FullWidth -OnChange {
+                        # Store the selected farm ID
+                        $selectedFarm = Get-Farm -FarmName $EventData
+                        Set-UDElement -Id 'new-origin-farm-id' -Properties @{value = $selectedFarm.FarmID }
+                    }
+                    New-UDTextbox -Id 'new-origin-farm-id' -Style @{display = 'none'}
                     New-UDElement -Tag 'br'
                     New-UDTextbox -Id 'new-name' -Label 'Name (Optional)' -FullWidth
                     New-UDElement -Tag 'br'
@@ -61,7 +69,22 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                     } -FullWidth
                     New-UDElement -Tag 'br'
                     New-UDElement -Tag 'br'
-                    New-UDTextbox -Id 'new-owner' -Label 'Owner (optional)' -FullWidth
+                    
+                    # Owner field - dropdown if farms exist, textbox otherwise
+                    New-UDDynamic -Content {
+                        $farms = Get-Farm -ActiveOnly
+                        if ($farms) {
+                            New-UDSelect -Id 'new-owner' -Label 'Owner (optional)' -Option {
+                                New-UDSelectOption -Name '(Select Farm)' -Value ''
+                                $farms | ForEach-Object {
+                                    New-UDSelectOption -Name $_.FarmName -Value $_.FarmName
+                                }
+                            } -FullWidth
+                        } else {
+                            New-UDTextbox -Id 'new-owner' -Label 'Owner (optional)' -FullWidth
+                        }
+                    }
+                    
                     New-UDElement -Tag 'br'
                     New-UDTextbox -Id 'new-price-per-day' -Label 'Price Per Day (optional)' -FullWidth
                     New-UDElement -Tag 'br'
@@ -77,6 +100,7 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                     New-UDButton -Text "Add Cattle" -Variant contained -Style @{backgroundColor = '#2e7d32'; color = 'white' } -OnClick {
                         $tagNumber = (Get-UDElement -Id 'new-tag-number').value
                         $originFarm = (Get-UDElement -Id 'new-origin-farm').value
+                        $originFarmID = (Get-UDElement -Id 'new-origin-farm-id').value
                         $name = (Get-UDElement -Id 'new-name').value
                         $breed = (Get-UDElement -Id 'new-breed').value
                         $gender = (Get-UDElement -Id 'new-gender').value
@@ -103,6 +127,7 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                                 OriginFarm = $originFarm
                             }
                     
+                            if ($originFarmID) { $params.OriginFarmID = [int]$originFarmID }
                             if ($name) { $params.Name = $name }
                             if ($breed) { $params.Breed = $breed }
                             if ($gender) { $params.Gender = $gender }
@@ -425,7 +450,15 @@ $($Data | ConvertTo-Json -Depth 3)
                         
                         New-UDTextbox -Id 'edit-tag-number' -Label 'Tag Number *' -Value $cattle.TagNumber -FullWidth
                         New-UDElement -Tag 'br'
-                        New-UDTextbox -Id 'edit-origin-farm' -Label 'Origin Farm *' -Value $cattle.OriginFarm -FullWidth
+                        New-UDAutoComplete -Id 'edit-origin-farm' -Label 'Origin Farm *' -Options {
+                            $farms = Get-Farm -OriginOnly
+                            $farms | ForEach-Object { $_.FarmName }
+                        } -Value $cattle.OriginFarm -FullWidth -OnChange {
+                            # Store the selected farm ID
+                            $selectedFarm = Get-Farm -FarmName $EventData
+                            Set-UDElement -Id 'edit-origin-farm-id' -Properties @{value = $selectedFarm.FarmID }
+                        }
+                        New-UDTextbox -Id 'edit-origin-farm-id' -Value $cattle.OriginFarmID -Style @{display = 'none'}
                         New-UDElement -Tag 'br'
                         New-UDTextbox -Id 'edit-name' -Label 'Name' -Value $cattle.Name -FullWidth
                         New-UDElement -Tag 'br'
@@ -447,7 +480,22 @@ $($Data | ConvertTo-Json -Depth 3)
                             New-UDSelectOption -Name 'Pasture' -Value 'Pasture'
                         }
                         New-UDElement -Tag 'br'
-                        New-UDTextbox -Id 'edit-owner' -Label 'Owner (optional)' -Value $cattle.Owner -FullWidth
+                        
+                        # Owner field - dropdown if farms exist, textbox otherwise
+                        New-UDDynamic -Content {
+                            $farms = Get-Farm -ActiveOnly
+                            if ($farms) {
+                                New-UDSelect -Id 'edit-owner' -Label 'Owner (optional)' -DefaultValue $cattle.Owner -Option {
+                                    New-UDSelectOption -Name '(Select Farm)' -Value ''
+                                    $farms | ForEach-Object {
+                                        New-UDSelectOption -Name $_.FarmName -Value $_.FarmName
+                                    }
+                                } -FullWidth
+                            } else {
+                                New-UDTextbox -Id 'edit-owner' -Label 'Owner (optional)' -Value $cattle.Owner -FullWidth
+                            }
+                        }
+                        
                         New-UDElement -Tag 'br'
                         New-UDTextbox -Id 'edit-price-per-day' -Label 'Price Per Day (optional)' -Value $cattle.PricePerDay -FullWidth
                         New-UDElement -Tag 'br'
@@ -469,6 +517,7 @@ $($Data | ConvertTo-Json -Depth 3)
                         New-UDButton -Text "Update" -Variant contained -Style @{backgroundColor = '#2e7d32'; color = 'white' } -OnClick {
                             $tagNumber = (Get-UDElement -Id 'edit-tag-number').value
                             $originFarm = (Get-UDElement -Id 'edit-origin-farm').value
+                            $originFarmID = (Get-UDElement -Id 'edit-origin-farm-id').value
                             $name = (Get-UDElement -Id 'edit-name').value
                             $breed = (Get-UDElement -Id 'edit-breed').value
                             $gender = (Get-UDElement -Id 'edit-gender').value
@@ -503,6 +552,7 @@ $($Data | ConvertTo-Json -Depth 3)
                                     Notes      = $notes
                                 }
                                 
+                                if ($originFarmID) { $params.OriginFarmID = [int]$originFarmID }
                                 if ($owner) { $params.Owner = $owner }
                                 if ($pricePerDay) { $params.PricePerDay = [decimal]$pricePerDay }
                                 if ($birthDateValue) { $params.BirthDate = [DateTime]$birthDateValue }

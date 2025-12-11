@@ -1,4 +1,4 @@
-$invoicePage = New-UDPage -Name "Invoice" -Url "/invoice/:invoiceNumber" -Content {
+$invoicePage = New-UDPage -Name "Invoice" -Url "/invoice/:invoiceNumber" -Blank -Content {
     $invoiceNumber = $InvoiceNumber
     
     $dbPath = $script:DatabasePath
@@ -11,26 +11,11 @@ $invoicePage = New-UDPage -Name "Invoice" -Url "/invoice/:invoiceNumber" -Conten
         return
     }
     
-    # Get cattle details
-    $cattle = Get-CattleById -CattleID $invoiceData.CattleID
+    # Check if this is a multi-cattle invoice
+    $isMultiCattle = $invoiceData.IsMultiCattle
     
-    # Get health records with costs
-    $healthQuery = @"
-SELECT 
-    CAST(RecordDate AS TEXT) AS RecordDate,
-    RecordType,
-    Title,
-    Description,
-    Cost,
-    VeterinarianName,
-    RecordedBy
-FROM HealthRecords
-WHERE CattleID = @CattleID AND Cost > 0
-ORDER BY RecordDate
-"@
-    $healthRecords = Invoke-SqliteQuery -DataSource $dbPath -Query $healthQuery -SqlParameters @{
-        CattleID = $invoiceData.CattleID
-    } -As PSObject
+    # Debug logging
+    Write-Host "Invoice: $invoiceNumber, IsMultiCattle: $isMultiCattle, LineItems: $($invoiceData.LineItems.Count)"
     
     # Print-friendly styles
     New-UDStyle -Style @'
@@ -40,11 +25,58 @@ ORDER BY RecordDate
             }
             body {
                 margin: 0;
-                padding: 20px;
+                padding: 10px;
+                font-size: 11pt;
             }
             .invoice-container {
                 max-width: 100% !important;
                 margin: 0 !important;
+                padding: 15px !important;
+                box-shadow: none !important;
+            }
+            .invoice-header {
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+            .invoice-header h2 {
+                font-size: 18pt;
+                margin: 0;
+            }
+            .invoice-header h3 {
+                font-size: 14pt;
+            }
+            .invoice-header p {
+                font-size: 9pt;
+                margin: 1px 0;
+            }
+            .invoice-section {
+                margin-bottom: 15px;
+            }
+            .invoice-section h6 {
+                font-size: 12pt;
+                margin-bottom: 8px;
+            }
+            .invoice-info-row {
+                margin-bottom: 5px;
+            }
+            .invoice-info-row p,
+            .invoice-info-row span {
+                font-size: 10pt;
+            }
+            .invoice-table {
+                font-size: 9pt;
+                margin-top: 8px;
+            }
+            .invoice-table th {
+                padding: 6px;
+            }
+            .invoice-table td {
+                padding: 5px;
+            }
+            .invoice-total {
+                padding: 10px;
+                margin-top: 15px;
+                font-size: 14pt;
             }
         }
         .invoice-container {
@@ -134,98 +166,289 @@ ORDER BY RecordDate
 "@
             New-UDHtml -Markup $headerHtml
             
-            # Cattle Information Section
-            New-UDElement -Tag 'div' -Attributes @{class = 'invoice-section' } -Content {
-                New-UDTypography -Text "ANIMAL INFORMATION" -Variant h6 -Style @{
-                    color         = '#2e7d32'
-                    fontWeight    = 'bold'
-                    marginBottom  = '15px'
-                    borderBottom  = '2px solid #2e7d32'
-                    paddingBottom = '5px'
+            # Owner/Customer Information - Try to get farm details
+            $ownerFarm = if ($invoiceData.Owner) { 
+                Get-Farm -FarmName $invoiceData.Owner 
+            } else { 
+                $null 
+            }
+            
+            if ($ownerFarm) {
+                # Farm found - build complete farm information
+                $cityStateZip = @()
+                if ($ownerFarm.City) { $cityStateZip += $ownerFarm.City }
+                if ($ownerFarm.State) { 
+                    if ($cityStateZip.Count -gt 0) {
+                        $cityStateZip += ", $($ownerFarm.State)"
+                    } else {
+                        $cityStateZip += $ownerFarm.State
+                    }
+                }
+                if ($ownerFarm.ZipCode) { $cityStateZip += " $($ownerFarm.ZipCode)" }
+                $cityStateZipLine = $cityStateZip -join ''
+                
+                $billToHtml = @"
+<div class="invoice-section">
+    <h6 style="color: #2e7d32; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #2e7d32; padding-bottom: 5px;">BILL TO</h6>
+    <p style="font-weight: bold; font-size: 1.1em; margin: 5px 0;">$($ownerFarm.FarmName)</p>
+"@
+                if ($ownerFarm.ContactPerson) {
+                    $billToHtml += "`n    <p style='margin: 3px 0;'>Attn: $($ownerFarm.ContactPerson)</p>"
+                }
+                if ($ownerFarm.Address) {
+                    $billToHtml += "`n    <p style='margin: 3px 0;'>$($ownerFarm.Address)</p>"
+                }
+                if ($cityStateZipLine) {
+                    $billToHtml += "`n    <p style='margin: 3px 0;'>$cityStateZipLine</p>"
+                }
+                if ($ownerFarm.PhoneNumber) {
+                    $billToHtml += "`n    <p style='margin: 3px 0;'>Phone: $($ownerFarm.PhoneNumber)</p>"
+                }
+                if ($ownerFarm.Email) {
+                    $billToHtml += "`n    <p style='margin: 3px 0;'>Email: $($ownerFarm.Email)</p>"
+                }
+                $billToHtml += "`n</div>"
+            } else {
+                # No farm found - show owner name only
+                $billToHtml = @"
+<div class="invoice-section">
+    <h6 style="color: #2e7d32; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid #2e7d32; padding-bottom: 5px;">BILL TO</h6>
+    <p style="font-weight: bold; font-size: 1.1em; margin: 5px 0;">$($invoiceData.Owner)</p>
+</div>
+"@
+            }
+            
+            New-UDHtml -Markup $billToHtml
+            
+            if ($isMultiCattle) {
+                # Multi-cattle invoice - show line items
+                # Build HTML for all line items
+                $lineItemsHtml = @"
+<div class="invoice-section">
+    <h6 style="color: #2e7d32; font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid #2e7d32; padding-bottom: 5px;">INVOICE LINE ITEMS</h6>
+"@
+                
+                $lineItemNumber = 1
+                foreach ($lineItem in $invoiceData.LineItems) {
+                    # Get cattle details
+                    $cattle = Get-CattleById -CattleID $lineItem.CattleID
+                    
+                    # Get health records
+                    $healthQuery = @"
+SELECT 
+    CAST(RecordDate AS TEXT) AS RecordDate,
+    RecordType,
+    Title,
+    Description,
+    Cost
+FROM HealthRecords
+WHERE CattleID = @CattleID AND Cost > 0
+ORDER BY RecordDate
+"@
+                    $healthRecords = Invoke-SqliteQuery -DataSource $dbPath -Query $healthQuery -SqlParameters @{
+                        CattleID = $lineItem.CattleID
+                    } -As PSObject
+                    
+                    # Build line item HTML
+                    $lineItemsHtml += @"
+    <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; background-color: #fafafa;">
+        <h6 style="color: #2e7d32; font-weight: bold; margin-bottom: 10px;">Animal #$lineItemNumber - $($lineItem.TagNumber) ($($lineItem.CattleName))</h6>
+        
+        <div style="margin-bottom: 10px;">
+            <div class="invoice-info-row">
+                <span class="invoice-label">Breed:</span>
+                <span>$($cattle.Breed)</span>
+            </div>
+            <div class="invoice-info-row">
+                <span class="invoice-label">Origin Farm:</span>
+                <span>$($cattle.OriginFarm)</span>
+            </div>
+        </div>
+        
+        <p style="font-weight: bold; margin-top: 10px; margin-bottom: 5px; font-size: 0.9em;">Feeding Costs:</p>
+        <div style="margin-left: 20px;">
+            <div class="invoice-info-row">
+                <span>Period: </span>
+                <span>$([DateTime]::Parse($lineItem.StartDate).ToString('MM/dd/yyyy')) - $([DateTime]::Parse($lineItem.EndDate).ToString('MM/dd/yyyy'))</span>
+            </div>
+            <div class="invoice-info-row">
+                <span>Days on Feed: </span>
+                <span>$($lineItem.DaysOnFeed) days</span>
+            </div>
+            <div class="invoice-info-row">
+                <span>Rate: </span>
+                <span>$([math]::Round($lineItem.PricePerDay, 2).ToString('C2')) per day</span>
+            </div>
+            <div class="invoice-info-row">
+                <span style="font-weight: bold;">Feeding Subtotal: </span>
+                <span style="font-weight: bold;">$([math]::Round($lineItem.FeedingCost, 2).ToString('C2'))</span>
+            </div>
+        </div>
+"@
+                    
+                    # Health costs
+                    if ($healthRecords) {
+                        $lineItemsHtml += @"
+        <p style="font-weight: bold; margin-top: 15px; margin-bottom: 5px; font-size: 0.9em;">Health & Veterinary Costs:</p>
+        <div style="margin-left: 20px;">
+        <table class="invoice-table" style="font-size: 0.9em;">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Date</th>
+                    <th style="width: 25%;">Type</th>
+                    <th style="width: 40%;">Description</th>
+                    <th style="width: 15%; text-align: right;">Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+"@
+                        foreach ($record in $healthRecords) {
+                            $date = [DateTime]::Parse($record.RecordDate).ToString('MM/dd/yyyy')
+                            $type = $record.RecordType
+                            $desc = if ($record.Title) { $record.Title } else { $record.Description }
+                            $cost = ([math]::Round($record.Cost, 2)).ToString('C2')
+                            
+                            $lineItemsHtml += @"
+                <tr>
+                    <td>$date</td>
+                    <td>$type</td>
+                    <td>$desc</td>
+                    <td style="text-align: right;">$cost</td>
+                </tr>
+"@
+                        }
+                        
+                        $lineItemsHtml += @"
+            </tbody>
+        </table>
+        <div style="text-align: right; font-weight: bold; margin-top: 10px;">Health Subtotal: $([math]::Round($lineItem.HealthCost, 2).ToString('C2'))</div>
+        </div>
+"@
+                    } else {
+                        $lineItemsHtml += @"
+        <p style="font-weight: bold; margin-top: 15px; margin-left: 20px; font-size: 0.9em;">Health & Veterinary Costs: `$0.00</p>
+"@
+                    }
+                    
+                    $lineItemsHtml += @"
+        <div style="text-align: right; font-weight: bold; font-size: 1.2em; margin-top: 15px; padding-top: 10px; border-top: 2px solid #2e7d32; color: #2e7d32;">
+            Animal Total: $([math]::Round($lineItem.LineItemTotal, 2).ToString('C2'))
+        </div>
+    </div>
+"@
+                    
+                    $lineItemNumber++
                 }
                 
-                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
-                    New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Tag Number:" }
-                    New-UDElement -Tag 'span' -Content { $cattle.TagNumber }
-                }
+                $lineItemsHtml += "</div>"
                 
-                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
-                    New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Name:" }
-                    New-UDElement -Tag 'span' -Content { $cattle.Name }
-                }
+                # Render the complete HTML
+                New-UDHtml -Markup $lineItemsHtml
+            } else {
+                # Single-cattle invoice (legacy format)
+                $cattle = Get-CattleById -CattleID $invoiceData.CattleID
                 
-                if ($cattle.Owner) {
+                # Get health records
+                $healthQuery = @"
+SELECT 
+    CAST(RecordDate AS TEXT) AS RecordDate,
+    RecordType,
+    Title,
+    Description,
+    Cost
+FROM HealthRecords
+WHERE CattleID = @CattleID AND Cost > 0
+ORDER BY RecordDate
+"@
+                $healthRecords = Invoke-SqliteQuery -DataSource $dbPath -Query $healthQuery -SqlParameters @{
+                    CattleID = $invoiceData.CattleID
+                } -As PSObject
+                
+                # Cattle Information Section
+                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-section' } -Content {
+                    New-UDTypography -Text "ANIMAL INFORMATION" -Variant h6 -Style @{
+                        color         = '#2e7d32'
+                        fontWeight    = 'bold'
+                        marginBottom  = '15px'
+                        borderBottom  = '2px solid #2e7d32'
+                        paddingBottom = '5px'
+                    }
+                    
                     New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
-                        New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Owner:" }
-                        New-UDElement -Tag 'span' -Content { $cattle.Owner }
+                        New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Tag Number:" }
+                        New-UDElement -Tag 'span' -Content { $cattle.TagNumber }
+                    }
+                    
+                    New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
+                        New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Name:" }
+                        New-UDElement -Tag 'span' -Content { $cattle.Name }
+                    }
+                    
+                    New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
+                        New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Breed:" }
+                        New-UDElement -Tag 'span' -Content { $cattle.Breed }
+                    }
+                    
+                    New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
+                        New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Origin Farm:" }
+                        New-UDElement -Tag 'span' -Content { $cattle.OriginFarm }
                     }
                 }
                 
-                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
-                    New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Breed:" }
-                    New-UDElement -Tag 'span' -Content { $cattle.Breed }
-                }
-                
-                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
-                    New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Origin Farm:" }
-                    New-UDElement -Tag 'span' -Content { $cattle.OriginFarm }
-                }
-            }
-            
-            # Feeding Costs Section
-            New-UDElement -Tag 'div' -Attributes @{class = 'invoice-section' } -Content {
-                New-UDTypography -Text "FEEDING COSTS" -Variant h6 -Style @{
-                    color         = '#2e7d32'
-                    fontWeight    = 'bold'
-                    marginBottom  = '15px'
-                    borderBottom  = '2px solid #2e7d32'
-                    paddingBottom = '5px'
-                }
-                
-                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
-                    New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Start Date:" }
-                    New-UDElement -Tag 'span' -Content { [DateTime]::Parse($invoiceData.StartDate).ToString('MM/dd/yyyy') }
-                }
-                
-                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
-                    New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "End Date:" }
-                    New-UDElement -Tag 'span' -Content { [DateTime]::Parse($invoiceData.EndDate).ToString('MM/dd/yyyy') }
-                }
-                
-                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
-                    New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Days on Feed:" }
-                    New-UDElement -Tag 'span' -Content { "$($invoiceData.DaysOnFeed) days" }
-                }
-                
-                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
-                    New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Price per Day:" }
-                    $ppdValue = [math]::Round($invoiceData.PricePerDay, 2)
+                # Feeding Costs Section
+                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-section' } -Content {
+                    New-UDTypography -Text "FEEDING COSTS" -Variant h6 -Style @{
+                        color         = '#2e7d32'
+                        fontWeight    = 'bold'
+                        marginBottom  = '15px'
+                        borderBottom  = '2px solid #2e7d32'
+                        paddingBottom = '5px'
+                    }
+                    
+                    New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
+                        New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Start Date:" }
+                        New-UDElement -Tag 'span' -Content { [DateTime]::Parse($invoiceData.StartDate).ToString('MM/dd/yyyy') }
+                    }
+                    
+                    New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
+                        New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "End Date:" }
+                        New-UDElement -Tag 'span' -Content { [DateTime]::Parse($invoiceData.EndDate).ToString('MM/dd/yyyy') }
+                    }
+                    
+                    New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
+                        New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Days on Feed:" }
+                        New-UDElement -Tag 'span' -Content { "$($invoiceData.DaysOnFeed) days" }
+                    }
+                    
+                    New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
+                        New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Price per Day:" }
+                        $ppdValue = [math]::Round($invoiceData.PricePerDay, 2)
                         $PricePerDay = $ppdValue.ToString('C2')
-                    New-UDElement -Tag 'span' -Content { $PricePerDay }
-                }
+                        New-UDElement -Tag 'span' -Content { $PricePerDay }
+                    }
 
-                $totalFeedingCost = [math]::Round($invoiceData.FeedingCost, 2)
-                New-UDTypography -Text "Total Feed Cost: $($totalFeedingCost.ToString('C2'))" -Variant body1 -Style @{
-                    fontWeight = 'bold'
-                    fontSize   = '1.1em'
-                    marginTop  = '15px'
-                    textAlign  = 'right'
-                }
-            }
-            
-            # Health Costs Section
-            New-UDElement -Tag 'div' -Attributes @{class = 'invoice-section' } -Content {
-                New-UDTypography -Text "HEALTH & VETERINARY COSTS" -Variant h6 -Style @{
-                    color         = '#2e7d32'
-                    fontWeight    = 'bold'
-                    marginBottom  = '15px'
-                    borderBottom  = '2px solid #2e7d32'
-                    paddingBottom = '5px'
+                    $totalFeedingCost = [math]::Round($invoiceData.FeedingCost, 2)
+                    New-UDTypography -Text "Total Feed Cost: $($totalFeedingCost.ToString('C2'))" -Variant body1 -Style @{
+                        fontWeight = 'bold'
+                        fontSize   = '1.1em'
+                        marginTop  = '15px'
+                        textAlign  = 'right'
+                    }
                 }
                 
-                if ($healthRecords) {
-                    # Create table header HTML
-                    $tableHtml = @"
+                # Health Costs Section
+                New-UDElement -Tag 'div' -Attributes @{class = 'invoice-section' } -Content {
+                    New-UDTypography -Text "HEALTH & VETERINARY COSTS" -Variant h6 -Style @{
+                        color         = '#2e7d32'
+                        fontWeight    = 'bold'
+                        marginBottom  = '15px'
+                        borderBottom  = '2px solid #2e7d32'
+                        paddingBottom = '5px'
+                    }
+                    
+                    if ($healthRecords) {
+                        # Create table header HTML
+                        $tableHtml = @"
 <table class="invoice-table">
     <thead>
         <tr>
@@ -237,15 +460,15 @@ ORDER BY RecordDate
     </thead>
     <tbody>
 "@
-                    # Add each health record as a row
-                    foreach ($record in $healthRecords) {
-                        $date = [DateTime]::Parse($record.RecordDate).ToString('MM/dd/yyyy')
-                        $type = $record.RecordType
-                        $desc = if ($record.Title) { $record.Title } else { $record.Description }
-                        $costValue = [math]::Round($record.Cost, 2)
-                        $cost = $costValue.ToString('C2')
-                        
-                        $tableHtml += @"
+                        # Add each health record as a row
+                        foreach ($record in $healthRecords) {
+                            $date = [DateTime]::Parse($record.RecordDate).ToString('MM/dd/yyyy')
+                            $type = $record.RecordType
+                            $desc = if ($record.Title) { $record.Title } else { $record.Description }
+                            $costValue = [math]::Round($record.Cost, 2)
+                            $cost = $costValue.ToString('C2')
+                            
+                            $tableHtml += @"
         <tr>
             <td>$date</td>
             <td>$type</td>
@@ -253,31 +476,32 @@ ORDER BY RecordDate
             <td style="text-align: right;">$cost</td>
         </tr>
 "@
-                    }
-                    
-                    $tableHtml += @"
+                        }
+                        
+                        $tableHtml += @"
     </tbody>
 </table>
 "@
-                    
-                    New-UDHtml -Markup $tableHtml
-                    
-                    $totalHealthCost = [math]::Round($invoiceData.HealthCost, 2)
-                    New-UDTypography -Text "Total Health Cost: $($totalHealthCost.ToString('C2'))" -Variant body1 -Style @{
-                        fontWeight = 'bold'
-                        fontSize   = '1.1em'
-                        marginTop  = '15px'
-                        textAlign  = 'right'
+                        
+                        New-UDHtml -Markup $tableHtml
+                        
+                        $totalHealthCost = [math]::Round($invoiceData.HealthCost, 2)
+                        New-UDTypography -Text "Total Health Cost: $($totalHealthCost.ToString('C2'))" -Variant body1 -Style @{
+                            fontWeight = 'bold'
+                            fontSize   = '1.1em'
+                            marginTop  = '15px'
+                            textAlign  = 'right'
+                        }
                     }
-                }
-                else {
-                    New-UDTypography -Text "No health costs associated with this animal" -Variant body2 -Style @{
-                        color     = '#666'
-                        fontStyle = 'italic'
-                        marginTop = '10px'
-                    }
-                    New-UDElement -Tag 'div' -Attributes @{style = 'font-weight: bold; font-size: 1.1em; margin-top: 15px; text-align: right;' } -Content {
-                        "Total Health Cost: `$0.00"
+                    else {
+                        New-UDTypography -Text "No health costs associated with this animal" -Variant body2 -Style @{
+                            color     = '#666'
+                            fontStyle = 'italic'
+                            marginTop = '10px'
+                        }
+                        New-UDElement -Tag 'div' -Attributes @{style = 'font-weight: bold; font-size: 1.1em; margin-top: 15px; text-align: right;' } -Content {
+                            "Total Health Cost: `$0.00"
+                        }
                     }
                 }
             }

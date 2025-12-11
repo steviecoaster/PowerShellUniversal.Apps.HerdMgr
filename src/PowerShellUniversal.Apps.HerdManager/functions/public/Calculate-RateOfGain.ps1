@@ -2,6 +2,50 @@ function Calculate-RateOfGain {
     <#
     .SYNOPSIS
     Calculates rate of gain between two weight records
+    
+    .DESCRIPTION
+    Computes the Average Daily Gain (ADG) for an animal between two dates by finding
+    the closest weight measurements and calculating the rate of weight increase.
+    Returns total weight gain, days elapsed, and ADG in lbs/day.
+    
+    .PARAMETER CattleID
+    Database ID of the cattle to analyze (required)
+    
+    .PARAMETER StartDate
+    Beginning date for the calculation period (required).
+    Uses the weight record closest to this date.
+    
+    .PARAMETER EndDate
+    Ending date for the calculation period (required).
+    Uses the weight record closest to this date.
+    
+    .OUTPUTS
+    PSCustomObject with the following properties:
+    - CattleID: ID of the animal
+    - StartWeight: Weight at beginning of period (lbs)
+    - EndWeight: Weight at end of period (lbs)
+    - StartDate: Actual date of start weight measurement
+    - EndDate: Actual date of end weight measurement
+    - DaysOnFeed: Number of days between measurements
+    - TotalWeightGain: Total pounds gained
+    - AverageDailyGain: Weight gain per day (lbs/day)
+    
+    .EXAMPLE
+    Calculate-RateOfGain -CattleID 5 -StartDate "2025-09-01" -EndDate "2025-12-01"
+    
+    Calculates 90-day rate of gain for cattle ID 5
+    
+    .EXAMPLE
+    $cattle = Get-AllCattle
+    $cattle | ForEach-Object {
+        Calculate-RateOfGain -CattleID $_.CattleID -StartDate (Get-Date).AddDays(-120) -EndDate (Get-Date)
+    }
+    
+    Calculates 120-day ADG for all active cattle
+    
+    .NOTES
+    Requires at least two weight records for the specified animal within the date range.
+    The function finds the closest weight records to the specified dates, so exact matches are not required.
     #>
     param(
         [Parameter(Mandatory)]

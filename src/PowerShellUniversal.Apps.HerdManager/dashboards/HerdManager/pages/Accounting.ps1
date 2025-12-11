@@ -40,86 +40,135 @@ $accounting = New-UDPage -Name "Accounting" -Content {
             # Generate Invoice
             New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -Content {
                 New-UDCard -Title "Generate Invoice" -Content {
-                    New-UDAutoComplete -Id 'invoice-cattle-select' -Options @((Get-AllCattle | Where-Object Status -eq 'Active' | ForEach-Object { "$($_.TagNumber) - $($_.Name)" })) -Label "Select Cattle" -FullWidth
+                    New-UDAutoComplete -Id 'invoice-cattle-select' -Multiple -Options @((Get-AllCattle | Where-Object Status -eq 'Active' | ForEach-Object { "$($_.TagNumber) - $($_.Name)" })) -Label "Select Cattle (single or multiple)" -FullWidth
                     New-UDElement -Tag 'br'
                     New-UDButton -Text "📄 Generate Invoice" -Variant contained -FullWidth -Style @{backgroundColor = '#2e7d32'; color = 'white'} -OnClick {
                         $selectedCattle = (Get-UDElement -Id 'invoice-cattle-select').value
                         
-                        if (-not $selectedCattle) {
-                            Show-UDToast -Message "Please select a cattle" -MessageColor red
+                        if (-not $selectedCattle -or $selectedCattle.Count -eq 0) {
+                            Show-UDToast -Message "Please select at least one cattle" -MessageColor red
                             return
                         }
                         
-                        # Extract tag number
-                        $tagNumber = $selectedCattle -split ' - ' | Select-Object -First 1
-                        $cattle = Get-AllCattle | Where-Object TagNumber -eq $tagNumber | Select-Object -First 1
-                        
-                        if (-not $cattle) {
-                            Show-UDToast -Message "Cattle not found" -MessageColor red
-                            return
+                        # Ensure $selectedCattle is an array
+                        if ($selectedCattle -isnot [array]) {
+                            $selectedCattle = @($selectedCattle)
                         }
                         
-                        # Get purchase date and current date
-                        $purchaseDate = if ($cattle.PurchaseDate) { [DateTime]::Parse($cattle.PurchaseDate) } else { $null }
+                        # Debug: Show what we received
+                        Show-UDToast -Message "Selected $($selectedCattle.Count) cattle" -MessageColor blue
+                        
                         $currentDate = Get-Date
+                        $cattleList = @()
+                        $totalInvoiceCost = 0
                         
-                        if (-not $purchaseDate) {
-                            Show-UDToast -Message "Cattle must have a purchase date to generate invoice" -MessageColor red
-                            return
-                        }
-                        
-                        # Calculate days on feed
-                        $daysOnFeed = ($currentDate - $purchaseDate).Days
-                        
-                        # Get price per day
-                        $pricePerDay = if ($cattle.PricePerDay) { $cattle.PricePerDay } else { 0 }
-                        
-                        if ($pricePerDay -eq 0) {
-                            Show-UDToast -Message "Cattle must have a Price Per Day set to generate invoice" -MessageColor red
-                            return
-                        }
-                        
-                        # Calculate feeding cost
-                        $feedingCost = $daysOnFeed * $pricePerDay
-                        
-                        # Get health costs
-                        $healthQuery = @"
+                        # Process each selected cattle
+                        foreach ($selection in $selectedCattle) {
+                            # Extract tag number
+                            $tagNumber = $selection -split ' - ' | Select-Object -First 1
+                            $cattle = Get-AllCattle | Where-Object TagNumber -eq $tagNumber | Select-Object -First 1
+                            
+                            if (-not $cattle) {
+                                Show-UDToast -Message "Cattle $tagNumber not found" -MessageColor red
+                                return
+                            }
+                            
+                            # Get purchase date
+                            $purchaseDate = if ($cattle.PurchaseDate) { [DateTime]::Parse($cattle.PurchaseDate) } else { $null }
+                            
+                            if (-not $purchaseDate) {
+                                Show-UDToast -Message "Cattle $tagNumber must have a purchase date to generate invoice" -MessageColor red
+                                return
+                            }
+                            
+                            # Calculate days on feed
+                            $daysOnFeed = ($currentDate - $purchaseDate).Days
+                            
+                            # Get price per day
+                            $pricePerDay = if ($cattle.PricePerDay) { $cattle.PricePerDay } else { 0 }
+                            
+                            if ($pricePerDay -eq 0) {
+                                Show-UDToast -Message "Cattle $tagNumber must have a Price Per Day set to generate invoice" -MessageColor red
+                                return
+                            }
+                            
+                            # Calculate feeding cost
+                            $feedingCost = $daysOnFeed * $pricePerDay
+                            
+                            # Get health costs
+                            $healthQuery = @"
 SELECT COALESCE(SUM(Cost), 0) AS TotalHealthCost
 FROM HealthRecords
 WHERE CattleID = @CattleID AND Cost > 0
 "@
-                        $healthCostResult = Invoke-SqliteQuery -DataSource $dbPath -Query $healthQuery -SqlParameters @{
-                            CattleID = $cattle.CattleID
-                        } -As PSObject
+                            $healthCostResult = Invoke-SqliteQuery -DataSource $dbPath -Query $healthQuery -SqlParameters @{
+                                CattleID = $cattle.CattleID
+                            } -As PSObject
+                            
+                            $healthCost = $healthCostResult.TotalHealthCost
+                            $lineItemTotal = $feedingCost + $healthCost
+                            $totalInvoiceCost += $lineItemTotal
+                            
+                            # Add to cattle list
+                            $cattleList += @{
+                                Cattle = $cattle
+                                PurchaseDate = $purchaseDate
+                                DaysOnFeed = $daysOnFeed
+                                PricePerDay = $pricePerDay
+                                FeedingCost = $feedingCost
+                                HealthCost = $healthCost
+                                LineItemTotal = $lineItemTotal
+                            }
+                        }
                         
-                        $healthCost = $healthCostResult.TotalHealthCost
-                        $totalCost = $feedingCost + $healthCost
+                        # Determine if single or multi-cattle invoice
+                        $isSingleCattle = $cattleList.Count -eq 1
                         
                         # Show invoice generation modal
                         Show-UDModal -Content {
-                            New-UDTypography -Text "Generate Invoice for $($cattle.TagNumber)" -Variant h5 -Style @{
-                                color = '#2e7d32'
-                                marginBottom = '20px'
-                                fontWeight = 'bold'
+                            if ($isSingleCattle) {
+                                New-UDTypography -Text "Generate Invoice for $($cattleList[0].Cattle.TagNumber)" -Variant h5 -Style @{
+                                    color = '#2e7d32'
+                                    marginBottom = '20px'
+                                    fontWeight = 'bold'
+                                }
+                            } else {
+                                New-UDTypography -Text "Generate Multi-Cattle Invoice ($($cattleList.Count) animals)" -Variant h5 -Style @{
+                                    color = '#2e7d32'
+                                    marginBottom = '20px'
+                                    fontWeight = 'bold'
+                                }
+                                
+                                # Show summary of selected cattle
+                                New-UDCard -Content {
+                                    foreach ($item in $cattleList) {
+                                        New-UDTypography -Text "• $($item.Cattle.TagNumber) - $($item.Cattle.Name): $([math]::Round($item.LineItemTotal, 2).ToString('C2'))" -Variant body2
+                                    }
+                                } -Style @{backgroundColor = '#f5f5f5'; marginBottom = '15px'}
                             }
                             
                             New-UDTextbox -Id 'new-invoice-number' -Label 'Invoice Number *' -FullWidth
                             New-UDElement -Tag 'br'
+                            New-UDElement -Tag 'br'
                             New-UDDatePicker -Id 'new-invoice-date' -Label 'Invoice Date' -Value $currentDate
                             New-UDElement -Tag 'br'
-                            New-UDDatePicker -Id 'new-start-date' -Label 'Start Date' -Value $purchaseDate
-                            New-UDElement -Tag 'br'
-                            New-UDDatePicker -Id 'new-end-date' -Label 'End Date' -Value $currentDate
-                            New-UDElement -Tag 'br'
-                            New-UDTextbox -Id 'new-days-on-feed' -Label 'Days on Feed' -Value $daysOnFeed -Disabled
-                            New-UDElement -Tag 'br'
-                            New-UDTextbox -Id 'new-price-per-day' -Label 'Price Per Day' -Value $pricePerDay -Disabled
-                            New-UDElement -Tag 'br'
-                            New-UDTextbox -Id 'new-feeding-cost' -Label 'Feeding Cost' -Value ([math]::Round($feedingCost, 2)) -Disabled
-                            New-UDElement -Tag 'br'
-                            New-UDTextbox -Id 'new-health-cost' -Label 'Health Cost' -Value ([math]::Round($healthCost, 2)) -Disabled
-                            New-UDElement -Tag 'br'
-                            New-UDTextbox -Id 'new-total-cost' -Label 'Total Cost' -Value ([math]::Round($totalCost, 2)) -Disabled
+                            
+                            if ($isSingleCattle) {
+                                New-UDDatePicker -Id 'new-start-date' -Label 'Start Date' -Value $cattleList[0].PurchaseDate
+                                New-UDElement -Tag 'br'
+                                New-UDDatePicker -Id 'new-end-date' -Label 'End Date' -Value $currentDate
+                                New-UDElement -Tag 'br'
+                                New-UDTextbox -Id 'new-days-on-feed' -Label 'Days on Feed' -Value $cattleList[0].DaysOnFeed -Disabled
+                                New-UDElement -Tag 'br'
+                                New-UDTextbox -Id 'new-price-per-day' -Label 'Price Per Day' -Value $cattleList[0].PricePerDay -Disabled
+                                New-UDElement -Tag 'br'
+                                New-UDTextbox -Id 'new-feeding-cost' -Label 'Feeding Cost' -Value ([math]::Round($cattleList[0].FeedingCost, 2)) -Disabled
+                                New-UDElement -Tag 'br'
+                                New-UDTextbox -Id 'new-health-cost' -Label 'Health Cost' -Value ([math]::Round($cattleList[0].HealthCost, 2)) -Disabled
+                                New-UDElement -Tag 'br'
+                            }
+                            
+                            New-UDTextbox -Id 'new-total-cost' -Label 'Total Invoice Amount' -Value ([math]::Round($totalInvoiceCost, 2)) -Disabled
                             New-UDElement -Tag 'br'
                             New-UDSelect -Id 'new-created-by' -Label 'Created By' -Option {
                                 New-UDSelectOption -Name 'Brandon' -Value 'Brandon'
@@ -134,8 +183,6 @@ WHERE CattleID = @CattleID AND Cost > 0
                             New-UDButton -Text "Create Invoice" -Variant contained -Style @{backgroundColor = '#2e7d32'; color = 'white'} -OnClick {
                                 $invoiceNumber = (Get-UDElement -Id 'new-invoice-number').value
                                 $invoiceDate = (Get-UDElement -Id 'new-invoice-date').value
-                                $startDate = (Get-UDElement -Id 'new-start-date').value
-                                $endDate = (Get-UDElement -Id 'new-end-date').value
                                 $createdBy = (Get-UDElement -Id 'new-created-by').value
                                 $notes = (Get-UDElement -Id 'new-invoice-notes').value
                                 
@@ -144,26 +191,54 @@ WHERE CattleID = @CattleID AND Cost > 0
                                     return
                                 }
                                 
-                                # Recalculate based on selected dates
-                                $startDateParsed = [DateTime]$startDate
-                                $endDateParsed = [DateTime]$endDate
-                                $daysOnFeedFinal = ($endDateParsed - $startDateParsed).Days
-                                $feedingCostFinal = $daysOnFeedFinal * $pricePerDay
-                                $totalCostFinal = $feedingCostFinal + $healthCost
-                                
                                 try {
-                                    Add-Invoice -InvoiceNumber $invoiceNumber `
-                                        -CattleID $cattle.CattleID `
-                                        -InvoiceDate ([DateTime]$invoiceDate) `
-                                        -StartDate $startDateParsed `
-                                        -EndDate $endDateParsed `
-                                        -DaysOnFeed $daysOnFeedFinal `
-                                        -PricePerDay $pricePerDay `
-                                        -FeedingCost $feedingCostFinal `
-                                        -HealthCost $healthCost `
-                                        -TotalCost $totalCostFinal `
-                                        -Notes $notes `
-                                        -CreatedBy $createdBy
+                                    if ($isSingleCattle) {
+                                        # Single-cattle invoice (legacy mode)
+                                        $startDate = (Get-UDElement -Id 'new-start-date').value
+                                        $endDate = (Get-UDElement -Id 'new-end-date').value
+                                        $startDateParsed = [DateTime]$startDate
+                                        $endDateParsed = [DateTime]$endDate
+                                        $daysOnFeedFinal = ($endDateParsed - $startDateParsed).Days
+                                        $feedingCostFinal = $daysOnFeedFinal * $cattleList[0].PricePerDay
+                                        $totalCostFinal = $feedingCostFinal + $cattleList[0].HealthCost
+                                        
+                                        Add-Invoice -InvoiceNumber $invoiceNumber `
+                                            -CattleID $cattleList[0].Cattle.CattleID `
+                                            -InvoiceDate ([DateTime]$invoiceDate) `
+                                            -StartDate $startDateParsed `
+                                            -EndDate $endDateParsed `
+                                            -DaysOnFeed $daysOnFeedFinal `
+                                            -PricePerDay $cattleList[0].PricePerDay `
+                                            -FeedingCost $feedingCostFinal `
+                                            -HealthCost $cattleList[0].HealthCost `
+                                            -TotalCost $totalCostFinal `
+                                            -Notes $notes `
+                                            -CreatedBy $createdBy
+                                    }
+                                    else {
+                                        # Multi-cattle invoice with line items
+                                        $lineItems = @()
+                                        foreach ($item in $cattleList) {
+                                            $lineItems += @{
+                                                CattleID = $item.Cattle.CattleID
+                                                StartDate = $item.PurchaseDate
+                                                EndDate = $currentDate
+                                                DaysOnFeed = $item.DaysOnFeed
+                                                PricePerDay = $item.PricePerDay
+                                                FeedingCost = $item.FeedingCost
+                                                HealthCost = $item.HealthCost
+                                                LineItemTotal = $item.LineItemTotal
+                                                Notes = $null
+                                            }
+                                        }
+                                        
+                                        Add-Invoice -InvoiceNumber $invoiceNumber `
+                                            -InvoiceDate ([DateTime]$invoiceDate) `
+                                            -LineItems $lineItems `
+                                            -TotalCost $totalInvoiceCost `
+                                            -Notes $notes `
+                                            -CreatedBy $createdBy
+                                    }
                                     
                                     Show-UDToast -Message "Invoice created successfully!" -MessageColor green
                                     Hide-UDModal
@@ -195,7 +270,15 @@ WHERE CattleID = @CattleID AND Cost > 0
                     New-UDTableColumn -Property CattleName -Title "Name" -ShowSort
                     New-UDTableColumn -Property Owner -Title "Owner" -ShowSort
                     New-UDTableColumn -Property InvoiceDate -Title "Invoice Date" -ShowSort -Render {
-                        [DateTime]::Parse($EventData.InvoiceDate).ToString('MM/dd/yyyy')
+                        try {
+                            # Try to parse and format the date
+                            $date = [DateTime]::Parse($EventData.InvoiceDate)
+                            $date.ToString('MM/dd/yyyy')
+                        }
+                        catch {
+                            # If parsing fails, just display the raw string
+                            $EventData.InvoiceDate
+                        }
                     }
                     New-UDTableColumn -Property DaysOnFeed -Title "Days on Feed" -ShowSort
                     New-UDTableColumn -Property TotalCost -Title "Total Cost" -ShowSort -Render {

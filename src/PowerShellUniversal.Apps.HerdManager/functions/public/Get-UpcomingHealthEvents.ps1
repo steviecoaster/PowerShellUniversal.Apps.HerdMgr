@@ -2,6 +2,43 @@ function Get-UpcomingHealthEvents {
     <#
     .SYNOPSIS
     Gets upcoming health events (vaccinations, follow-ups) that are due
+    
+    .DESCRIPTION
+    Retrieves health records that have upcoming due dates within a specified time window.
+    Useful for scheduling and ensuring animals receive timely follow-up care.
+    
+    .PARAMETER DaysAhead
+    Number of days into the future to check for upcoming events. Default is 30 days.
+    
+    .OUTPUTS
+    Health event records with properties:
+    HealthRecordID, CattleID, TagNumber, CattleName, RecordType, Title,
+    OriginalDate, NextDueDate, DaysUntilDue
+    
+    .EXAMPLE
+    Get-UpcomingHealthEvents
+    
+    Returns all health events due in the next 30 days
+    
+    .EXAMPLE
+    Get-UpcomingHealthEvents -DaysAhead 7
+    
+    Returns health events due in the next week
+    
+    .EXAMPLE
+    Get-UpcomingHealthEvents -DaysAhead 60 | Where-Object { $_.RecordType -eq 'Vaccination' }
+    
+    Returns upcoming vaccinations due in the next 60 days
+    
+    .EXAMPLE
+    $upcoming = Get-UpcomingHealthEvents -DaysAhead 14
+    $upcoming | Sort-Object DaysUntilDue | Format-Table TagNumber, CattleName, Title, DaysUntilDue
+    
+    Displays upcoming events for the next 2 weeks, sorted by urgency
+    
+    .NOTES
+    Only returns records where NextDueDate is set and falls within the specified timeframe.
+    Results include DaysUntilDue for easy prioritization of care tasks.
     #>
     param(
         [int]$DaysAhead = 30

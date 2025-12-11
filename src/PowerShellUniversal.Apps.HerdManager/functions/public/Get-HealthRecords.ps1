@@ -2,6 +2,51 @@ function Get-HealthRecords {
     <#
     .SYNOPSIS
     Gets health records for a specific cattle or all cattle
+    
+    .DESCRIPTION
+    Retrieves health records from the database with optional filtering by cattle ID
+    and/or record type. Returns records in descending date order (most recent first).
+    
+    .PARAMETER CattleID
+    Filter to health records for a specific animal
+    
+    .PARAMETER RecordType
+    Filter by type of health record. Valid values:
+    - Vaccination
+    - Treatment
+    - Observation
+    - Veterinary Visit
+    - Other
+    
+    .OUTPUTS
+    Health records with properties:
+    HealthRecordID, CattleID, TagNumber, CattleName, RecordDate, RecordType,
+    Title, Description, VeterinarianName, Medication, Cost, NextDueDate,
+    PerformedBy, Notes
+    
+    .EXAMPLE
+    Get-HealthRecords -CattleID 7
+    
+    Returns all health records for cattle ID 7
+    
+    .EXAMPLE
+    Get-HealthRecords -RecordType "Vaccination"
+    
+    Returns all vaccination records across all cattle
+    
+    .EXAMPLE
+    Get-HealthRecords -CattleID 12 -RecordType "Treatment"
+    
+    Returns only treatment records for cattle ID 12
+    
+    .EXAMPLE
+    Get-HealthRecords | Where-Object { $_.Cost -gt 100 }
+    
+    Returns all health records with cost over $100
+    
+    .NOTES
+    Records are joined with cattle information to include TagNumber and Name.
+    Results are ordered by RecordDate DESC (newest first).
     #>
     param(
         [Parameter()]

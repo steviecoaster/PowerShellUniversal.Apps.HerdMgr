@@ -5,6 +5,7 @@ $Navigation = New-UDList -Content {
     New-UDListItem -Label "Weight Management" -Icon (New-UDIcon -Icon Weight) -OnClick { Invoke-UDRedirect -Url '/weights' }
     New-UDListItem -Label "Health Records" -Icon (New-UDIcon -Icon Heartbeat) -OnClick { Invoke-UDRedirect -Url '/health' }
     New-UDListItem -Label "Feed Records" -Icon (New-UDIcon -Icon Seedling) -OnClick { Invoke-UDRedirect -Url '/feedrecords' }
+    New-UDListItem -Label "Farms" -Icon (New-UDIcon -Icon Tractor) -OnClick { Invoke-UDRedirect -Url '/farms' }
     New-UDListItem -Label "Rate of Gain" -Icon (New-UDIcon -Icon ChartLine) -OnClick { Invoke-UDRedirect -Url '/rog' }
     New-UDListItem -Label "Animal Report" -Icon (New-UDIcon -Icon FileAlt) -OnClick { Invoke-UDRedirect -Url '/animal-report' }
     New-UDListItem -Label "Accounting" -Icon (New-UDIcon -Icon Calculator) -OnClick { Invoke-UDRedirect -Url '/accounting' }
@@ -34,7 +35,7 @@ $HeaderContent = {
 
 $app = @{
     Title            = '🐄 Herd Manager'
-    Pages            = @($homepage, $notifications, $cattleMgmt, $weightMgmt, $healthMgmt, $feedRecords, $rog, $reports, $animalreport, $accounting, $invoicePage)
+    Pages            = @($homepage, $notifications, $cattleMgmt, $weightMgmt, $healthMgmt, $feedRecords, $farmsPage, $rog, $reports, $animalreport, $accounting, $invoicePage)
     Navigation       = $Navigation
     NavigationLayout = 'Temporary'
     HeaderContent    = $HeaderContent
