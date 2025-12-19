@@ -6,6 +6,7 @@ $app = @{
     AutoDeploy  = $true
     Description = "A cattle management app for PowerShell Universal"
     Environment = 'PowerShell 7'
+    Authenticated = $true
 }
 
 New-PSUApp @app
