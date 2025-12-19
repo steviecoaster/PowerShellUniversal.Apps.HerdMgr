@@ -46,7 +46,13 @@ function Get-AllCattle {
         [string]$Status = 'Active'
     )
     
-    $query = "SELECT * FROM CattleWithLatestWeight WHERE Status = @Status ORDER BY TagNumber"
+    $statusValue = ConvertTo-SqlValue -Value $Status
+    $query = "SELECT * FROM CattleWithLatestWeight WHERE Status = $statusValue ORDER BY TagNumber"
     
-    Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -SqlParameters @{Status = $Status} -As PSObject
+    Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query 
 }
+
+
+
+
+

@@ -44,7 +44,7 @@ WHERE hr.NextDueDate IS NOT NULL
 ORDER BY hr.NextDueDate ASC
 "@
         
-        $overdueEvents = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $overdueQuery -As PSObject
+    $overdueEvents = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $overdueQuery
         
         # Get upcoming weight check recommendations (no weight in 45+ days)
         $weightCheckQuery = @"
@@ -62,7 +62,7 @@ HAVING DaysSinceWeight >= 45
 ORDER BY DaysSinceWeight DESC
 "@
         
-        $weightCheckNeeded = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $weightCheckQuery -As PSObject
+    $weightCheckNeeded = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $weightCheckQuery
         
         # Summary Cards
         New-UDGrid -Container -Spacing 3 -Content {
@@ -140,7 +140,7 @@ ORDER BY DaysSinceWeight DESC
                 }
                 
                 foreach ($evt in $overdueEvents) {
-                    $daysOverdue = ([DateTime]::Now - [DateTime]::Parse($evt.NextDueDate)).Days
+                    $daysOverdue = ([DateTime]::Now - (Parse-Date $evt.NextDueDate)).Days
                     
                     New-UDCard -Style @{
                         marginBottom = '15px'
@@ -159,7 +159,7 @@ ORDER BY DaysSinceWeight DESC
                                     opacity   = 0.7
                                     marginTop = '3px'
                                 }
-                                New-UDTypography -Text "⚠️ $daysOverdue days overdue (Due: $([DateTime]::Parse($evt.NextDueDate).ToString('MM/dd/yyyy')))" -Variant body2 -Style @{
+                                New-UDTypography -Text "⚠️ $daysOverdue days overdue (Due: $(Format-Date $evt.NextDueDate) )" -Variant body2 -Style @{
                                     color     = '#d32f2f'
                                     marginTop = '5px'
                                     fontWeight = 'bold'
@@ -199,7 +199,7 @@ ORDER BY DaysSinceWeight DESC
                 
                 # Add days until column to the data
                 $upcomingEventsWithDays = $upcomingEvents | ForEach-Object {
-                    $daysUntil = ([DateTime]::Parse($_.NextDueDate) - [DateTime]::Now).Days
+                    $daysUntil = (Parse-Date $_.NextDueDate - [DateTime]::Now).Days
                     $_ | Add-Member -MemberType NoteProperty -Name DaysUntil -Value $daysUntil -PassThru -Force
                 }
                 
@@ -215,11 +215,8 @@ ORDER BY DaysSinceWeight DESC
                     New-UDTableColumn -Property RecordType -Title "Type" -ShowSort
                     New-UDTableColumn -Property Title -Title "Title" -ShowSort
                     New-UDTableColumn -Property NextDueDate -Title "Due Date" -ShowSort -Render {
-                        try {
-                            ([DateTime]::Parse($EventData.NextDueDate)).ToString('MM/dd/yyyy')
-                        } catch {
-                            $EventData.NextDueDate -replace ' \d{2}:\d{2}:\d{2}.*$', ''
-                        }
+                        $fd = Format-Date $EventData.NextDueDate
+                        if ($fd -ne '-') { $fd } else { $EventData.NextDueDate -replace ' \d{2}:\d{2}:\d{2}.*$', '' }
                     }
                     New-UDTableColumn -Property DaysUntil -Title "Days Until" -ShowSort -Render {
                         $daysUntil = $EventData.DaysUntil
@@ -229,9 +226,9 @@ ORDER BY DaysSinceWeight DESC
                     }
                     New-UDTableColumn -Property HealthRecordID -Title "Actions" -Render {
                         New-UDButton -Text "Details" -Size small -Variant outlined -OnClick {
-                            Show-UDModal -Content {
+                                Show-UDModal -Content {
                                 $evt = $EventData
-                                $daysUntil = ([DateTime]::Parse($evt.NextDueDate) - [DateTime]::Now).Days
+                                $daysUntil = (Parse-Date $evt.NextDueDate - [DateTime]::Now).Days
                                 $urgency = if ($daysUntil -le 7) { 'high' } elseif ($daysUntil -le 14) { 'medium' } else { 'low' }
                                 $urgencyColor = switch ($urgency) {
                                     'high' { '#f57c00' }
@@ -268,7 +265,7 @@ ORDER BY DaysSinceWeight DESC
                                             color = '#555'
                                         }
                                         New-UDTypography -Text "Type: $($evt.RecordType)" -Variant body1
-                                        New-UDTypography -Text "Due Date: $([DateTime]::Parse($evt.NextDueDate).ToString('MM/dd/yyyy'))" -Variant body1
+                                        New-UDTypography -Text "Due Date: $(Format-Date $evt.NextDueDate)" -Variant body1
                                         New-UDTypography -Text "Days Until: $daysUntil days" -Variant body1 -Style @{
                                             color = $urgencyColor
                                             fontWeight = 'bold'
@@ -333,7 +330,7 @@ ORDER BY DaysSinceWeight DESC
                                     color      = '#1976d2'
                                     fontWeight = 'bold'
                                 }
-                                New-UDTypography -Text "Last weighed: $([DateTime]::Parse($animal.LastWeightDate).ToString('MM/dd/yyyy'))" -Variant body1 -Style @{
+                                            New-UDTypography -Text "Last weighed: $(Format-Date $animal.LastWeightDate)" -Variant body1 -Style @{
                                     marginTop = '5px'
                                 }
                                 New-UDTypography -Text "⏱️ $($animal.DaysSinceWeight) days since last weight" -Variant body2 -Style @{
@@ -373,3 +370,9 @@ ORDER BY DaysSinceWeight DESC
         }
     }
 }
+
+
+
+
+
+

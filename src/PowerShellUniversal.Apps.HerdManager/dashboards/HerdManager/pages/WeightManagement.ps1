@@ -111,22 +111,7 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
     New-UDDynamic -Id 'weight-records-table' -Content {
         
         # Get all weight records with cattle info
-        $query = @"
-SELECT 
-    wr.WeightRecordID,
-    wr.CattleID,
-    c.TagNumber,
-    c.Name as CattleName,
-    wr.Weight,
-    CAST(wr.WeightDate AS TEXT) as WeightDate,
-    wr.Notes,
-    CAST(wr.CreatedDate AS TEXT) as CreatedDate
-FROM WeightRecords wr
-INNER JOIN Cattle c ON wr.CattleID = c.CattleID
-ORDER BY wr.WeightDate DESC, wr.CreatedDate DESC
-"@
-        
-        $weightRecords = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -As PSObject
+        $weightRecords = Get-AllWeightRecords
         
         $columns = @(
             New-UDTableColumn -Property TagNumber -Title "Tag #" -ShowSort
@@ -141,7 +126,7 @@ ORDER BY wr.WeightDate DESC, wr.CreatedDate DESC
                 New-UDTypography -Text "$($EventData.Weight) lbs" -Style @{fontWeight = 'bold'; color = '#2e7d32'}
             }
             New-UDTableColumn -Property WeightDate -Title "Date" -ShowSort -Render {
-                ([DateTime]$EventData.WeightDate).ToString('MM/dd/yyyy')
+                Format-Date $EventData.WeightDate
             }
             New-UDTableColumn -Property Notes -Title "Notes" -Render {
                 if ($EventData.Notes) {
@@ -171,8 +156,10 @@ ORDER BY wr.WeightDate DESC, wr.CreatedDate DESC
                             # Chart
                             New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '300px'; marginBottom = '20px'}} -Content {
                                 $chartData = $weightHistory | Sort-Object WeightDate | ForEach-Object {
-                                    [PSCustomObject]@{
-                                        Date = ([DateTime]$_.WeightDate).ToString('MM/dd/yyyy')
+                                        $dateStr = Format-Date $_.WeightDate
+                                        if ($dateStr -eq '-') { $dateStr = $_.WeightDate -replace ' \d{2}:\d{2}:\d{2}.*$', '' }
+                                        [PSCustomObject]@{
+                                        Date = $dateStr
                                         Weight = [decimal]$_.Weight
                                     }
                                 }
@@ -198,9 +185,9 @@ ORDER BY wr.WeightDate DESC, wr.CreatedDate DESC
                             }
                             
                             # Table
-                            New-UDTable -Data $weightHistory -Columns @(
+                                New-UDTable -Data $weightHistory -Columns @(
                                 New-UDTableColumn -Property WeightDate -Title "Date" -Render {
-                                    ([DateTime]$EventData.WeightDate).ToString('MM/dd/yyyy')
+                                    Format-Date $EventData.WeightDate
                                 }
                                 New-UDTableColumn -Property Weight -Title "Weight (lbs)" -Render {
                                     "$($EventData.Weight) lbs"
@@ -243,7 +230,7 @@ ORDER BY wr.WeightDate DESC, wr.CreatedDate DESC
                 New-UDButton -Text "🗑️ Delete" -Size small -Variant text -Style @{color = '#d32f2f'} -OnClick {
                     $weightRecordId = $EventData.WeightRecordID
                     $weightValue = $EventData.Weight
-                    $dateValue = ([DateTime]$EventData.WeightDate).ToString('MM/dd/yyyy')
+                    $dateValue = Format-Date $EventData.WeightDate
                     
                     Show-UDModal -Content {
                         New-UDTypography -Text "⚠️ Confirm Delete" -Variant h5 -Style @{color = '#d32f2f'; marginBottom = '20px'}
@@ -253,10 +240,7 @@ ORDER BY wr.WeightDate DESC, wr.CreatedDate DESC
                         New-UDButton -Text "Cancel" -OnClick { Hide-UDModal }
                         New-UDButton -Text "Delete" -Variant contained -Style @{backgroundColor = '#d32f2f'; color = 'white'} -OnClick {
                             try {
-                                $deleteQuery = "DELETE FROM WeightRecords WHERE WeightRecordID = @WeightRecordID"
-                                Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $deleteQuery -SqlParameters @{
-                                    WeightRecordID = $weightRecordId
-                                }
+                                Remove-WeightRecord -WeightRecordID $weightRecordId
                                 
                                 Show-UDToast -Message "Weight record deleted successfully" -MessageColor green
                                 Hide-UDModal
@@ -277,3 +261,9 @@ ORDER BY wr.WeightDate DESC, wr.CreatedDate DESC
         }
     }
 }
+
+
+
+
+
+

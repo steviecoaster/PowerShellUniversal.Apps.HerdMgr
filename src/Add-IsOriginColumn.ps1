@@ -16,7 +16,7 @@ if (-not (Test-Path $DatabasePath)) {
 
 # Check if IsOrigin column already exists
 $checkQuery = "PRAGMA table_info(Farms)"
-$columns = Invoke-SqliteQuery -DataSource $DatabasePath -Query $checkQuery
+$columns = Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $checkQuery
 $columnExists = $columns | Where-Object { $_.name -eq 'IsOrigin' }
 
 if ($columnExists) {
@@ -31,7 +31,7 @@ ALTER TABLE Farms ADD COLUMN IsOrigin INTEGER DEFAULT 0;
 
 try {
     Write-Host "Adding IsOrigin column to Farms table..." -ForegroundColor Cyan
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $addColumnQuery
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $addColumnQuery
     Write-Host "✓ IsOrigin column added successfully" -ForegroundColor Green
     
     Write-Host "`nMigration completed successfully!" -ForegroundColor Green
@@ -42,3 +42,6 @@ catch {
     Write-Host "ERROR during migration: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
+
+
+

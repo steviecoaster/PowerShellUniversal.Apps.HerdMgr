@@ -79,51 +79,48 @@ function Update-Farm {
     )
     
     $updates = @()
-    $params = @{ FarmID = $FarmID }
     
     if ($PSBoundParameters.ContainsKey('FarmName')) {
-        $updates += "FarmName = @FarmName"
-        $params['FarmName'] = $FarmName
+        $farmNameValue = ConvertTo-SqlValue -Value $FarmName
+        $updates += "FarmName = $farmNameValue"
     }
     if ($PSBoundParameters.ContainsKey('Address')) {
-        $updates += "Address = @Address"
-        $params['Address'] = $Address
+        $addressValue = ConvertTo-SqlValue -Value $Address
+        $updates += "Address = $addressValue"
     }
     if ($PSBoundParameters.ContainsKey('City')) {
-        $updates += "City = @City"
-        $params['City'] = $City
+        $cityValue = ConvertTo-SqlValue -Value $City
+        $updates += "City = $cityValue"
     }
     if ($PSBoundParameters.ContainsKey('State')) {
-        $updates += "State = @State"
-        $params['State'] = $State
+        $stateValue = ConvertTo-SqlValue -Value $State
+        $updates += "State = $stateValue"
     }
     if ($PSBoundParameters.ContainsKey('ZipCode')) {
-        $updates += "ZipCode = @ZipCode"
-        $params['ZipCode'] = $ZipCode
+        $zipValue = ConvertTo-SqlValue -Value $ZipCode
+        $updates += "ZipCode = $zipValue"
     }
     if ($PSBoundParameters.ContainsKey('PhoneNumber')) {
-        $updates += "PhoneNumber = @PhoneNumber"
-        $params['PhoneNumber'] = $PhoneNumber
+        $phoneValue = ConvertTo-SqlValue -Value $PhoneNumber
+        $updates += "PhoneNumber = $phoneValue"
     }
     if ($PSBoundParameters.ContainsKey('Email')) {
-        $updates += "Email = @Email"
-        $params['Email'] = $Email
+        $emailValue = ConvertTo-SqlValue -Value $Email
+        $updates += "Email = $emailValue"
     }
     if ($PSBoundParameters.ContainsKey('ContactPerson')) {
-        $updates += "ContactPerson = @ContactPerson"
-        $params['ContactPerson'] = $ContactPerson
+        $contactValue = ConvertTo-SqlValue -Value $ContactPerson
+        $updates += "ContactPerson = $contactValue"
     }
     if ($PSBoundParameters.ContainsKey('Notes')) {
-        $updates += "Notes = @Notes"
-        $params['Notes'] = $Notes
+        $notesValue = ConvertTo-SqlValue -Value $Notes
+        $updates += "Notes = $notesValue"
     }
     if ($PSBoundParameters.ContainsKey('IsOrigin')) {
-        $updates += "IsOrigin = @IsOrigin"
-        $params['IsOrigin'] = $IsOrigin
+        $updates += "IsOrigin = $IsOrigin"
     }
     if ($PSBoundParameters.ContainsKey('IsActive')) {
-        $updates += "IsActive = @IsActive"
-        $params['IsActive'] = $IsActive
+        $updates += "IsActive = $IsActive"
     }
     
     if ($updates.Count -eq 0) {
@@ -133,7 +130,13 @@ function Update-Farm {
     
     $updates += "ModifiedDate = CURRENT_TIMESTAMP"
     
-    $query = "UPDATE Farms SET $($updates -join ', ') WHERE FarmID = @FarmID"
+    $query = "UPDATE Farms SET $($updates -join ', ') WHERE FarmID = $FarmID"
     
-    Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -SqlParameters $params
+    Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
 }
+
+
+
+
+
+

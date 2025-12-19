@@ -67,7 +67,7 @@ for ($i = 1; $i -le 30; $i++) {
     
     try {
         Add-CattleRecord @params
-        $cattle = Invoke-SqliteQuery -DataSource $DatabasePath -Query "SELECT CattleID FROM Cattle WHERE TagNumber = '$tagNumber'"
+        $cattle = Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "SELECT CattleID FROM Cattle WHERE TagNumber = '$tagNumber'"
         
         # Update status if not Active
         if ($status -ne 'Active') {
@@ -123,7 +123,7 @@ Write-Host "`nCalculating rate of gain for all cattle..." -ForegroundColor Yello
 # Calculate ROG for all active cattle between various date ranges
 foreach ($cattle in ($cattleIds | Where-Object { $_.Status -eq 'Active' })) {
     # Get their weight records
-    $weights = Invoke-SqliteQuery -DataSource $DatabasePath -Query @"
+    $weights = Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query @"
 SELECT WeightRecordID, WeightDate, Weight 
 FROM WeightRecords 
 WHERE CattleID = $($cattle.CattleID)
@@ -235,3 +235,7 @@ Write-Host "  - ~6 months of weight records per animal" -ForegroundColor White
 Write-Host "  - Rate of gain calculations for all periods" -ForegroundColor White
 Write-Host "  - 60-160 health records across the herd" -ForegroundColor White
 Write-Host "  - Multiple upcoming health events scheduled" -ForegroundColor White
+
+
+
+

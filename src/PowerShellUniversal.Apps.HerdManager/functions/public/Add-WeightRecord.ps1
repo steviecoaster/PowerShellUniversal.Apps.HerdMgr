@@ -60,24 +60,27 @@ function Add-WeightRecord {
         [string]$Notes
     )
     
-    $query = @"
-INSERT INTO WeightRecords (CattleID, WeightDate, Weight, WeightUnit, MeasurementMethod, RecordedBy, Notes)
-VALUES (@CattleID, @WeightDate, @Weight, @WeightUnit, @MeasurementMethod, @RecordedBy, @Notes)
-"@
-    
-    $params = @{
-        DataSource = $script:DatabasePath
-        Query = $query
-        SqlParameters = @{
-            CattleID = $CattleID
-            WeightDate = $WeightDate
-            Weight = $Weight
-            WeightUnit = $WeightUnit
-            MeasurementMethod = $MeasurementMethod
-            RecordedBy = $RecordedBy
-            Notes = $Notes
-        }
+    # Convert values to SQL-safe representations
+    $cattleIdValue = ConvertTo-SqlValue -Value $CattleID
+    $weightDateValue = ConvertTo-SqlValue -Value $WeightDate
+    $weightValue = ConvertTo-SqlValue -Value $Weight
+    $weightUnitValue = ConvertTo-SqlValue -Value $WeightUnit
+    $methodValue = ConvertTo-SqlValue -Value $MeasurementMethod
+    $recordedByValue = ConvertTo-SqlValue -Value $RecordedBy
+    $notesValue = ConvertTo-SqlValue -Value $Notes
+
+    $query = "INSERT INTO WeightRecords (CattleID, WeightDate, Weight, WeightUnit, MeasurementMethod, RecordedBy, Notes) VALUES ($cattleIdValue, $weightDateValue, $weightValue, $weightUnitValue, $methodValue, $recordedByValue, $notesValue)"
+
+    try {
+        Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
+        Write-Verbose "Weight record added for CattleID $CattleID on $(Format-Date $WeightDate)"
     }
-    
-    Invoke-SqliteQuery @params
+    catch {
+        throw $_
+    }
 }
+
+
+
+
+

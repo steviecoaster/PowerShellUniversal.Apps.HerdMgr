@@ -16,7 +16,7 @@ if (-not (Test-Path $DatabasePath)) {
 
 # Check if Farms table already exists
 $checkQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name='Farms'"
-$tableExists = Invoke-SqliteQuery -DataSource $DatabasePath -Query $checkQuery
+$tableExists = Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $checkQuery
 
 if ($tableExists) {
     Write-Host "Farms table already exists. Migration not needed." -ForegroundColor Green
@@ -44,12 +44,12 @@ CREATE TABLE Farms (
 
 try {
     Write-Host "Creating Farms table..." -ForegroundColor Cyan
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $createFarmsTable
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $createFarmsTable
     Write-Host "✓ Farms table created successfully" -ForegroundColor Green
     
     # Create index on FarmName for faster lookups
     $createIndex = "CREATE INDEX idx_farms_name ON Farms(FarmName);"
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $createIndex
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $createIndex
     Write-Host "✓ Index on FarmName created" -ForegroundColor Green
     
     Write-Host "`nMigration completed successfully!" -ForegroundColor Green
@@ -59,3 +59,6 @@ catch {
     Write-Host "ERROR during migration: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
+
+
+

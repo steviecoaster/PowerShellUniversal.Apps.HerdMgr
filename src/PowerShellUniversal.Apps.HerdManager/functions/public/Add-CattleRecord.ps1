@@ -59,95 +59,123 @@ function Add-CattleRecord {
     #>
     param(
         [Parameter(Mandatory)]
-        [string]$TagNumber,
+        [string]
+        $TagNumber,
         
         [Parameter(Mandatory)]
-        [string]$OriginFarm,
+        [string]
+        $OriginFarm,
         
-        [int]$OriginFarmID,
+        [Parameter()]
+        [int]
+        $OriginFarmID,
         
-        [string]$Name,
-        [string]$Breed,
+        [Parameter()]
+        [string]
+        $Name,
+
+        [Parameter()]
+        [string]
+        $Breed,
+
+        [Parameter()]
         [ValidateSet('Steer', 'Heifer')]
-        [string]$Gender,
+        [string]
+        $Gender,
+        
+        [Parameter()]
         [ValidateSet('Pen 1', 'Pen 2', 'Pen 3', 'Pen 4', 'Pen 5', 'Pen 6', 'Quarantine', 'Pasture')]
-        [string]$Location,
-        [string]$Owner,
-        [decimal]$PricePerDay,
-        [DateTime]$BirthDate,
-        [DateTime]$PurchaseDate,
-        [string]$Notes
+        [string]
+        $Location,
+
+        [Parameter()]
+        [string]
+        $Owner,
+
+        [Parameter()]
+        [decimal]
+        $PricePerDay,
+
+        [Parameter()]
+        [DateTime]
+        $BirthDate,
+
+        [Parameter(Mandatory)]
+        [DateTime]
+        $PurchaseDate,
+        
+        [Parameter()]
+        [string]
+        $Notes
     )
     
-    # Build dynamic INSERT based on provided parameters
-    $columns = @('TagNumber', 'OriginFarm')
-    $values = @('@TagNumber', '@OriginFarm')
-    $sqlParams = @{
-        TagNumber = $TagNumber
-        OriginFarm = $OriginFarm
-    }
-    
+    # Build dynamic INSERT based on provided parameters, converting values to SQL literals
+    $columns = @()
+    $values = @()
+
+    $columns += 'TagNumber'; $values += (ConvertTo-SqlValue -Value $TagNumber)
+    $columns += 'OriginFarm'; $values += (ConvertTo-SqlValue -Value $OriginFarm)
+
     if ($PSBoundParameters.ContainsKey('OriginFarmID')) {
         $columns += 'OriginFarmID'
-        $values += '@OriginFarmID'
-        $sqlParams['OriginFarmID'] = $OriginFarmID
+        $values += (ConvertTo-SqlValue -Value $OriginFarmID)
     }
     if ($PSBoundParameters.ContainsKey('Name')) {
         $columns += 'Name'
-        $values += '@Name'
-        $sqlParams['Name'] = $Name
+        $values += (ConvertTo-SqlValue -Value $Name)
     }
     if ($PSBoundParameters.ContainsKey('Breed')) {
         $columns += 'Breed'
-        $values += '@Breed'
-        $sqlParams['Breed'] = $Breed
+        $values += (ConvertTo-SqlValue -Value $Breed)
     }
     if ($PSBoundParameters.ContainsKey('Gender')) {
         $columns += 'Gender'
-        $values += '@Gender'
-        $sqlParams['Gender'] = $Gender
+        $values += (ConvertTo-SqlValue -Value $Gender)
     }
     if ($PSBoundParameters.ContainsKey('Location')) {
         $columns += 'Location'
-        $values += '@Location'
-        $sqlParams['Location'] = $Location
+        $values += (ConvertTo-SqlValue -Value $Location)
     }
     if ($PSBoundParameters.ContainsKey('Owner')) {
         $columns += 'Owner'
-        $values += '@Owner'
-        $sqlParams['Owner'] = $Owner
+        $values += (ConvertTo-SqlValue -Value $Owner)
     }
     if ($PSBoundParameters.ContainsKey('PricePerDay')) {
         $columns += 'PricePerDay'
-        $values += '@PricePerDay'
-        $sqlParams['PricePerDay'] = $PricePerDay
+        $values += (ConvertTo-SqlValue -Value $PricePerDay)
     }
     if ($PSBoundParameters.ContainsKey('BirthDate')) {
         $columns += 'BirthDate'
-        $values += '@BirthDate'
-        $sqlParams['BirthDate'] = $BirthDate
+        $values += (ConvertTo-SqlValue -Value $BirthDate)
     }
     if ($PSBoundParameters.ContainsKey('PurchaseDate')) {
         $columns += 'PurchaseDate'
-        $values += '@PurchaseDate'
-        $sqlParams['PurchaseDate'] = $PurchaseDate
+        $values += (ConvertTo-SqlValue -Value $PurchaseDate)
     }
     if ($PSBoundParameters.ContainsKey('Notes')) {
         $columns += 'Notes'
-        $values += '@Notes'
-        $sqlParams['Notes'] = $Notes
+        $values += (ConvertTo-SqlValue -Value $Notes)
     }
-    
+
     $columnList = $columns -join ', '
     $valueList = $values -join ', '
-    
+
     $query = "INSERT INTO Cattle ($columnList) VALUES ($valueList)"
-    
-    $params = @{
-        DataSource = $script:DatabasePath
-        Query = $query
-        SqlParameters = $sqlParams
+
+    try {
+        Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
+        Write-Verbose "Created cattle: $TagNumber"
     }
-    
-    Invoke-SqliteQuery @params
+    catch {
+        if ($_.Exception.Message -like '*UNIQUE constraint failed*') {
+            throw "A cattle record with tag number '$TagNumber' already exists."
+        } else {
+            throw $_
+        }
+    }
 }
+
+
+
+
+

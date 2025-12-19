@@ -205,6 +205,10 @@ Optimized indexes on frequently queried fields for fast performance
 
    - Navigate to: `http://localhost:5000/herdmanager` (or your PSU URL)
 
+   In-app Help
+
+   - The full Usage Guide is available inside the application under the **Help** menu (Help → Usage Guide) once the module is installed/reloaded.
+
 ## 🎨 Features in Detail
 
 ### Smart Date Handling
@@ -296,6 +300,13 @@ $app = @{
 3. Update affected views and functions
 4. Test data migration on sample data
 
+Migrations included
+
+- `src\PowerShellUniversal.Apps.HerdManager\data\Migrate-AddSystemInfo.ps1` - adds the `SystemInfo` table and seeds a default row
+- `src\PowerShellUniversal.Apps.HerdManager\data\Migrate-AddSystemInfoEstablished.ps1` - adds the `Established` column to `SystemInfo` (if missing)
+
+Note: After running migrations that change function parameters, restart PowerShell Universal so the runspace picks up the updated code (or copy the module into the installed modules directory and restart the service).
+
 ### Testing
 
 - Test all CRUD operations after changes
@@ -304,6 +315,50 @@ $app = @{
 - Validate print layouts
 - Ensure modal dialogs function correctly
 
+Running unit tests
+
+- Run all tests: `Invoke-Pester -Script tests -PassThru`
+- Run the SystemInfo/Established tests only: `Invoke-Pester -Script tests\Set-SystemInfo.Established.Tests.ps1 -PassThru`
+
+System Settings (UI and CLI)
+
+- The app provides a System Settings page (Settings -> System Settings) to store farm-level metadata (Farm Name, Address, Default Currency/Culture, Notes, and Established).
+- The "Established" field is intentionally simple: the UI accepts a 4-digit year (e.g. `2000`) and you may also provide a date string (e.g. `2000-01-01`) or pass a DateTime from the CLI.
+   - If you provide a year it is stored as January 1st of that year (e.g. `2000` -> `2000-01-01`).
+   - The form normalizes values and will accept array-wrapped values (as some UI controls return arrays).
+
+CLI examples:
+
+```powershell
+# Set by year
+Set-SystemInfo -Established 2000
+
+# Set by date string
+Set-SystemInfo -Established '2000-05-06'
+
+# The function also accepts array-wrapped values (UI can send arrays)
+Set-SystemInfo -Established @('2001')
+```
+
+Troubleshooting
+
+- Error "Cannot convert the System.Object[] value ... to type System.DateTime" when saving Established: this can happen when a DatePicker-style control returns an array instead of a single value. The System Settings UI now uses a simple year textbox and the CLI `Set-SystemInfo` function unwraps arrays and normalizes the value.
+
+### Deploying changes to a running PowerShell Universal
+
+- After changing exported functions (for example, adding or removing parameters), you must copy the updated module files to the installed modules directory and restart the PowerShell Universal service so the running runspace picks up the new signatures.
+- A helper script is provided at `src/tools/Sync-InstalledModule.ps1` to copy the module to the installed path and optionally restart the service:
+
+```powershell
+.\src\tools\Sync-InstalledModule.ps1 -RestartService
+```
+
+If you prefer not to restart the service, you can re-import the module in the target runspace (for development/testing) with:
+
+```powershell
+Import-Module -Force "C:\Path\To\PowerShellUniversal.Apps.HerdManager.psd1"
+```
+
 ## 📝 Notes
 
 ### Date Format Considerations
@@ -311,7 +366,7 @@ $app = @{
 - SQLite stores dates as TEXT
 - Application uses MM/dd/yyyy HH:mm:ss format
 - CAST AS TEXT in queries prevents PSSQLite auto-conversion errors
-- Always use -As PSObject with Invoke-SqliteQuery
+- Always use -As PSObject with Invoke-UniversalSQLiteQuery
 
 ### Performance Tips
 

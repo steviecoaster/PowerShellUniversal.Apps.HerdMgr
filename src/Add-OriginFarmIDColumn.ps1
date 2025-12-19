@@ -16,7 +16,7 @@ if (-not (Test-Path $DatabasePath)) {
 
 # Check if OriginFarmID column already exists
 $checkQuery = "PRAGMA table_info(Cattle)"
-$columns = Invoke-SqliteQuery -DataSource $DatabasePath -Query $checkQuery
+$columns = Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $checkQuery
 $columnExists = $columns | Where-Object { $_.name -eq 'OriginFarmID' }
 
 if ($columnExists) {
@@ -31,12 +31,12 @@ ALTER TABLE Cattle ADD COLUMN OriginFarmID INTEGER REFERENCES Farms(FarmID);
 
 try {
     Write-Host "Adding OriginFarmID column to Cattle table..." -ForegroundColor Cyan
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $addColumnQuery
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $addColumnQuery
     Write-Host "✓ OriginFarmID column added successfully" -ForegroundColor Green
     
     # Create index for better performance on farm lookups
     $createIndex = "CREATE INDEX idx_cattle_originfarm ON Cattle(OriginFarmID);"
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $createIndex
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $createIndex
     Write-Host "✓ Index on OriginFarmID created" -ForegroundColor Green
     
     Write-Host "`nMigration completed successfully!" -ForegroundColor Green
@@ -47,3 +47,6 @@ catch {
     Write-Host "ERROR during migration: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
+
+
+

@@ -45,7 +45,7 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                         $selectedFarm = Get-Farm -FarmName $EventData
                         Set-UDElement -Id 'new-origin-farm-id' -Properties @{value = $selectedFarm.FarmID }
                     }
-                    New-UDTextbox -Id 'new-origin-farm-id' -Style @{display = 'none'}
+                    New-UDTextbox -Id 'new-origin-farm-id' -Style @{display = 'none' }
                     New-UDElement -Tag 'br'
                     New-UDTextbox -Id 'new-name' -Label 'Name (Optional)' -FullWidth
                     New-UDElement -Tag 'br'
@@ -80,7 +80,8 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                                     New-UDSelectOption -Name $_.FarmName -Value $_.FarmName
                                 }
                             } -FullWidth
-                        } else {
+                        }
+                        else {
                             New-UDTextbox -Id 'new-owner' -Label 'Owner (optional)' -FullWidth
                         }
                     }
@@ -250,7 +251,7 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                                     # Parse dates if provided
                                     if ($row.BirthDate) {
                                         try {
-                                            $params.BirthDate = [DateTime]::Parse($row.BirthDate)
+                                            $params.BirthDate = Parse-Date $row.BirthDate
                                         }
                                         catch {
                                             throw "Invalid BirthDate format: $($row.BirthDate)"
@@ -259,7 +260,7 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                                     
                                     if ($row.PurchaseDate) {
                                         try {
-                                            $params.PurchaseDate = [DateTime]::Parse($row.PurchaseDate)
+                                            $params.PurchaseDate = Parse-Date $row.PurchaseDate
                                         }
                                         catch {
                                             throw "Invalid PurchaseDate format: $($row.PurchaseDate)"
@@ -398,6 +399,185 @@ $($Data | ConvertTo-Json -Depth 3)
                 } -FullWidth -MaxWidth 'md'
             }
         }
+
+        # Bulk Edit Button
+        New-UDGrid -Item -Content {
+            New-UDButton -Text "✏️ Bulk Edit" -Variant outlined -Style @{
+                borderColor  = '#1565c0'
+                color        = '#1565c0'
+                marginBottom = '20px'
+            } -OnClick {
+                Show-UDModal -Content {
+                    New-UDTypography -Text "Bulk Edit Cattle" -Variant h5 -Style @{
+                        color        = '#1565c0'
+                        marginBottom = '20px'
+                        fontWeight   = 'bold'
+                    }
+                    
+                    New-UDAlert -Severity 'info' -Text 'Select multiple cattle by tag number and update shared attributes like Location. Useful for moving groups of cattle together.' -Style @{marginBottom = '20px' }
+                    
+                    # Tag number selection
+                    $allCattle = Get-AllCattle | Where-Object Status -eq 'Active'
+                    $tagOptions = $allCattle | ForEach-Object { 
+                        "$($_.TagNumber) - $($_.Breed) $($_.Gender) ($($_.Location))"
+                    }
+                    
+                    New-UDAutoComplete -Id 'bulk-tags' -Label 'Select Cattle by Tag Number *' -Multiple -Options @($tagOptions) -FullWidth
+                    
+                    New-UDElement -Tag 'br'
+                    New-UDElement -Tag 'br'
+                    
+                    New-UDTypography -Text "Update Fields (leave blank to skip):" -Variant subtitle1 -Style @{
+                        fontWeight   = 'bold'
+                        marginBottom = '15px'
+                    }
+                    
+                    # Location field
+                    New-UDSelect -Id 'bulk-location' -Label 'New Location' -Option {
+                        New-UDSelectOption -Name '(No Change)' -Value ''
+                        New-UDSelectOption -Name 'Pen 1' -Value 'Pen 1'
+                        New-UDSelectOption -Name 'Pen 2' -Value 'Pen 2'
+                        New-UDSelectOption -Name 'Pen 3' -Value 'Pen 3'
+                        New-UDSelectOption -Name 'Pen 4' -Value 'Pen 4'
+                        New-UDSelectOption -Name 'Pen 5' -Value 'Pen 5'
+                        New-UDSelectOption -Name 'Pen 6' -Value 'Pen 6'
+                        New-UDSelectOption -Name 'Quarantine' -Value 'Quarantine'
+                        New-UDSelectOption -Name 'Pasture' -Value 'Pasture'
+                    } -FullWidth
+                    
+                    New-UDElement -Tag 'br'
+                    New-UDElement -Tag 'br'
+                    
+                    # Status field
+                    New-UDSelect -Id 'bulk-status' -Label 'New Status' -Option {
+                        New-UDSelectOption -Name '(No Change)' -Value ''
+                        New-UDSelectOption -Name 'Active' -Value 'Active'
+                        New-UDSelectOption -Name 'Sold' -Value 'Sold'
+                        New-UDSelectOption -Name 'Deceased' -Value 'Deceased'
+                        New-UDSelectOption -Name 'Transferred' -Value 'Transferred'
+                    } -FullWidth
+                    
+                    New-UDElement -Tag 'br'
+                    New-UDElement -Tag 'br'
+                    
+                    # Owner field
+                    New-UDDynamic -Content {
+                        $farms = Get-Farm -ActiveOnly
+                        if ($farms) {
+                            New-UDSelect -Id 'bulk-owner' -Label 'New Owner' -Option {
+                                New-UDSelectOption -Name '(No Change)' -Value ''
+                                $farms | ForEach-Object {
+                                    New-UDSelectOption -Name $_.FarmName -Value $_.FarmName
+                                }
+                            } -FullWidth
+                        }
+                        else {
+                            New-UDTextbox -Id 'bulk-owner' -Label 'New Owner' -FullWidth
+                        }
+                    }
+                    
+                    New-UDElement -Tag 'br'
+                    New-UDElement -Tag 'br'
+                    
+                    # Notes field
+                    New-UDTextbox -Id 'bulk-notes' -Label 'Notes to Add' -Multiline -Rows 3 -FullWidth
+                    New-UDElement -Tag 'br'
+                    New-UDCheckbox -Id 'bulk-append-notes' -Label 'Append to existing notes (instead of replacing)' -Checked $false
+                    
+                } -Footer {
+                    New-UDButton -Text "Cancel" -OnClick { Hide-UDModal }
+                    New-UDButton -Text "Update Selected Cattle" -Variant contained -Style @{backgroundColor = '#1565c0'; color = 'white' } -OnClick {
+                        $selectedOptions = (Get-UDElement -Id 'bulk-tags').value
+                        
+                        # Extract tag numbers from selected options (format: "1001 - Black Angus Steer (Pen 1)")
+                        $selectedTags = $selectedOptions | ForEach-Object {
+                            if ($_ -match '^(\d+)') {
+                                $matches[1]
+                            }
+                        }
+                        
+                        $location = (Get-UDElement -Id 'bulk-location').value
+                        $status = (Get-UDElement -Id 'bulk-status').value
+                        $owner = (Get-UDElement -Id 'bulk-owner').value
+                        $notes = (Get-UDElement -Id 'bulk-notes').value
+                        $appendNotes = (Get-UDElement -Id 'bulk-append-notes').checked
+                        
+                        # Validate selection
+                        if (-not $selectedTags -or $selectedTags.Count -eq 0) {
+                            Show-UDToast -Message "Please select at least one cattle to update" -MessageColor red
+                            return
+                        }
+                        
+                        # Validate at least one update field
+                        if (-not $location -and -not $status -and -not $owner -and -not $notes) {
+                            Show-UDToast -Message "Please specify at least one field to update" -MessageColor red
+                            return
+                        }
+                        
+                        try {
+                            # Build parameters
+                            $params = @{
+                                TagNumbers = $selectedTags
+                            }
+                            
+                            if ($location) { $params.Location = $location }
+                            if ($status) { $params.Status = $status }
+                            if ($owner) { $params.Owner = $owner }
+                            if ($notes) { 
+                                $params.Notes = $notes 
+                                if ($appendNotes) {
+                                    $params.AppendNotes = $true
+                                }
+                            }
+                            
+                            # Execute bulk update
+                            $result = Update-BulkCattle @params
+                            
+                            # Show result
+                            if ($result.FailedCount -gt 0) {
+                                Show-UDToast -Message "Updated $($result.SuccessCount) cattle. Failed: $($result.FailedCount) ($($result.FailedTags -join ', '))" -MessageColor orange -Duration 10000
+                            }
+                            else {
+                                Show-UDToast -Message "Successfully updated $($result.SuccessCount) cattle!" -MessageColor green
+                            }
+                            
+                            Hide-UDModal
+                            Sync-UDElement -Id 'cattle-table'
+                        }
+                        catch {
+                            Show-UDToast -Message "Error during bulk update: $($_.Exception.Message)" -MessageColor red
+                        }
+                    }
+                } -FullWidth -MaxWidth 'md'
+            }
+        }
+
+        New-UDGrid -Item -Content {
+            New-UDButton -Text "⬇️ Download Template" -Variant outlined -Style @{
+                borderColor  = '#1565c0'
+                color        = '#1565c0'
+                marginBottom = '20px'
+            } -OnClick {
+                $templateContent = [pscustomobject]@{
+                    TagNumber    = $null
+                    OriginFarm   = $null
+                    Name         = $null
+                    Breed        = $null
+                    Gender       = $null
+                    BirthDate    = $null
+                    PurchaseDate = $null
+                    Notes        = $null
+                } | ConvertTo-Csv | Out-String
+
+                $startUDDownloadSplat = @{
+                    StringData = $templateContent
+                    FileName = 'cattle_import_template.csv'
+                    ContentType = 'text/plain'
+                }
+
+                Start-UDDownload @startUDDownloadSplat
+            }
+        }
     }
    
     
@@ -430,7 +610,7 @@ $($Data | ConvertTo-Json -Depth 3)
             }
             New-UDTableColumn -Property BirthDate -Title "Birth Date" -ShowSort -Render {
                 if ($EventData.BirthDate) {
-                    ([DateTime]$EventData.BirthDate).ToString('MM/dd/yyyy')
+                    Format-Date $EventData.BirthDate
                 }
                 else {
                     'N/A'
@@ -458,7 +638,7 @@ $($Data | ConvertTo-Json -Depth 3)
                             $selectedFarm = Get-Farm -FarmName $EventData
                             Set-UDElement -Id 'edit-origin-farm-id' -Properties @{value = $selectedFarm.FarmID }
                         }
-                        New-UDTextbox -Id 'edit-origin-farm-id' -Value $cattle.OriginFarmID -Style @{display = 'none'}
+                        New-UDTextbox -Id 'edit-origin-farm-id' -Value $cattle.OriginFarmID -Style @{display = 'none' }
                         New-UDElement -Tag 'br'
                         New-UDTextbox -Id 'edit-name' -Label 'Name' -Value $cattle.Name -FullWidth
                         New-UDElement -Tag 'br'
@@ -469,7 +649,7 @@ $($Data | ConvertTo-Json -Depth 3)
                             New-UDSelectOption -Name 'Heifer' -Value 'Heifer'
                         } -FullWidth
                         New-UDElement -Tag 'br'
-                        New-UDSelect -Id 'edit-location' -Label 'Location' -DefaultValue $(if ($cattle.Location) { $cattle.Location} else { 'Unknown'})-Option {
+                        New-UDSelect -Id 'edit-location' -Label 'Location' -DefaultValue $(if ($cattle.Location) { $cattle.Location } else { 'Unknown' })-Option {
                             New-UDSelectOption -Name 'Pen 1' -Value 'Pen 1'
                             New-UDSelectOption -Name 'Pen 2' -Value 'Pen 2'
                             New-UDSelectOption -Name 'Pen 3' -Value 'Pen 3'
@@ -491,7 +671,8 @@ $($Data | ConvertTo-Json -Depth 3)
                                         New-UDSelectOption -Name $_.FarmName -Value $_.FarmName
                                     }
                                 } -FullWidth
-                            } else {
+                            }
+                            else {
                                 New-UDTextbox -Id 'edit-owner' -Label 'Owner (optional)' -Value $cattle.Owner -FullWidth
                             }
                         }
@@ -600,3 +781,9 @@ $($Data | ConvertTo-Json -Depth 3)
         New-UDTable -Data $cattle -Columns $columns -ShowPagination -PageSize 10 -ShowSearch -Dense -ShowSort -ShowExport
     }
 }
+
+
+
+
+
+

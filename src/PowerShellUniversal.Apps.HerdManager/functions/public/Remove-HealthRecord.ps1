@@ -30,9 +30,13 @@ function Remove-HealthRecord {
         $HealthRecordID
     )
     
-    $query = "DELETE FROM HealthRecords WHERE HealthRecordID = @HealthRecordID"
+    $query = "DELETE FROM HealthRecords WHERE HealthRecordID = $HealthRecordID"
     
-    Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -SqlParameters @{
-        HealthRecordID = $HealthRecordID
-    }
+    Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query 
 }
+
+
+
+
+
+

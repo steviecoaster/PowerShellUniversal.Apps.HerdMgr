@@ -1,6 +1,4 @@
 $accounting = New-UDPage -Name "Accounting" -Content {
-    # Capture database path in closure
-    $dbPath = $script:DatabasePath
     
     New-UDTypography -Text "💰 Accounting & Invoices" -Variant h4 -Style @{
         marginBottom = '20px'
@@ -74,7 +72,7 @@ $accounting = New-UDPage -Name "Accounting" -Content {
                             }
                             
                             # Get purchase date
-                            $purchaseDate = if ($cattle.PurchaseDate) { [DateTime]::Parse($cattle.PurchaseDate) } else { $null }
+                            $purchaseDate = if ($cattle.PurchaseDate) { Parse-Date $cattle.PurchaseDate } else { $null }
                             
                             if (-not $purchaseDate) {
                                 Show-UDToast -Message "Cattle $tagNumber must have a purchase date to generate invoice" -MessageColor red
@@ -96,16 +94,8 @@ $accounting = New-UDPage -Name "Accounting" -Content {
                             $feedingCost = $daysOnFeed * $pricePerDay
                             
                             # Get health costs
-                            $healthQuery = @"
-SELECT COALESCE(SUM(Cost), 0) AS TotalHealthCost
-FROM HealthRecords
-WHERE CattleID = @CattleID AND Cost > 0
-"@
-                            $healthCostResult = Invoke-SqliteQuery -DataSource $dbPath -Query $healthQuery -SqlParameters @{
-                                CattleID = $cattle.CattleID
-                            } -As PSObject
+                            $healthCost = Get-TotalHealthCost -CattleID $cattle.CattleID
                             
-                            $healthCost = $healthCostResult.TotalHealthCost
                             $lineItemTotal = $feedingCost + $healthCost
                             $totalInvoiceCost += $lineItemTotal
                             
@@ -142,7 +132,7 @@ WHERE CattleID = @CattleID AND Cost > 0
                                 # Show summary of selected cattle
                                 New-UDCard -Content {
                                     foreach ($item in $cattleList) {
-                                        New-UDTypography -Text "• $($item.Cattle.TagNumber) - $($item.Cattle.Name): $([math]::Round($item.LineItemTotal, 2).ToString('C2'))" -Variant body2
+                                        New-UDTypography -Text "• $($item.Cattle.TagNumber) - $($item.Cattle.Name): $(Format-Currency ([math]::Round($item.LineItemTotal, 2)))" -Variant body2
                                     }
                                 } -Style @{backgroundColor = '#f5f5f5'; marginBottom = '15px'}
                             }
@@ -267,20 +257,11 @@ WHERE CattleID = @CattleID AND Cost > 0
                 New-UDTable -Data $invoices -Columns @(
                     New-UDTableColumn -Property InvoiceNumber -Title "Invoice #" -ShowSort
                     New-UDTableColumn -Property TagNumber -Title "Tag #" -ShowSort
-                    New-UDTableColumn -Property CattleName -Title "Name" -ShowSort
                     New-UDTableColumn -Property Owner -Title "Owner" -ShowSort
                     New-UDTableColumn -Property InvoiceDate -Title "Invoice Date" -ShowSort -Render {
-                        try {
-                            # Try to parse and format the date
-                            $date = [DateTime]::Parse($EventData.InvoiceDate)
-                            $date.ToString('MM/dd/yyyy')
-                        }
-                        catch {
-                            # If parsing fails, just display the raw string
-                            $EventData.InvoiceDate
-                        }
+                        $fd = Format-Date $EventData.InvoiceDate
+                        if ($fd -ne '-') { $fd } else { $EventData.InvoiceDate }
                     }
-                    New-UDTableColumn -Property DaysOnFeed -Title "Days on Feed" -ShowSort
                     New-UDTableColumn -Property TotalCost -Title "Total Cost" -ShowSort -Render {
                         "`$$([math]::Round($EventData.TotalCost, 2))"
                     }
@@ -291,15 +272,14 @@ WHERE CattleID = @CattleID AND Cost > 0
                             Invoke-UDRedirect -Url "/herdmanager/invoice/$invoiceNumber" -OpenInNewWindow
                         }
                     }
-                    New-UDTableColumn -Property PrintAction -Title "Print" -Render {
-                        New-UDButton -Text "🖨️ Print" -Size small -Variant text -OnClick {
-                            $invoiceNumber = $EventData.InvoiceNumber
-                            # Open invoice in new tab for printing
-                            Invoke-UDRedirect -Url "/herdmanager/invoice/$invoiceNumber" -OpenInNewWindow
-                        }
-                    }
                 ) -ShowPagination -PageSize 10 -ShowSearch -Dense
             }
         }
     }
 } -Url "/accounting" -Icon (New-UDIcon -Icon 'Calculator')
+
+
+
+
+
+

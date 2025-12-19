@@ -33,12 +33,16 @@ function Get-CattleById {
     $query = @"
 SELECT CattleID, TagNumber, OriginFarm, Name, Breed, Gender, BirthDate, PurchaseDate, Location, Owner, PricePerDay, Status, Notes, CreatedDate, ModifiedDate
 FROM Cattle
-WHERE CattleID = @CattleID
+WHERE CattleID = $CattleID
 "@
     
-    $result = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -SqlParameters @{
-        CattleID = $CattleID
-    } -As PSObject
+    $result = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query 
     
     return $result
 }
+
+
+
+
+
+

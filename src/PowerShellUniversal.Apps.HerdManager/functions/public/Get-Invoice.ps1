@@ -19,57 +19,18 @@ function Get-Invoice {
     )
     
     if ($InvoiceNumber) {
+        $invoiceNumberValue = ConvertTo-SqlValue -Value $InvoiceNumber
         # Get invoice header
-        $query = @"
-SELECT 
-    i.InvoiceID,
-    i.InvoiceNumber,
-    i.CattleID,
-    CAST(i.InvoiceDate AS TEXT) AS InvoiceDate,
-    CAST(i.StartDate AS TEXT) AS StartDate,
-    CAST(i.EndDate AS TEXT) AS EndDate,
-    i.DaysOnFeed,
-    i.PricePerDay,
-    i.FeedingCost,
-    i.HealthCost,
-    i.TotalCost,
-    i.Notes,
-    i.CreatedBy,
-    CAST(i.CreatedDate AS TEXT) AS CreatedDate
-FROM Invoices i
-WHERE i.InvoiceNumber = @InvoiceNumber
-"@
+        $query = "SELECT i.InvoiceID, i.InvoiceNumber, i.CattleID, CAST(i.InvoiceDate AS TEXT) AS InvoiceDate, CAST(i.StartDate AS TEXT) AS StartDate, CAST(i.EndDate AS TEXT) AS EndDate, i.DaysOnFeed, i.PricePerDay, i.FeedingCost, i.HealthCost, i.TotalCost, i.Notes, i.CreatedBy, CAST(i.CreatedDate AS TEXT) AS CreatedDate FROM Invoices i WHERE i.InvoiceNumber = $invoiceNumberValue"
         
-        $result = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -SqlParameters @{
-            InvoiceNumber = $InvoiceNumber
-        } -As PSObject
+        $result = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query 
         
         if ($result) {
             # Check if this is a multi-cattle invoice (has line items)
-            $lineItemsQuery = @"
-SELECT 
-    li.LineItemID,
-    li.CattleID,
-    c.TagNumber,
-    c.Name AS CattleName,
-    c.Owner,
-    CAST(li.StartDate AS TEXT) AS StartDate,
-    CAST(li.EndDate AS TEXT) AS EndDate,
-    li.DaysOnFeed,
-    li.PricePerDay,
-    li.FeedingCost,
-    li.HealthCost,
-    li.LineItemTotal,
-    li.Notes AS LineItemNotes
-FROM InvoiceLineItems li
-JOIN Cattle c ON li.CattleID = c.CattleID
-WHERE li.InvoiceID = @InvoiceID
-ORDER BY c.TagNumber
-"@
+            $InvoiceID = $result.InvoiceID
+            $lineItemsQuery = "SELECT li.LineItemID, li.CattleID, c.TagNumber, c.Name AS CattleName, c.Owner, CAST(li.StartDate AS TEXT) AS StartDate, CAST(li.EndDate AS TEXT) AS EndDate, li.DaysOnFeed, li.PricePerDay, li.FeedingCost, li.HealthCost, li.LineItemTotal, li.Notes AS LineItemNotes FROM InvoiceLineItems li JOIN Cattle c ON li.CattleID = c.CattleID WHERE li.InvoiceID = $InvoiceID ORDER BY c.TagNumber"
             
-            $lineItems = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $lineItemsQuery -SqlParameters @{
-                InvoiceID = $result.InvoiceID
-            } -As PSObject
+            $lineItems = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $lineItemsQuery 
             
             if ($lineItems) {
                 # Multi-cattle invoice - add line items and get owner from first cattle
@@ -80,14 +41,9 @@ ORDER BY c.TagNumber
             else {
                 # Legacy single-cattle invoice - get cattle details
                 if ($result.CattleID) {
-                    $cattleQuery = @"
-SELECT TagNumber, Name AS CattleName, Owner
-FROM Cattle
-WHERE CattleID = @CattleID
-"@
-                    $cattle = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $cattleQuery -SqlParameters @{
-                        CattleID = $result.CattleID
-                    } -As PSObject
+                    $CattleID = $result.CattleID
+                    $cattleQuery = "SELECT TagNumber, Name AS CattleName, Owner FROM Cattle WHERE CattleID = $CattleID"
+                    $cattle = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $cattleQuery 
                     
                     if ($cattle) {
                         $result | Add-Member -MemberType NoteProperty -Name 'TagNumber' -Value $cattle.TagNumber -Force
@@ -101,56 +57,22 @@ WHERE CattleID = @CattleID
     }
     elseif ($CattleID) {
         # Get all invoices for a specific cattle (both as primary and in line items)
-        $query = @"
-SELECT DISTINCT
-    i.InvoiceID,
-    i.InvoiceNumber,
-    i.CattleID,
-    c.TagNumber,
-    c.Name AS CattleName,
-    c.Owner,
-    CAST(i.InvoiceDate AS TEXT) AS InvoiceDate,
-    CAST(i.StartDate AS TEXT) AS StartDate,
-    CAST(i.EndDate AS TEXT) AS EndDate,
-    i.DaysOnFeed,
-    i.PricePerDay,
-    i.FeedingCost,
-    i.HealthCost,
-    i.TotalCost,
-    i.Notes,
-    i.CreatedBy,
-    CAST(i.CreatedDate AS TEXT) AS CreatedDate
-FROM Invoices i
-LEFT JOIN Cattle c ON i.CattleID = c.CattleID
-LEFT JOIN InvoiceLineItems li ON i.InvoiceID = li.InvoiceID
-WHERE i.CattleID = @CattleID OR li.CattleID = @CattleID
-ORDER BY i.InvoiceDate DESC
-"@
+        $query = "SELECT DISTINCT i.InvoiceID, i.InvoiceNumber, i.CattleID, c.TagNumber, c.Name AS CattleName, c.Owner, CAST(i.InvoiceDate AS TEXT) AS InvoiceDate, CAST(i.StartDate AS TEXT) AS StartDate, CAST(i.EndDate AS TEXT) AS EndDate, i.DaysOnFeed, i.PricePerDay, i.FeedingCost, i.HealthCost, i.TotalCost, i.Notes, i.CreatedBy, CAST(i.CreatedDate AS TEXT) AS CreatedDate FROM Invoices i LEFT JOIN Cattle c ON i.CattleID = c.CattleID LEFT JOIN InvoiceLineItems li ON i.InvoiceID = li.InvoiceID WHERE i.CattleID = $CattleID OR li.CattleID = $CattleID ORDER BY i.InvoiceDate DESC"
         
-        $result = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -SqlParameters @{
-            CattleID = $CattleID
-        } -As PSObject
+        $result = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query 
     }
     else {
         # Get all invoices (simplified for table display)
-        $query = @"
-SELECT 
-    i.InvoiceID,
-    i.InvoiceNumber,
-    i.CattleID,
-    COALESCE(c.TagNumber, 'Multiple') AS TagNumber,
-    COALESCE(c.Name, 'Multiple Cattle') AS CattleName,
-    COALESCE(c.Owner, (SELECT Owner FROM Cattle WHERE CattleID = (SELECT CattleID FROM InvoiceLineItems WHERE InvoiceID = i.InvoiceID LIMIT 1))) AS Owner,
-    CAST(i.InvoiceDate AS TEXT) AS InvoiceDate,
-    i.TotalCost,
-    CASE WHEN EXISTS(SELECT 1 FROM InvoiceLineItems WHERE InvoiceID = i.InvoiceID) THEN 1 ELSE 0 END AS IsMultiCattle
-FROM Invoices i
-LEFT JOIN Cattle c ON i.CattleID = c.CattleID
-ORDER BY i.InvoiceDate DESC
-"@
+        $query = "SELECT i.InvoiceID, i.InvoiceNumber, i.CattleID, CASE WHEN EXISTS(SELECT 1 FROM InvoiceLineItems WHERE InvoiceID = i.InvoiceID) THEN (CASE WHEN (SELECT COUNT(*) FROM InvoiceLineItems WHERE InvoiceID = i.InvoiceID) = 1 THEN (SELECT c2.TagNumber FROM InvoiceLineItems li2 JOIN Cattle c2 ON li2.CattleID = c2.CattleID WHERE li2.InvoiceID = i.InvoiceID LIMIT 1) ELSE 'Multiple' END) ELSE c.TagNumber END AS TagNumber, COALESCE(c.Owner, (SELECT Owner FROM Cattle WHERE CattleID = (SELECT CattleID FROM InvoiceLineItems WHERE InvoiceID = i.InvoiceID LIMIT 1))) AS Owner, CAST(i.InvoiceDate AS TEXT) AS InvoiceDate, i.TotalCost, CASE WHEN EXISTS(SELECT 1 FROM InvoiceLineItems WHERE InvoiceID = i.InvoiceID) THEN 1 ELSE 0 END AS IsMultiCattle FROM Invoices i LEFT JOIN Cattle c ON i.CattleID = c.CattleID ORDER BY i.InvoiceDate DESC"
         
-        $result = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -As PSObject
+        $result = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query 
     }
     
     return $result
 }
+
+
+
+
+
+

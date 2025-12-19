@@ -73,87 +73,50 @@ function Add-Invoice {
     
     if ($PSCmdlet.ParameterSetName -eq 'Single') {
         # Legacy single-cattle invoice
-        $query = @"
-INSERT INTO Invoices (InvoiceNumber, CattleID, InvoiceDate, StartDate, EndDate, DaysOnFeed, PricePerDay, FeedingCost, HealthCost, TotalCost, Notes, CreatedBy)
-VALUES (@InvoiceNumber, @CattleID, @InvoiceDate, @StartDate, @EndDate, @DaysOnFeed, @PricePerDay, @FeedingCost, @HealthCost, @TotalCost, @Notes, @CreatedBy)
-"@
+        $invoiceNumberValue = ConvertTo-SqlValue -Value $InvoiceNumber
+        $invoiceDateValue = ConvertTo-SqlValue -Value $InvoiceDate
+        $startDateValue = ConvertTo-SqlValue -Value $StartDate
+        $endDateValue = ConvertTo-SqlValue -Value $EndDate
+        $notesValue = ConvertTo-SqlValue -Value $Notes
+        $createdByValue = ConvertTo-SqlValue -Value $CreatedBy
         
-        $params = @{
-            DataSource = $script:DatabasePath
-            Query = $query
-            SqlParameters = @{
-                InvoiceNumber = $InvoiceNumber
-                CattleID = $CattleID
-                InvoiceDate = $InvoiceDate.ToString('MM/dd/yyyy HH:mm:ss')
-                StartDate = $StartDate.ToString('MM/dd/yyyy HH:mm:ss')
-                EndDate = $EndDate.ToString('MM/dd/yyyy HH:mm:ss')
-                DaysOnFeed = $DaysOnFeed
-                PricePerDay = $PricePerDay
-                FeedingCost = $FeedingCost
-                HealthCost = $HealthCost
-                TotalCost = $TotalCost
-                Notes = $Notes
-                CreatedBy = $CreatedBy
-            }
-        }
+        $query = "INSERT INTO Invoices (InvoiceNumber, CattleID, InvoiceDate, StartDate, EndDate, DaysOnFeed, PricePerDay, FeedingCost, HealthCost, TotalCost, Notes, CreatedBy) VALUES ($invoiceNumberValue, $CattleID, $invoiceDateValue, $startDateValue, $endDateValue, $DaysOnFeed, $PricePerDay, $FeedingCost, $HealthCost, $TotalCost, $notesValue, $createdByValue)"
         
-        Invoke-SqliteQuery @params
+        Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
     }
     else {
         # Multi-cattle invoice with line items
         # First, create the invoice header
-        $headerQuery = @"
-INSERT INTO Invoices (InvoiceNumber, InvoiceDate, TotalCost, Notes, CreatedBy)
-VALUES (@InvoiceNumber, @InvoiceDate, @TotalCost, @Notes, @CreatedBy)
-"@
+        $invoiceNumberValue = ConvertTo-SqlValue -Value $InvoiceNumber
+        $invoiceDateValue = ConvertTo-SqlValue -Value $InvoiceDate
+        $notesValue = ConvertTo-SqlValue -Value $Notes
+        $createdByValue = ConvertTo-SqlValue -Value $CreatedBy
         
-        $headerParams = @{
-            DataSource = $script:DatabasePath
-            Query = $headerQuery
-            SqlParameters = @{
-                InvoiceNumber = $InvoiceNumber
-                InvoiceDate = $InvoiceDate.ToString('MM/dd/yyyy HH:mm:ss')
-                TotalCost = $TotalCost
-                Notes = $Notes
-                CreatedBy = $CreatedBy
-            }
-        }
+        $headerQuery = "INSERT INTO Invoices (InvoiceNumber, InvoiceDate, TotalCost, Notes, CreatedBy) VALUES ($invoiceNumberValue, $invoiceDateValue, $TotalCost, $notesValue, $createdByValue)"
         
-        Invoke-SqliteQuery @headerParams
+        Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $headerQuery
         
         # Get the InvoiceID of the newly created invoice
-        $invoiceIdQuery = "SELECT InvoiceID FROM Invoices WHERE InvoiceNumber = @InvoiceNumber"
-        $invoiceIdResult = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $invoiceIdQuery -SqlParameters @{
-            InvoiceNumber = $InvoiceNumber
-        } -As PSObject
+        $invoiceIdQuery = "SELECT InvoiceID FROM Invoices WHERE InvoiceNumber = $invoiceNumberValue"
+        $invoiceIdResult = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $invoiceIdQuery 
         
         $invoiceId = $invoiceIdResult.InvoiceID
         
         # Insert line items
         foreach ($item in $LineItems) {
-            $lineItemQuery = @"
-INSERT INTO InvoiceLineItems (InvoiceID, CattleID, StartDate, EndDate, DaysOnFeed, PricePerDay, FeedingCost, HealthCost, LineItemTotal, Notes)
-VALUES (@InvoiceID, @CattleID, @StartDate, @EndDate, @DaysOnFeed, @PricePerDay, @FeedingCost, @HealthCost, @LineItemTotal, @Notes)
-"@
+            $startDateValue = ConvertTo-SqlValue -Value $item.StartDate
+            $endDateValue = ConvertTo-SqlValue -Value $item.EndDate
+            $itemNotesValue = ConvertTo-SqlValue -Value $item.Notes
             
-            $lineItemParams = @{
-                DataSource = $script:DatabasePath
-                Query = $lineItemQuery
-                SqlParameters = @{
-                    InvoiceID = $invoiceId
-                    CattleID = $item.CattleID
-                    StartDate = $item.StartDate.ToString('MM/dd/yyyy HH:mm:ss')
-                    EndDate = $item.EndDate.ToString('MM/dd/yyyy HH:mm:ss')
-                    DaysOnFeed = $item.DaysOnFeed
-                    PricePerDay = $item.PricePerDay
-                    FeedingCost = $item.FeedingCost
-                    HealthCost = $item.HealthCost
-                    LineItemTotal = $item.LineItemTotal
-                    Notes = if ($item.Notes) { $item.Notes } else { $null }
-                }
-            }
+            $lineItemQuery = "INSERT INTO InvoiceLineItems (InvoiceID, CattleID, StartDate, EndDate, DaysOnFeed, PricePerDay, FeedingCost, HealthCost, LineItemTotal, Notes) VALUES ($invoiceId, $($item.CattleID), $startDateValue, $endDateValue, $($item.DaysOnFeed), $($item.PricePerDay), $($item.FeedingCost), $($item.HealthCost), $($item.LineItemTotal), $itemNotesValue)"
             
-            Invoke-SqliteQuery @lineItemParams
+            Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $lineItemQuery
         }
     }
 }
+
+
+
+
+
+

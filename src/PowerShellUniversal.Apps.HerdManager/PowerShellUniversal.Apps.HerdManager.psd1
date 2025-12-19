@@ -70,27 +70,57 @@
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
+        # Util
+        'New-UDHerdManagerApp',
+        'Initialize-HerdDatabase',
+        'Get-DatabasePath',
+        'Invoke-UniversalSQLiteQuery',
+        'Parse-Date',
+        'Format-Date',
+        'Format-Currency',
+        'Get-SystemInfo',
+        'Set-SystemInfo',
+            'Clear-SystemInfo',
+        #Notifcation
+        'Get-NotificationCount',
+        #Cattle
         'Add-CattleRecord',
-        'Add-WeightRecord',
-        'Add-HealthRecord',
         'Remove-CattleRecord',
-        'Remove-HealthRecord',
         'Update-CattleRecord',
         'Get-CattleById',
+        'Update-BulkCattle',
+        'Get-AllCattle',
+        # Health
+        'Add-HealthRecord',
+        'Remove-HealthRecord',
         'Get-HealthRecords',
         'Get-UpcomingHealthEvents',
+        'Get-HealthRecordsWithCost',
+        'Get-TotalHealthCost',
+        # ROG
         'Calculate-RateOfGain',
-        'Get-AllCattle',
         'Get-RateOfGainHistory',
+        # Weight
+        'Add-WeightRecord',
         'Get-WeightHistory',
-        'Initialze-HerdDatabase',
-        'New-UDHerdManagerApp',
+        'Get-AllWeightRecords',
+        'Remove-WeightRecord',
+        # Invoice
         'Add-Invoice',
         'Get-Invoice',
+        # Farm
         'Get-Farm',
         'Update-Farm',
         'Add-Farm',
-        'Invoke-HerdApi'
+        # Feed
+        'Get-FeedRecord',
+        'Add-FeedRecord',
+        'Update-FeedRecord',
+        'Remove-FeedRecord',
+        # API
+        'Invoke-CattleApi',
+        'Invoke-FeedApi',
+        'Invoke-FarmApi'
     )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -114,8 +144,10 @@
         'PowerShellUniversal.Apps.HerdManager.psd1', 
         '.universal\dashboards.ps1',
         'dashboards\HerdManager\HerdManager.ps1',
-        'dashboards\HerdManager\pages\Homepage.ps1'
-        'dashboards\HerdManager\pages\RateOfGain.ps1'
+        'dashboards\HerdManager\pages\Homepage.ps1',
+        'dashboards\HerdManager\pages\RateOfGain.ps1',
+        'docs\UsageGuide.md'
+        'dashboards\HerdManager\pages\Help.ps1'
     )
 
     # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.

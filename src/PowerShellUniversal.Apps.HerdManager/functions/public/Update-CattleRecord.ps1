@@ -101,11 +101,11 @@ function Update-CattleRecord {
         $PricePerDay,
 
         [Parameter()]
-        [DateTime]
+        [Nullable[DateTime]]
         $BirthDate,
         
         [Parameter()]
-        [DateTime]
+        [Nullable[DateTime]]
         $PurchaseDate,
         
         [Parameter()]
@@ -118,45 +118,55 @@ function Update-CattleRecord {
         $Notes
     )
     
-    $query = @"
-UPDATE Cattle
-SET TagNumber = @TagNumber,
-    OriginFarm = @OriginFarm,
-    OriginFarmID = @OriginFarmID,
-    Name = @Name,
-    Breed = @Breed,
-    Gender = @Gender,
-    BirthDate = @BirthDate,
-    PurchaseDate = @PurchaseDate,
-    Location = @Location,
-    Owner = @Owner,
-    PricePerDay = @PricePerDay,
-    Status = @Status,
-    Notes = @Notes,
-    ModifiedDate = CURRENT_TIMESTAMP
-WHERE CattleID = @CattleID
-"@
+    # Build UPDATE query dynamically - only update provided fields
+    $updates = @()
+    $updates += "TagNumber = $(ConvertTo-SqlValue -Value $TagNumber)"
+    $updates += "OriginFarm = $(ConvertTo-SqlValue -Value $OriginFarm)"
     
-    $params = @{
-        DataSource = $script:DatabasePath
-        Query = $query
-        SqlParameters = @{
-            CattleID = $CattleID
-            TagNumber = $TagNumber
-            OriginFarm = $OriginFarm
-            OriginFarmID = $OriginFarmID
-            Name = $Name
-            Breed = $Breed
-            Gender = $Gender
-            BirthDate = $BirthDate
-            PurchaseDate = $PurchaseDate
-            Location = $Location
-            Owner = $Owner
-            PricePerDay = $PricePerDay
-            Status = $Status
-            Notes = $Notes
-        }
+    if ($PSBoundParameters.ContainsKey('OriginFarmID')) {
+        $updates += "OriginFarmID = $OriginFarmID"
+    }
+    if ($PSBoundParameters.ContainsKey('Name')) {
+        $updates += "Name = $(ConvertTo-SqlValue -Value $Name)"
+    }
+    if ($PSBoundParameters.ContainsKey('Breed')) {
+        $updates += "Breed = $(ConvertTo-SqlValue -Value $Breed)"
+    }
+    if ($PSBoundParameters.ContainsKey('Gender')) {
+        $updates += "Gender = $(ConvertTo-SqlValue -Value $Gender)"
+    }
+    if ($PSBoundParameters.ContainsKey('BirthDate')) {
+        $updates += "BirthDate = $(ConvertTo-SqlValue -Value $BirthDate)"
+    }
+    if ($PSBoundParameters.ContainsKey('PurchaseDate')) {
+        $updates += "PurchaseDate = $(ConvertTo-SqlValue -Value $PurchaseDate)"
+    }
+    if ($PSBoundParameters.ContainsKey('Location')) {
+        $updates += "Location = $(ConvertTo-SqlValue -Value $Location)"
+    }
+    if ($PSBoundParameters.ContainsKey('Owner')) {
+        $updates += "Owner = $(ConvertTo-SqlValue -Value $Owner)"
+    }
+    if ($PSBoundParameters.ContainsKey('PricePerDay')) {
+        $updates += "PricePerDay = $PricePerDay"
+    }
+    if ($PSBoundParameters.ContainsKey('Status')) {
+        $updates += "Status = $(ConvertTo-SqlValue -Value $Status)"
+    }
+    if ($PSBoundParameters.ContainsKey('Notes')) {
+        $updates += "Notes = $(ConvertTo-SqlValue -Value $Notes)"
     }
     
-    Invoke-SqliteQuery @params
+    $updates += "ModifiedDate = CURRENT_TIMESTAMP"
+    
+    $setClause = $updates -join ', '
+    $query = "UPDATE Cattle SET $setClause WHERE CattleID = $CattleID"
+    
+    Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
 }
+
+
+
+
+
+

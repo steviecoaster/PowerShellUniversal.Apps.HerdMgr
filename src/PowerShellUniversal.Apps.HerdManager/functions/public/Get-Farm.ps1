@@ -78,32 +78,35 @@ function Get-Farm {
     
     switch ($PSCmdlet.ParameterSetName) {
         'ById' {
-            $query = "SELECT * FROM Farms WHERE FarmID = @FarmID"
-            $result = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -SqlParameters @{
-                FarmID = $FarmID
-            } -As PSObject
+            $query = "SELECT * FROM Farms WHERE FarmID = $FarmID"
+            $result = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query 
         }
         'ByName' {
-            $query = "SELECT * FROM Farms WHERE FarmName = @FarmName"
-            $result = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -SqlParameters @{
-                FarmName = $FarmName
-            } -As PSObject
+            $farmNameValue = ConvertTo-SqlValue -Value $FarmName
+            $query = "SELECT * FROM Farms WHERE FarmName = $farmNameValue"
+            $result = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query 
         }
         'All' {
             $query = "SELECT * FROM Farms ORDER BY FarmName"
-            $result = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -As PSObject
+            $result = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
         }
 
         'Active' {
             $query = "SELECT * FROM Farms WHERE IsActive = 1 ORDER BY FarmName"
-            $result = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -As PSObject
+            $result = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
         }
         
         'Origins' {
             $query = "SELECT * FROM Farms WHERE IsActive = 1 AND IsOrigin = 1 ORDER BY FarmName"
-            $result = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -As PSObject
+            $result = Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
         }
     }
 
     return $result
 }
+
+
+
+
+
+

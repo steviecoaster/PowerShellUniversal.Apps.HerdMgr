@@ -1,140 +1,18 @@
-# 📖 Gundy Ridge Herd Manager - Usage Guide
+### Database & Migrations
 
-A comprehensive guide to using all features of the Herd Manager application.
+- The repository provides migration scripts to add the Farms table and link cattle to farms:
+   - `src\Add-FarmsTable.ps1` — add Farms table
+   - `src\Add-OriginFarmIDColumn.ps1` — add OriginFarmID to Cattle table
+   - `src\Add-IsOriginColumn.ps1` — add IsOrigin boolean to Farms table
+- After running migrations, restart the dashboard runspace or copy the updated module into the installed modules path and restart PowerShell Universal so the UI picks up the changes.
 
----
+### Best Practices
 
-## Table of Contents
+- Mark origin farms correctly so imports and cattle additions use the correct Origin Farm
+- Keep farm names unique for easier search and autocomplete
+- Keep contact info up to date for invoices and owner communications
+- Deactivate farms you no longer use instead of deleting them to preserve historical data
 
-- [Getting Started](#getting-started)
-- [Cattle Management](#cattle-management)
-- [Weight Management](#weight-management)
-- [Health Records](#health-records)
-- [Feed Records](#feed-records)
-- [Rate of Gain Tracking](#rate-of-gain-tracking)
-- [Animal Reports](#animal-reports)
-- [Accounting & Invoicing](#accounting--invoicing)
-- [Notifications Dashboard](#notifications-dashboard)
-- [Reports & Analytics](#reports--analytics)
-- [Tips & Best Practices](#tips--best-practices)
-
----
-
-## Getting Started
-
-### Accessing the Application
-
-1. Open your web browser
-2. Navigate to your PowerShell Universal server URL followed by `/herdmanager`
-   - Example: `http://localhost:5000/herdmanager`
-3. The dashboard will load with the navigation menu on the left
-
-### Navigation Overview
-
-The application has 9 main sections accessible from the side navigation:
-
-- **Home**: Dashboard overview with quick stats
-- **🔔 Notifications**: Alerts for overdue health events and weight checks
-- **Cattle Management**: Add, edit, and view all cattle records
-- **Weight Management**: Record and track weight measurements
-- **Health Records**: Track medical history and upcoming treatments
-- **Feed Records**: Log daily feed mix quantities
-- **Rate of Gain**: Calculate and analyze performance metrics
-- **Animal Report**: Generate comprehensive individual animal reports
-- **Accounting**: Generate and manage invoices for cattle billing
-- **Reports**: View herd-wide analytics and summaries
-
----
-
-## Cattle Management
-
-### Adding a New Animal
-
-1. Navigate to **Cattle Management** from the side menu
-2. Click the **➕ Add New Cattle** button at the top of the page
-3. Fill in the required fields in the modal dialog:
-   - **Tag Number** (required): Unique identifier for the animal (e.g., "BR-2924")
-   - **Origin Farm** (required): Farm where the animal was purchased or born
-4. Fill in optional fields:
-   - **Name**: A friendly name for the animal (optional but recommended)
-   - **Breed**: Animal's breed (e.g., "Angus", "Hereford", "Charolais")
-   - **Gender**: Select "Steer" or "Heifer" from dropdown
-   - **Location**: Select from Pen 1-6, Quarantine, or Pasture
-   - **Birth Date**: Use date picker to select birth date
-   - **Purchase Date**: Date the animal was acquired
-   - **Notes**: Any additional information or special considerations
-5. Click **Add Cattle** to save the record
-6. A success toast notification will appear confirming the addition
-
-### Viewing Cattle Records
-
-The cattle table displays all active animals with the following information:
-
-- Tag Number
-- Origin Farm
-- Name
-- Gender
-- Location
-- Status (Active, Sold, Deceased, Transferred)
-- Birth Date
-
-**Table Features**:
-
-- **Search**: Use the search box at the top to filter by any field
-- **Sort**: Click column headers to sort ascending or descending
-- **Pagination**: Navigate through pages if you have many animals
-
-### Editing an Existing Animal
-
-1. Locate the animal in the cattle table
-2. Click the **✏️ Edit** button in the Actions column
-3. The edit modal will open with current values pre-filled
-4. Modify any fields as needed:
-   - Update location when moving animals between pens
-   - Change status when selling or transferring animals
-   - Update notes with new information
-5. Click **Update** to save changes
-6. The table will refresh automatically with updated information
-
-### Importing Cattle from CSV
-
-For bulk additions, you can import cattle records from a CSV file:
-
-1. Click the **📂 Import from CSV** button
-2. Review the CSV format requirements shown in the modal:
-   - **Required columns**: TagNumber, OriginFarm
-   - **Optional columns**: Name, Breed, Gender, BirthDate, PurchaseDate, Location, Notes
-   - **Gender values**: Must be "Steer" or "Heifer"
-   - **Location values**: Must be one of: Pen 1, Pen 2, Pen 3, Pen 4, Pen 5, Pen 6, Quarantine, Pasture
-   - **Date format**: MM/dd/yyyy or yyyy-MM-dd
-3. Prepare your CSV file following these requirements
-4. Click or drag your CSV file to the upload area
-5. The system will process and import valid records
-6. A summary will show successful imports and any errors
-
-**Example CSV**:
-
-```csv
-TagNumber,OriginFarm,Name,Breed,Gender,Location,BirthDate,PurchaseDate,Notes
-BR-1001,Smith Farm,Duke,Angus,Steer,Pen 1,01/15/2024,03/20/2024,Good temperament
-BR-1002,Jones Ranch,Bessie,Hereford,Heifer,Pen 2,02/10/2024,04/01/2024,
-```
-
-### Managing Animal Status
-
-Change an animal's status to track their lifecycle:
-
-1. Edit the animal record
-2. Select new status from dropdown:
-   - **Active**: Currently in your herd
-   - **Sold**: Animal has been sold
-   - **Deceased**: Animal has died (removed from active management)
-   - **Transferred**: Moved to another location/operation
-3. Click **Update**
-
-> **Note**: Changing status to Sold, Deceased, or Transferred will remove the animal from active lists but retain all historical data.
-
----
 
 ## Weight Management
 

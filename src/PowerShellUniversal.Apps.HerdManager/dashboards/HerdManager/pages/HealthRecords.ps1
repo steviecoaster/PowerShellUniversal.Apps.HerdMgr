@@ -103,6 +103,13 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
                     New-UDDatePicker -Id 'health-next-due' -Label 'Next Due Date (Optional)'
                     
                     New-UDElement -Tag 'br'
+
+                    # Recorded By
+                    New-UDSelect -Id 'health-recorded-by' -Label 'Recorded By' -Option {
+                        New-UDSelectOption -Name 'Brandon' -Value 'Brandon'
+                        New-UDSelectOption -Name 'Jerry' -Value 'Jerry'
+                        New-UDSelectOption -Name 'Stephanie' -Value 'Stephanie'
+                    } -FullWidth
                     
                     # Notes
                     New-UDTextbox -Id 'health-notes' -Label 'Notes' -Multiline -Rows 3 -FullWidth
@@ -143,6 +150,8 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
                             return
                         }
                         
+                        $recordedBy = (Get-UDElement -Id 'health-recorded-by').value
+
                         try {
                             $params = @{
                                 CattleID   = [int]$cattleId
@@ -157,6 +166,7 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
                             if ($dosage) { $params.Dosage = $dosage }
                             if ($costValue) { $params.Cost = [decimal]$costValue }
                             if ($nextDueValue) { $params.NextDueDate = [DateTime]$nextDueValue }
+                            if ($recordedBy) { $params.RecordedBy = $recordedBy }
                             if ($notes) { $params.Notes = $notes }
                             
                             Add-HealthRecord @params
@@ -199,12 +209,8 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
                             New-UDTableColumn -Property RecordType -Title "Type" -ShowSort
                             New-UDTableColumn -Property Title -Title "Title" -ShowSort
                             New-UDTableColumn -Property NextDueDate -Title "Due Date" -ShowSort -Render {
-                                try {
-                                    ([DateTime]::Parse($EventData.NextDueDate)).ToString('MM/dd/yyyy')
-                                } catch {
-                                    $EventData.NextDueDate -replace ' \d{2}:\d{2}:\d{2}.*$', ''
-                                }
-                            }
+                Format-Date $EventData.NextDueDate
+            }
                             New-UDTableColumn -Property DaysUntilDue -Title "Days Until" -ShowSort -Render {
                                 $daysUntil = $EventData.DaysUntilDue
                                 $color = if ($daysUntil -le 7) { '#d32f2f' } elseif ($daysUntil -le 14) { '#f57c00' } else { '#1976d2' }
@@ -252,7 +258,14 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
                                                     color = '#555'
                                                 }
                                                 New-UDTypography -Text "Type: $($evt.RecordType)" -Variant body1
-                                                New-UDTypography -Text "Due Date: $(([DateTime]::Parse($evt.NextDueDate)).ToString('MM/dd/yyyy'))" -Variant body1
+                                                if ($evt.NextDueDate -and $evt.NextDueDate -ne '') {
+                                                    $dueDateStr = Format-Date $evt.NextDueDate
+                                                    if ($dueDateStr -ne '-') {
+                                                        New-UDTypography -Text "Due Date: $dueDateStr" -Variant body1
+                                                    } else {
+                                                        New-UDTypography -Text "Due Date: Invalid date" -Variant body1
+                                                    }
+                                                }
                                                 New-UDTypography -Text "Days Until: $daysUntil days" -Variant body1 -Style @{
                                                     color = $urgencyColor
                                                     fontWeight = 'bold'
@@ -291,7 +304,7 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
                 }
             }
             New-UDTableColumn -Property RecordDate -Title "Date" -ShowSort -Render {
-                ([DateTime]$EventData.RecordDate).ToString('MM/dd/yyyy')
+                Format-Date $EventData.RecordDate
             }
             New-UDTableColumn -Property RecordType -Title "Type" -ShowSort -Render {
                 $color = switch ($EventData.RecordType) {
@@ -319,11 +332,7 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
                 }
             }
             New-UDTableColumn -Property NextDueDate -Title "Next Due" -ShowSort -Render {
-                if ($EventData.NextDueDate) {
-                    ([DateTime]$EventData.NextDueDate).ToString('MM/dd/yyyy')
-                } else {
-                    '-'
-                }
+                Format-Date $EventData.NextDueDate
             }
             New-UDTableColumn -Property Actions -Title "Actions" -Render {
                 New-UDButton -Text "📋 Details" -Size small -Variant outlined -Style @{borderColor = '#2e7d32'; color = '#2e7d32'} -OnClick {
@@ -345,7 +354,7 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
                             New-UDTypography -Text "Record Details" -Variant h6 -Style @{marginBottom = '10px'; color = '#2e7d32'}
                             New-UDTypography -Text "Type: $($record.RecordType)" -Variant body2
                             New-UDTypography -Text "Title: $($record.Title)" -Variant body2
-                            New-UDTypography -Text "Date: $(([DateTime]$record.RecordDate).ToString('MM/dd/yyyy'))" -Variant body2
+                            New-UDTypography -Text "Date: $(Format-Date $record.RecordDate)" -Variant body2
                             if ($record.Description) {
                                 New-UDElement -Tag 'br'
                                 New-UDTypography -Text "Description:" -Variant body2 -Style @{fontWeight = 'bold'}
@@ -371,11 +380,16 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
                             }
                         }
                         
-                        if ($record.NextDueDate) {
+                        if ($record.NextDueDate -and $record.NextDueDate -ne '') {
                             New-UDCard -Style @{borderLeft = '4px solid #2e7d32'; padding = '15px'; marginBottom = '15px'} -Content {
-                                New-UDTypography -Text "📅 Next Due Date: $(([DateTime]$record.NextDueDate).ToString('MM/dd/yyyy'))" -Variant body1 -Style @{
-                                    fontWeight = 'bold'
-                                    color      = '#2e7d32'
+                                $nextDueDateStr = Format-Date $record.NextDueDate
+                                if ($nextDueDateStr -ne '-') {
+                                    New-UDTypography -Text "📅 Next Due Date: $nextDueDateStr" -Variant body1 -Style @{
+                                        fontWeight = 'bold'
+                                        color      = '#2e7d32'
+                                    }
+                                } else {
+                                    New-UDTypography -Text "📅 Next Due Date: Invalid date" -Variant body1 -Style @{color = '#999'}
                                 }
                             }
                         }
@@ -397,7 +411,7 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
                 New-UDButton -Text "🗑️ Delete" -Size small -Variant text -Style @{color = '#d32f2f'} -OnClick {
                     $healthRecordId = $EventData.HealthRecordID
                     $title = $EventData.Title
-                    $dateValue = ([DateTime]$EventData.RecordDate).ToString('MM/dd/yyyy')
+                    $dateValue = Format-Date $EventData.RecordDate
                     
                     Show-UDModal -Content {
                         New-UDTypography -Text "⚠️ Confirm Delete" -Variant h5 -Style @{color = '#d32f2f'; marginBottom = '20px'}
@@ -429,3 +443,9 @@ $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
         }
     }
 }
+
+
+
+
+
+

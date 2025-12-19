@@ -27,19 +27,19 @@ Write-Host "Fixing CattleWithLatestWeight view..." -ForegroundColor Cyan
 Write-Host "Database: $DatabasePath" -ForegroundColor Cyan
 
 try {
-    # Import PSSQLite module
-    if (-not (Get-Module -ListAvailable -Name PSSQLite)) {
-        Write-Error "PSSQLite module not found. Please install it first: Install-Module PSSQLite"
+    # Import MySQLite module
+    if (-not (Get-Module -ListAvailable -Name MySQLite)) {
+        Write-Error "MySQLite module not found. Please install it first: Install-Module MySQLite"
         exit 1
     }
     
-    Import-Module PSSQLite -ErrorAction Stop
+    Import-Module MySQLite -ErrorAction Stop
     
     Write-Host "Dropping existing view..." -ForegroundColor Yellow
     
     # Drop the existing view
     $dropViewQuery = "DROP VIEW IF EXISTS CattleWithLatestWeight;"
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $dropViewQuery
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $dropViewQuery
     
     Write-Host "Creating updated view with PurchaseDate..." -ForegroundColor Yellow
     
@@ -70,7 +70,7 @@ LEFT JOIN (
 ) w ON c.CattleID = w.CattleID AND w.rn = 1;
 "@
     
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $createViewQuery
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $createViewQuery
     
     Write-Host "✓ View updated successfully!" -ForegroundColor Green
     Write-Host ""
@@ -84,3 +84,8 @@ catch {
     Write-Error $_.ScriptStackTrace
     exit 1
 }
+
+
+
+
+

@@ -28,13 +28,13 @@ Write-Host "Starting database migration for multi-cattle invoices..." -Foregroun
 Write-Host "Database: $DatabasePath" -ForegroundColor Cyan
 
 try {
-    # Import PSSQLite module
-    if (-not (Get-Module -ListAvailable -Name PSSQLite)) {
-        Write-Error "PSSQLite module not found. Please install it first: Install-Module PSSQLite"
+    # Import MySQLite module
+    if (-not (Get-Module -ListAvailable -Name MySQLite)) {
+        Write-Error "MySQLite module not found. Please install it first: Install-Module MySQLite"
         exit 1
     }
     
-    Import-Module PSSQLite -ErrorAction Stop
+    Import-Module MySQLite -ErrorAction Stop
     
     # Check if table already exists
     $checkTableQuery = @"
@@ -42,7 +42,7 @@ SELECT name FROM sqlite_master
 WHERE type='table' AND name='InvoiceLineItems';
 "@
     
-    $existingTable = Invoke-SqliteQuery -DataSource $DatabasePath -Query $checkTableQuery -As PSObject
+    $existingTable = Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $checkTableQuery
     
     if ($existingTable) {
         Write-Host "✓ InvoiceLineItems table already exists. No migration needed." -ForegroundColor Green
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS InvoiceLineItems (
 );
 "@
     
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $createTableQuery
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $createTableQuery
     Write-Host "✓ InvoiceLineItems table created successfully" -ForegroundColor Green
     
     # Create indexes
@@ -84,7 +84,7 @@ CREATE INDEX IF NOT EXISTS idx_line_item_invoice ON InvoiceLineItems(InvoiceID);
 CREATE INDEX IF NOT EXISTS idx_line_item_cattle ON InvoiceLineItems(CattleID);
 "@
     
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $createIndexesQuery
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $createIndexesQuery
     Write-Host "✓ Indexes created successfully" -ForegroundColor Green
     
     # Update Invoices table to make legacy fields nullable (if needed)
@@ -109,3 +109,8 @@ catch {
     Write-Error $_.ScriptStackTrace
     exit 1
 }
+
+
+
+
+

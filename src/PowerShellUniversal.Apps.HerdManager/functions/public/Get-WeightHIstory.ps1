@@ -43,9 +43,14 @@ function Get-WeightHistory {
     $query = @"
 SELECT WeightRecordID, WeightDate, Weight, WeightUnit, MeasurementMethod, RecordedBy, Notes
 FROM WeightRecords
-WHERE CattleID = @CattleID
+WHERE CattleID = $CattleID
 ORDER BY WeightDate DESC
 "@
     
-    Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $query -SqlParameters @{CattleID = $CattleID} -As PSObject
+    Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query 
 }
+
+
+
+
+

@@ -3,8 +3,8 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
     
     New-UDTypography -Text "🚜 Farm Management" -Variant h4 -Style @{
         marginBottom = '20px'
-        color = '#2e7d32'
-        fontWeight = 'bold'
+        color        = '#2e7d32'
+        fontWeight   = 'bold'
     }
     
     # Add New Farm Section
@@ -52,8 +52,8 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
         
         New-UDButton -Text "➕ Add Farm" -Variant contained -FullWidth -Style @{
             backgroundColor = '#2e7d32'
-            color = 'white'
-            marginTop = '10px'
+            color           = 'white'
+            marginTop       = '10px'
         } -OnClick {
             $farmName = (Get-UDElement -Id 'new-farm-name').value
             $contactPerson = (Get-UDElement -Id 'new-farm-contact').value
@@ -73,18 +73,16 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
             
             try {
                 $farmParams = @{
-                    FarmName = $farmName
+                    FarmName      = $farmName
                     ContactPerson = $contactPerson
-                    Address = $address
-                    City = $city
-                    State = $state
-                    ZipCode = $zip
-                    PhoneNumber = $phone
-                    Email = $email
-                    Notes = $notes
-                }
-                if ($isOrigin) {
-                    $farmParams['IsOrigin'] = $true
+                    Address       = $address
+                    City          = $city
+                    State         = $state
+                    ZipCode       = $zip
+                    PhoneNumber   = $phone
+                    Email         = $email
+                    Notes         = $notes
+                    IsOrigin        = if ($isOrigin) { $true } else { $false }
                 }
                 
                 Add-Farm @farmParams
@@ -117,7 +115,7 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
             
             if (-not $farms) {
                 New-UDTypography -Text "No farms found. Add your first farm above!" -Variant body2 -Style @{
-                    color = '#666'
+                    color     = '#666'
                     textAlign = 'center'
                     marginTop = '20px'
                 }
@@ -132,16 +130,18 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
                     New-UDTableColumn -Property Email -Title "Email" -ShowSort
                     New-UDTableColumn -Property IsOrigin -Title "Is Origin" -Render {
                         if ($EventData.IsOrigin -eq 1) {
-                            New-UDChip -Label "Origin" -Size small -Style @{backgroundColor = '#2196f3'; color = 'white'}
-                        } else {
-                            New-UDChip -Label "-" -Size small -Style @{backgroundColor = '#e0e0e0'; color = '#666'}
+                            New-UDChip -Label "Origin" -Size small -Style @{backgroundColor = '#2196f3'; color = 'white' }
+                        }
+                        else {
+                            New-UDChip -Label "-" -Size small -Style @{backgroundColor = '#e0e0e0'; color = '#666' }
                         }
                     }
                     New-UDTableColumn -Property IsActive -Title "Active" -Render {
                         if ($EventData.IsActive -eq 1) {
-                            New-UDChip -Label "Active" -Size small -Style @{backgroundColor = '#4caf50'; color = 'white'}
-                        } else {
-                            New-UDChip -Label "Inactive" -Size small -Style @{backgroundColor = '#9e9e9e'; color = 'white'}
+                            New-UDChip -Label "Active" -Size small -Style @{backgroundColor = '#4caf50'; color = 'white' }
+                        }
+                        else {
+                            New-UDChip -Label "Inactive" -Size small -Style @{backgroundColor = '#9e9e9e'; color = 'white' }
                         }
                     }
                     New-UDTableColumn -Property Actions -Title "Actions" -Render {
@@ -149,7 +149,7 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
                             $farm = $EventData
                             Show-UDModal -Content {
                                 New-UDTypography -Text "Edit Farm: $($farm.FarmName)" -Variant h5 -Style @{
-                                    color = '#2e7d32'
+                                    color        = '#2e7d32'
                                     marginBottom = '20px'
                                 }
                                 
@@ -184,7 +184,7 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
                                 
                             } -Footer {
                                 New-UDButton -Text "Cancel" -OnClick { Hide-UDModal }
-                                New-UDButton -Text "Save Changes" -Variant contained -Style @{backgroundColor = '#2e7d32'; color = 'white'} -OnClick {
+                                New-UDButton -Text "Save Changes" -Variant contained -Style @{backgroundColor = '#2e7d32'; color = 'white' } -OnClick {
                                     $farmName = (Get-UDElement -Id 'edit-farm-name').value
                                     $contactPerson = (Get-UDElement -Id 'edit-farm-contact').value
                                     $address = (Get-UDElement -Id 'edit-farm-address').value
@@ -218,3 +218,9 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
         }
     }
 } -Url "/farms" -Icon (New-UDIcon -Icon 'Tractor')
+
+
+
+
+
+

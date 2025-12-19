@@ -12,17 +12,41 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
     } -Content {
         New-UDGrid -Container -Content {
             New-UDGrid -Item -ExtraSmallSize 12 -Content {
-                New-UDTypography -Text "🐂 Gundy Ridge Herd Manager" -Variant h2 -Style @{
+                $system = Get-SystemInfo
+                $headerTypography = if($system -and $system.FarmName){
+                    '🐂 {0}' -f $system.FarmName
+                }
+                else {
+                    "🐂 Herd Management Platform"
+                }
+
+                New-UDTypography -Text $headerTypography -Variant h2 -Style @{
                     fontWeight = 'bold'
                     textAlign = 'center'
                     marginBottom = '15px'
                 }
-                New-UDTypography -Text "Since 1942" -Variant h5 -Style @{
+
+                $establishedTypography = if($system -and $system.Established) {
+                    'Since {0}' -f ((Parse-Date $system.Established).Year)
+                }
+                else {
+                    'Copyright 2025'
+                }
+
+                New-UDTypography -Text $establishedTypography -Variant h5 -Style @{
                     textAlign = 'center'
                     opacity = '0.9'
                     marginBottom = '10px'
                 }
-                New-UDTypography -Text "Quality over quantity - mostly because we don't have room for more" -Variant body1 -Style @{
+
+                $missionTypography = if($system -and $system.MissionStatement){
+                    '{0}' -f $system.MissionStatement
+                }
+                else {
+                    'Quality cattle, even better management'
+                }
+
+                New-UDTypography -Text $missionTypography -Variant body1 -Style @{
                     textAlign = 'center'
                     opacity = '0.85'
                 }
@@ -30,6 +54,16 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
         }
     }
     
+    # First-run banner: prompt to run Setup if system settings are not configured
+    $system = Get-SystemInfo
+    if (-not $system -or -not $system.FarmName) {
+        New-UDCard -Style @{backgroundColor = '#fff3f3'; borderLeft = '4px solid #d32f2f'; marginBottom = '20px'} -Content {
+            New-UDTypography -Text '⚠️ Setup required' -Variant h6 -Style @{color = '#d32f2f'; fontWeight = 'bold'}
+            New-UDTypography -Text 'This Herd Manager instance is not yet configured. Please run the setup wizard to configure farm name, currency, and preferences.' -Variant body2 -Style @{marginBottom = '12px'}
+            New-UDButton -Text 'Run Setup' -Variant contained -Style @{backgroundColor = '#d32f2f'; color = 'white'} -OnClick { Invoke-UDRedirect -Url '/setup' }
+        }
+    }
+
     # Quick Stats Dashboard (Dynamic - can be populated with real data)
     New-UDDynamic -Id 'quick-stats' -Content {
         New-UDGrid -Container -Spacing 3 -Content {
@@ -84,7 +118,7 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
                         }
                         try {
                             $weightQuery = "SELECT COUNT(*) as Count FROM WeightRecords WHERE WeightDate >= DATE('now', '-30 days')"
-                            $weightCount = (Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $weightQuery).Count
+                            $weightCount = (Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $weightQuery).Count
                             New-UDTypography -Text $weightCount -Variant h4 -Style @{
                                 textAlign = 'center'
                                 fontWeight = 'bold'
@@ -124,7 +158,7 @@ FROM RateOfGainCalculations rog
 INNER JOIN Cattle c ON rog.CattleID = c.CattleID
 WHERE c.Status = 'Active'
 "@
-                            $avgADG = (Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $rogQuery).AvgADG
+                            $avgADG = (Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $rogQuery).AvgADG
                             if ($avgADG) {
                                 New-UDTypography -Text "$([Math]::Round($avgADG, 2)) lbs" -Variant h4 -Style @{
                                     textAlign = 'center'
@@ -168,7 +202,7 @@ WHERE c.Status = 'Active'
                         }
                         try {
                             $healthQuery = "SELECT COUNT(*) as Count FROM HealthRecords WHERE RecordDate >= DATE('now', '-30 days')"
-                            $healthCount = (Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $healthQuery).Count
+                            $healthCount = (Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $healthQuery).Count
                             New-UDTypography -Text $healthCount -Variant h4 -Style @{
                                 textAlign = 'center'
                                 fontWeight = 'bold'
@@ -517,22 +551,10 @@ WHERE c.Status = 'Active'
     }
     
     New-UDElement -Tag 'br'
-    New-UDElement -Tag 'br'
-    
-    # Footer
-    New-UDCard -Style @{
-        textAlign = 'center'
-        padding = '20px'
-        marginTop = '30px'
-        opacity = 0.6
-    } -Content {
-        New-UDTypography -Text "🌾 Gundy Ridge Herd Manager 🌾" -Variant body2 -Style @{
-            color = '#666'
-            marginBottom = '5px'
-        }
-        New-UDTypography -Text "Empowering farmers with modern herd management tools" -Variant body2 -Style @{
-            color = '#999'
-            fontSize = '0.875rem'
-        }
-    }
 }
+
+
+
+
+
+

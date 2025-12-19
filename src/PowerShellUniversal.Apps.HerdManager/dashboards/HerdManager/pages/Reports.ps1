@@ -150,25 +150,7 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
         New-UDTab -Text "Rate of Gain" -Icon (New-UDIcon -Icon ChartLine) -Content {
             New-UDDynamic -Content {
                 
-                $rogQuery = @"
-SELECT 
-    c.CattleID,
-    c.TagNumber,
-    c.Name,
-    c.OriginFarm,
-    c.Gender,
-    rog.AverageDailyGain,
-    CAST(rog.StartDate AS TEXT) as StartDate,
-    CAST(rog.EndDate AS TEXT) as EndDate,
-    rog.TotalWeightGain,
-    rog.DaysBetween
-FROM RateOfGainCalculations rog
-INNER JOIN Cattle c ON rog.CattleID = c.CattleID
-WHERE c.Status = 'Active'
-ORDER BY rog.EndDate DESC
-"@
-                
-                $rogData = Invoke-SqliteQuery -DataSource $script:DatabasePath -Query $rogQuery -As PSObject
+                $rogData = Get-RateOfGainHistory -Limit 100
                 
                 if ($rogData -and $rogData.Count -gt 0) {
                     
@@ -540,7 +522,7 @@ ORDER BY rog.EndDate DESC
                                 if ($EventData.CattleName) { $EventData.CattleName } else { '-' }
                             }
                             New-UDTableColumn -Property RecordDate -Title "Date" -Render {
-                                ([DateTime]$EventData.RecordDate).ToString('MM/dd/yyyy')
+                                Format-Date $EventData.RecordDate
                             }
                             New-UDTableColumn -Property RecordType -Title "Type"
                             New-UDTableColumn -Property Title -Title "Title"
@@ -559,3 +541,9 @@ ORDER BY rog.EndDate DESC
         }
     }
 }
+
+
+
+
+
+

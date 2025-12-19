@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS Farms (
     PhoneNumber VARCHAR(20),
     Email VARCHAR(100),
     ContactPerson VARCHAR(100),
+    Established DATE,
     Notes TEXT,
     IsOrigin INTEGER DEFAULT 0,
     IsActive INTEGER DEFAULT 1,
@@ -222,4 +223,26 @@ CREATE INDEX IF NOT EXISTS idx_invoice_date ON Invoices(InvoiceDate);
 -- Index for invoice line items
 CREATE INDEX IF NOT EXISTS idx_line_item_invoice ON InvoiceLineItems(InvoiceID);
 CREATE INDEX IF NOT EXISTS idx_line_item_cattle ON InvoiceLineItems(CattleID);
+
+-- Table: SystemInfo
+-- Stores global system settings for the instance (single row)
+CREATE TABLE IF NOT EXISTS SystemInfo (
+    SystemID INTEGER PRIMARY KEY AUTOINCREMENT,
+    FarmName VARCHAR(200),
+    Address TEXT,
+    City VARCHAR(100),
+    State VARCHAR(50),
+    ZipCode VARCHAR(20),
+    PhoneNumber VARCHAR(20),
+    Email VARCHAR(100),
+    ContactPerson VARCHAR(100),
+    Established DATE,
+    Notes TEXT,
+    DefaultCurrency VARCHAR(10) DEFAULT 'USD',
+    DefaultCulture VARCHAR(10) DEFAULT 'en-US',
+    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ModifiedDate DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_systeminfo_id ON SystemInfo(SystemID);
 

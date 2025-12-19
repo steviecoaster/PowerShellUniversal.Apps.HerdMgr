@@ -35,18 +35,20 @@ function Remove-CattleRecord {
         [int]$CattleID
     )
     
-    $query = @"
-DELETE FROM Cattle
-WHERE CattleID = @CattleID
-"@
-    
-    $params = @{
-        DataSource = $script:DatabasePath
-        Query = $query
-        SqlParameters = @{
-            CattleID = $CattleID
-        }
+    $cattleIdValue = ConvertTo-SqlValue -Value $CattleID
+    $query = "DELETE FROM Cattle WHERE CattleID = $cattleIdValue"
+
+    try {
+        Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
+        Write-Verbose "Removed cattle record ID $CattleID"
     }
-    
-    Invoke-SqliteQuery @params
+    catch {
+        throw $_
+    }
 }
+
+
+
+
+
+

@@ -91,7 +91,7 @@ $animalreport = New-UDPage -Name "Animal Report" -Icon (New-UDIcon -Icon FileAlt
             # Calculate age if birth date available
             $age = if ($animal.BirthDate) {
                 try {
-                    $birthDate = [DateTime]::Parse($animal.BirthDate)
+                    $birthDate = Parse-Date $animal.BirthDate
                     $ageInDays = ([DateTime]::Now - $birthDate).Days
                     if ($ageInDays -lt 30) {
                         "$ageInDays days"
@@ -145,14 +145,14 @@ $animalreport = New-UDPage -Name "Animal Report" -Icon (New-UDIcon -Icon FileAlt
             
             $daysInHerd = if ($animal.PurchaseDate) {
                 try {
-                    $purchaseDate = [DateTime]::Parse($animal.PurchaseDate)
+                    $purchaseDate = Parse-Date $animal.PurchaseDate
                     ([DateTime]::Now - $purchaseDate).Days
                 } catch {
                     $null
                 }
             } elseif ($animal.BirthDate) {
                 try {
-                    $birthDate = [DateTime]::Parse($animal.BirthDate)
+                    $birthDate = Parse-Date $animal.BirthDate
                     ([DateTime]::Now - $birthDate).Days
                 } catch {
                     $null
@@ -283,11 +283,8 @@ $animalreport = New-UDPage -Name "Animal Report" -Icon (New-UDIcon -Icon FileAlt
                     # Weight trend chart
                     if ($weightHistory.Count -gt 1) {
                         $chartData = $weightHistory | Sort-Object WeightDate | ForEach-Object {
-                            $dateStr = try {
-                                ([DateTime]::Parse($_.WeightDate)).ToString('MM/dd/yyyy')
-                            } catch {
-                                $_.WeightDate -replace ' \d{2}:\d{2}:\d{2}.*$', ''
-                            }
+                            $dateStr = Format-Date $_.WeightDate
+                            if ($dateStr -eq '-') { $dateStr = $_.WeightDate -replace ' \d{2}:\d{2}:\d{2}.*$', '' }
                             [PSCustomObject]@{
                                 Date = $dateStr
                                 Weight = [decimal]$_.Weight
@@ -327,13 +324,10 @@ $animalreport = New-UDPage -Name "Animal Report" -Icon (New-UDIcon -Icon FileAlt
                     }
                     
                     # Weight records table
-                    New-UDTable -Data $weightHistory -Columns @(
+                        New-UDTable -Data $weightHistory -Columns @(
                         New-UDTableColumn -Property WeightDate -Title "Date" -Render {
-                            try {
-                                ([DateTime]::Parse($EventData.WeightDate)).ToString('MM/dd/yyyy')
-                            } catch {
-                                $EventData.WeightDate -replace ' \d{2}:\d{2}:\d{2}.*$', ''
-                            }
+                            $fd = Format-Date $EventData.WeightDate
+                            if ($fd -ne '-') { $fd } else { $EventData.WeightDate -replace ' \d{2}:\d{2}:\d{2}.*$', '' }
                         }
                         New-UDTableColumn -Property Weight -Title "Weight (lbs)"
                         New-UDTableColumn -Property WeightUnit -Title "Unit"
@@ -356,12 +350,12 @@ $animalreport = New-UDPage -Name "Animal Report" -Icon (New-UDIcon -Icon FileAlt
                         marginBottom = '20px'
                     }
                     
-                    New-UDTable -Data $rogHistory -Columns @(
+                        New-UDTable -Data $rogHistory -Columns @(
                         New-UDTableColumn -Property StartDate -Title "Start Date" -Render {
-                            $EventData.StartDate -replace ' \d{2}:\d{2}:\d{2}.*$', ''
+                            Format-Date $EventData.StartDate
                         }
                         New-UDTableColumn -Property EndDate -Title "End Date" -Render {
-                            $EventData.EndDate -replace ' \d{2}:\d{2}:\d{2}.*$', ''
+                            Format-Date $EventData.EndDate
                         }
                         New-UDTableColumn -Property DaysBetween -Title "Days"
                         New-UDTableColumn -Property StartWeight -Title "Start (lbs)"
@@ -386,23 +380,17 @@ $animalreport = New-UDPage -Name "Animal Report" -Icon (New-UDIcon -Icon FileAlt
                         marginBottom = '20px'
                     }
                     
-                    New-UDTable -Data $healthRecords -Columns @(
+                        New-UDTable -Data $healthRecords -Columns @(
                         New-UDTableColumn -Property RecordDate -Title "Date" -Render {
-                            try {
-                                ([DateTime]::Parse($EventData.RecordDate)).ToString('MM/dd/yyyy')
-                            } catch {
-                                $EventData.RecordDate -replace ' \d{2}:\d{2}:\d{2}.*$', ''
-                            }
+                            $fd = Format-Date $EventData.RecordDate
+                            if ($fd -ne '-') { $fd } else { $EventData.RecordDate -replace ' \d{2}:\d{2}:\d{2}.*$', '' }
                         }
                         New-UDTableColumn -Property RecordType -Title "Type"
                         New-UDTableColumn -Property Title -Title "Title"
                         New-UDTableColumn -Property NextDueDate -Title "Next Due" -Render {
                             if ($EventData.NextDueDate) {
-                                try {
-                                    ([DateTime]::Parse($EventData.NextDueDate)).ToString('MM/dd/yyyy')
-                                } catch {
-                                    $EventData.NextDueDate -replace ' \d{2}:\d{2}:\d{2}.*$', ''
-                                }
+                                $fd = Format-Date $EventData.NextDueDate
+                                if ($fd -ne '-') { $fd } else { $EventData.NextDueDate -replace ' \d{2}:\d{2}:\d{2}.*$', '' }
                             } else {
                                 'N/A'
                             }
@@ -428,3 +416,9 @@ $animalreport = New-UDPage -Name "Animal Report" -Icon (New-UDIcon -Icon FileAlt
         }
     }
 }
+
+
+
+
+
+

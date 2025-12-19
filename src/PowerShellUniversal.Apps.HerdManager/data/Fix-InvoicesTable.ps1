@@ -28,19 +28,19 @@ Write-Host "Migrating Invoices table to support multi-cattle invoices..." -Foreg
 Write-Host "Database: $DatabasePath" -ForegroundColor Cyan
 
 try {
-    # Import PSSQLite module
-    if (-not (Get-Module -ListAvailable -Name PSSQLite)) {
-        Write-Error "PSSQLite module not found. Please install it first: Install-Module PSSQLite"
+    # Import MySQLite module
+    if (-not (Get-Module -ListAvailable -Name MySQLite)) {
+        Write-Error "MySQLite module not found. Please install it first: Install-Module MySQLite"
         exit 1
     }
     
-    Import-Module PSSQLite -ErrorAction Stop
+    Import-Module MySQLite -ErrorAction Stop
     
     Write-Host "Checking current table structure..." -ForegroundColor Yellow
     
     # Check if we need to migrate
     $checkQuery = "PRAGMA table_info(Invoices);"
-    $tableInfo = Invoke-SqliteQuery -DataSource $DatabasePath -Query $checkQuery -As PSObject
+    $tableInfo = Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $checkQuery
     
     $cattleIdColumn = $tableInfo | Where-Object { $_.name -eq 'CattleID' }
     
@@ -52,12 +52,12 @@ try {
     Write-Host "Migration needed. Starting transaction..." -ForegroundColor Yellow
     
     # Begin transaction
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query "BEGIN TRANSACTION;"
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "BEGIN TRANSACTION;"
     
     try {
         # Step 1: Rename existing table
         Write-Host "  1. Backing up existing Invoices table..." -ForegroundColor Yellow
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query "ALTER TABLE Invoices RENAME TO Invoices_OLD;"
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "ALTER TABLE Invoices RENAME TO Invoices_OLD;"
         
         # Step 2: Create new table with correct schema
         Write-Host "  2. Creating new Invoices table with nullable CattleID..." -ForegroundColor Yellow
@@ -80,7 +80,7 @@ CREATE TABLE Invoices (
     FOREIGN KEY (CattleID) REFERENCES Cattle(CattleID)
 );
 "@
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query $createNewTable
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $createNewTable
         
         # Step 3: Copy data from old table
         Write-Host "  3. Copying existing invoice data..." -ForegroundColor Yellow
@@ -96,20 +96,20 @@ SELECT
     CreatedBy, CreatedDate
 FROM Invoices_OLD;
 "@
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query $copyData
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $copyData
         
         # Step 4: Recreate indexes
         Write-Host "  4. Recreating indexes..." -ForegroundColor Yellow
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query "CREATE INDEX IF NOT EXISTS idx_invoice_number ON Invoices(InvoiceNumber);"
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query "CREATE INDEX IF NOT EXISTS idx_invoice_cattle ON Invoices(CattleID);"
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query "CREATE INDEX IF NOT EXISTS idx_invoice_date ON Invoices(InvoiceDate);"
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "CREATE INDEX IF NOT EXISTS idx_invoice_number ON Invoices(InvoiceNumber);"
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "CREATE INDEX IF NOT EXISTS idx_invoice_cattle ON Invoices(CattleID);"
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "CREATE INDEX IF NOT EXISTS idx_invoice_date ON Invoices(InvoiceDate);"
         
         # Step 5: Drop old table
         Write-Host "  5. Removing backup table..." -ForegroundColor Yellow
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query "DROP TABLE Invoices_OLD;"
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "DROP TABLE Invoices_OLD;"
         
         # Commit transaction
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query "COMMIT;"
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "COMMIT;"
         
         Write-Host "✓ Migration completed successfully!" -ForegroundColor Green
         Write-Host ""
@@ -124,7 +124,7 @@ FROM Invoices_OLD;
     catch {
         # Rollback on error
         Write-Host "Error during migration. Rolling back..." -ForegroundColor Red
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query "ROLLBACK;" -ErrorAction SilentlyContinue
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "ROLLBACK;" -ErrorAction SilentlyContinue
         throw
     }
 }
@@ -133,3 +133,8 @@ catch {
     Write-Error $_.ScriptStackTrace
     exit 1
 }
+
+
+
+
+

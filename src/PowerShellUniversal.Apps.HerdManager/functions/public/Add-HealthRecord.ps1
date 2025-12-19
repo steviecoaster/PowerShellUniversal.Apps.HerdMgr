@@ -36,10 +36,10 @@ function Add-HealthRecord {
     .PARAMETER Cost
     Cost of the treatment or veterinary visit
     
-    .PARAMETER FollowUpDate
-    Date when follow-up care is needed
+    .PARAMETER NextDueDate
+    Date when follow-up care is needed (for vaccinations or follow-up treatments)
     
-    .PARAMETER PerformedBy
+    .PARAMETER RecordedBy
     Name of the person who administered treatment or recorded the observation
     
     .PARAMETER Notes
@@ -51,7 +51,7 @@ function Add-HealthRecord {
     Records a basic vaccination event
     
     .EXAMPLE
-    Add-HealthRecord -CattleID 12 -RecordDate "2025-12-01" -RecordType "Treatment" -Title "Respiratory Infection" -Description "Treated for respiratory symptoms" -Medication "Antibiotic 10cc IM" -VeterinarianName "Dr. Sarah Johnson" -Cost 75.00 -FollowUpDate "2025-12-10" -PerformedBy "John Smith"
+    Add-HealthRecord -CattleID 12 -RecordDate "2025-12-01" -RecordType "Treatment" -Title "Respiratory Infection" -Description "Treated for respiratory symptoms" -Medication "Antibiotic 10cc IM" -VeterinarianName "Dr. Sarah Johnson" -Cost 75.00 -NextDueDate "2025-12-10" -RecordedBy "John Smith"
     
     Records a complete treatment with full details
     
@@ -96,43 +96,49 @@ function Add-HealthRecord {
         [decimal]
         $Cost,
         
-        [Parameter()]
-        [DateTime]
-        $NextDueDate,
+    [Parameter()]
+    [Alias('FollowUpDate')]
+    [DateTime]
+    $NextDueDate,
         
         [Parameter()]
         [string]
         $Notes,
         
-        [Parameter()]
-        [ValidateSet('Brandon','Jerry','Stephanie')]
-        [string]
-        $RecordedBy
+    [Parameter()]
+    [Alias('PerformedBy')]
+    [ValidateSet('Brandon','Jerry','Stephanie')]
+    [string]
+    $RecordedBy
     )
     
-    $query = @"
-INSERT INTO HealthRecords (CattleID, RecordDate, RecordType, Title, Description, VeterinarianName, Medication, Dosage, Cost, NextDueDate, Notes, RecordedBy)
-VALUES (@CattleID, @RecordDate, @RecordType, @Title, @Description, @VeterinarianName, @Medication, @Dosage, @Cost, @NextDueDate, @Notes, @RecordedBy)
-"@
-    
-    $params = @{
-        DataSource = $script:DatabasePath
-        Query = $query
-        SqlParameters = @{
-            CattleID = $CattleID
-            RecordDate = $RecordDate
-            RecordType = $RecordType
-            Title = $Title
-            Description = $Description
-            VeterinarianName = $VeterinarianName
-            Medication = $Medication
-            Dosage = $Dosage
-            Cost = $Cost
-            NextDueDate = $NextDueDate
-            Notes = $Notes
-            RecordedBy = $RecordedBy
-        }
+    # Convert values to SQL-safe representations
+    $cattleIdValue = ConvertTo-SqlValue -Value $CattleID
+    $recordDateValue = ConvertTo-SqlValue -Value $RecordDate
+    $recordTypeValue = ConvertTo-SqlValue -Value $RecordType
+    $titleValue = ConvertTo-SqlValue -Value $Title
+    $descriptionValue = ConvertTo-SqlValue -Value $Description
+    $vetValue = ConvertTo-SqlValue -Value $VeterinarianName
+    $medValue = ConvertTo-SqlValue -Value $Medication
+    $dosageValue = ConvertTo-SqlValue -Value $Dosage
+    $costValue = ConvertTo-SqlValue -Value $Cost
+    $nextDueValue = ConvertTo-SqlValue -Value $NextDueDate
+    $notesValue = ConvertTo-SqlValue -Value $Notes
+    $recordedByValue = ConvertTo-SqlValue -Value $RecordedBy
+
+    $query = "INSERT INTO HealthRecords (CattleID, RecordDate, RecordType, Title, Description, VeterinarianName, Medication, Dosage, Cost, NextDueDate, Notes, RecordedBy) VALUES ($cattleIdValue, $recordDateValue, $recordTypeValue, $titleValue, $descriptionValue, $vetValue, $medValue, $dosageValue, $costValue, $nextDueValue, $notesValue, $recordedByValue)"
+
+    try {
+        Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
+        Write-Verbose "Health record added for CattleID $CattleID on $(Format-Date $RecordDate)"
     }
-    
-    Invoke-SqliteQuery @params
+    catch {
+        throw $_
+    }
 }
+
+
+
+
+
+

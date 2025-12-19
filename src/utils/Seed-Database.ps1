@@ -32,14 +32,14 @@ INSERT INTO Cattle (TagNumber, OriginFarm, Name, Breed, Gender, BirthDate, Purch
 VALUES ('$tagNumber', '$originFarm', $(if($name){"'$name'"}else{'NULL'}), $(if($breed){"'$breed'"}else{'NULL'}), '$gender', '$birthDate', '$purchaseDate', '$status');
 "@
     
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $insertCattle
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $insertCattle
     Write-Host "  ✓ Created: $tagNumber $(if($name){"($name)"}else{''}) [$status]" -ForegroundColor Gray
 }
 
 Write-Host "`nAdding weight records over 6 months..." -ForegroundColor Yellow
 
 # Get all active cattle
-$cattle = Invoke-SqliteQuery -DataSource $DatabasePath -Query "SELECT CattleID, TagNumber FROM Cattle WHERE Status = 'Active'"
+$cattle = Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "SELECT CattleID, TagNumber FROM Cattle WHERE Status = 'Active'"
 
 foreach ($animal in $cattle) {
     # Starting weight (400-600 lbs)
@@ -65,7 +65,7 @@ INSERT INTO WeightRecords (CattleID, WeightDate, Weight, WeightUnit, Measurement
 VALUES ($($animal.CattleID), '$($weightDate.ToString('yyyy-MM-dd'))', $([Math]::Round($currentWeight, 2)), 'lbs', '$method', '$person');
 "@
         
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query $insertWeight
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $insertWeight
     }
     Write-Host "  ✓ Added weight history for $($animal.TagNumber)" -ForegroundColor Gray
 }
@@ -74,7 +74,7 @@ Write-Host "`nCalculating Rate of Gain..." -ForegroundColor Yellow
 
 # Calculate ROG for all cattle
 foreach ($animal in $cattle) {
-    $weights = Invoke-SqliteQuery -DataSource $DatabasePath -Query "SELECT WeightRecordID, WeightDate, Weight FROM WeightRecords WHERE CattleID = $($animal.CattleID) ORDER BY WeightDate"
+    $weights = Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "SELECT WeightRecordID, WeightDate, Weight FROM WeightRecords WHERE CattleID = $($animal.CattleID) ORDER BY WeightDate"
     
     if ($weights.Count -ge 2) {
         for ($i = 0; $i -lt ($weights.Count - 1); $i++) {
@@ -96,7 +96,7 @@ VALUES
 "@
             
             try {
-                Invoke-SqliteQuery -DataSource $DatabasePath -Query $insertROG
+                Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $insertROG
             } catch {
                 # Skip duplicates
             }
@@ -153,7 +153,7 @@ VALUES
 $medValue, $dosageValue, $costValue, $nextDue, '$person');
 "@
         
-        Invoke-SqliteQuery -DataSource $DatabasePath -Query $insertHealth
+        Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $insertHealth
     }
     Write-Host "  ✓ Added health records for $($animal.TagNumber)" -ForegroundColor Gray
 }
@@ -174,21 +174,25 @@ VALUES
 '$($futureDate.ToString('yyyy-MM-dd'))', 'Brandon');
 "@
     
-    Invoke-SqliteQuery -DataSource $DatabasePath -Query $insertUpcoming
+    Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query $insertUpcoming
     Write-Host "  ✓ Scheduled booster for $($animal.TagNumber) on $($futureDate.ToString('MM/dd/yyyy'))" -ForegroundColor Gray
 }
 
 Write-Host "`n✅ Database seeding complete!`n" -ForegroundColor Green
 
 # Summary stats
-$totalCattle = (Invoke-SqliteQuery -DataSource $DatabasePath -Query "SELECT COUNT(*) as Count FROM Cattle").Count
-$activeCattle = (Invoke-SqliteQuery -DataSource $DatabasePath -Query "SELECT COUNT(*) as Count FROM Cattle WHERE Status='Active'").Count
-$totalWeights = (Invoke-SqliteQuery -DataSource $DatabasePath -Query "SELECT COUNT(*) as Count FROM WeightRecords").Count
-$totalROG = (Invoke-SqliteQuery -DataSource $DatabasePath -Query "SELECT COUNT(*) as Count FROM RateOfGainCalculations").Count
-$totalHealth = (Invoke-SqliteQuery -DataSource $DatabasePath -Query "SELECT COUNT(*) as Count FROM HealthRecords").Count
+$totalCattle = (Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "SELECT COUNT(*) as Count FROM Cattle").Count
+$activeCattle = (Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "SELECT COUNT(*) as Count FROM Cattle WHERE Status='Active'").Count
+$totalWeights = (Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "SELECT COUNT(*) as Count FROM WeightRecords").Count
+$totalROG = (Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "SELECT COUNT(*) as Count FROM RateOfGainCalculations").Count
+$totalHealth = (Invoke-UniversalSQLiteQuery -Path $DatabasePath -Query "SELECT COUNT(*) as Count FROM HealthRecords").Count
 
 Write-Host "Summary:" -ForegroundColor Cyan
 Write-Host "  - Total Cattle: $totalCattle ($activeCattle active)" -ForegroundColor White
 Write-Host "  - Weight Records: $totalWeights" -ForegroundColor White
 Write-Host "  - ROG Calculations: $totalROG" -ForegroundColor White
 Write-Host "  - Health Records: $totalHealth" -ForegroundColor White
+
+
+
+

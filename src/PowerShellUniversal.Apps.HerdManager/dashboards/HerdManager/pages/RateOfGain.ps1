@@ -51,7 +51,8 @@ $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
                     New-UDSelectOption -Name $displayText -Value $animal.CattleID
                 }
             } -OnChange {
-                # Update weight history when cattle is selected
+                # Clear previous results and update weight history when cattle is selected
+                Clear-UDElement -Id 'rog-results'
                 Sync-UDElement -Id 'weight-history-grid'
                 Sync-UDElement -Id 'rog-history-grid'
             } -FullWidth
@@ -99,8 +100,8 @@ $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
                 
             # Convert date values to DateTime objects
             try {
-                $startDate = [DateTime]::Parse($startDateValue)
-                $endDate = [DateTime]::Parse($endDateValue)
+                $startDate = Parse-Date $startDateValue
+                $endDate = Parse-Date $endDateValue
             }
             catch {
                 Show-UDToast -Message "Invalid date format. Error: $($_.Exception.Message)" -MessageColor red
@@ -133,7 +134,7 @@ $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
                                 New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -Content {
                                     New-UDPaper -Style @{padding = '15px' } -Content {
                                         New-UDTypography -Text "📅 Period" -Variant body2 -Style @{marginBottom = '5px'; opacity = 0.7 }
-                                        New-UDTypography -Text "$($result.StartDate.ToString('MM/dd/yyyy')) to $($result.EndDate.ToString('MM/dd/yyyy'))" -Variant body1 -Style @{fontWeight = 'bold' }
+                                        New-UDTypography -Text "$(Format-Date $result.StartDate) to $(Format-Date $result.EndDate)" -Variant body1 -Style @{fontWeight = 'bold' }
                                     }
                                 }
                                 New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -Content {
@@ -200,29 +201,25 @@ $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
                             $allWeights = Get-WeightHistory -CattleID $cattleId
                             $filteredWeights = @()
                                 
-                            foreach ($record in $allWeights) {
-                                try {
-                                    $recordDate = [DateTime]::Parse($record.WeightDate)
-                                    if ($recordDate -ge $startDate -and $recordDate -le $endDate) {
-                                        $filteredWeights += $record
+                                foreach ($record in $allWeights) {
+                                    try {
+                                        $recordDate = Parse-Date $record.WeightDate
+                                        if ($recordDate -ge $startDate -and $recordDate -le $endDate) {
+                                            $filteredWeights += $record
+                                        }
+                                    }
+                                    catch {
+                                        # Skip records with bad dates
                                     }
                                 }
-                                catch {
-                                    # Skip records with bad dates
-                                }
-                            }
                                 
                             $filteredWeights = $filteredWeights | Sort-Object WeightDate
                                 
-                            if ($filteredWeights -and $filteredWeights.Count -gt 1) {
+                                if ($filteredWeights -and $filteredWeights.Count -gt 1) {
                                 # Prepare chart data - convert to objects with friendly date labels
                                 $chartData = $filteredWeights | ForEach-Object {
-                                    try {
-                                        $dateStr = ([DateTime]::Parse($_.WeightDate)).ToString('MM/dd/yyyy')
-                                    }
-                                    catch {
-                                        $dateStr = $_.WeightDate -replace ' \d{2}:\d{2}:\d{2}.*$', ''
-                                    }
+                                        $dateStr = Format-Date $_.WeightDate
+                                        if ($dateStr -eq '-') { $dateStr = $_.WeightDate -replace ' \d{2}:\d{2}:\d{2}.*$', '' }
                                     [PSCustomObject]@{
                                         Date   = $dateStr
                                         Weight = [decimal]$_.Weight
@@ -315,10 +312,10 @@ $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
                 $weightHistory = Get-WeightHistory -CattleID $cattleId
                     
                 if ($weightHistory) {
-                    New-UDTable -Data $weightHistory -Columns @(
+                        New-UDTable -Data $weightHistory -Columns @(
                         New-UDTableColumn -Property WeightDate -Title "Date" -Render {
                             New-UDElement -Tag 'div' -Content { 
-                                [DateTime]::Parse($EventData.WeightDate).ToString('MM/dd/yyyy')
+                                Format-Date $EventData.WeightDate
                             }
                         }
                         New-UDTableColumn -Property Weight -Title "Weight"
@@ -401,3 +398,8 @@ $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
         }
     }
 }
+
+
+
+
+

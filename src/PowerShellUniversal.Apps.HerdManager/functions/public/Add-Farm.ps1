@@ -68,27 +68,35 @@ function Add-Farm {
         [switch]$IsOrigin
     )
     
-    $query = @"
-INSERT INTO Farms (FarmName, Address, City, State, ZipCode, PhoneNumber, Email, ContactPerson, Notes, IsOrigin, IsActive)
-VALUES (@FarmName, @Address, @City, @State, @ZipCode, @PhoneNumber, @Email, @ContactPerson, @Notes, @IsOrigin, 1)
-"@
-    
-    $params = @{
-        DataSource = $script:DatabasePath
-        Query = $query
-        SqlParameters = @{
-            FarmName = $FarmName
-            Address = $Address
-            City = $City
-            State = $State
-            ZipCode = $ZipCode
-            PhoneNumber = $PhoneNumber
-            Email = $Email
-            ContactPerson = $ContactPerson
-            Notes = $Notes
-            IsOrigin = if ($IsOrigin) { 1 } else { 0 }
+    # Convert values
+    $farmNameValue = ConvertTo-SqlValue -Value $FarmName
+    $addressValue = ConvertTo-SqlValue -Value $Address
+    $cityValue = ConvertTo-SqlValue -Value $City
+    $stateValue = ConvertTo-SqlValue -Value $State
+    $zipValue = ConvertTo-SqlValue -Value $ZipCode
+    $phoneValue = ConvertTo-SqlValue -Value $PhoneNumber
+    $emailValue = ConvertTo-SqlValue -Value $Email
+    $contactValue = ConvertTo-SqlValue -Value $ContactPerson
+    $notesValue = ConvertTo-SqlValue -Value $Notes
+    $isOriginValue = ConvertTo-SqlValue -Value $IsOrigin.IsPresent
+
+    $query = "INSERT INTO Farms (FarmName, Address, City, State, ZipCode, PhoneNumber, Email, ContactPerson, Notes, IsOrigin, IsActive) VALUES ($farmNameValue, $addressValue, $cityValue, $stateValue, $zipValue, $phoneValue, $emailValue, $contactValue, $notesValue, $isOriginValue, 1)"
+
+    try {
+        Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
+        Write-Verbose "Created farm: $FarmName"
+    }
+    catch {
+        if ($_.Exception.Message -like '*UNIQUE constraint failed*') {
+            throw "A farm with the name '$FarmName' already exists."
+        } else {
+            throw $_
         }
     }
-    
-    Invoke-SqliteQuery @params
 }
+
+
+
+
+
+

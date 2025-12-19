@@ -1,8 +1,6 @@
 $invoicePage = New-UDPage -Name "Invoice" -Url "/invoice/:invoiceNumber" -Blank -Content {
     $invoiceNumber = $InvoiceNumber
     
-    $dbPath = $script:DatabasePath
-    
     # Get invoice details
     $invoiceData = Get-Invoice -InvoiceNumber $invoiceNumber
     
@@ -136,30 +134,39 @@ $invoicePage = New-UDPage -Name "Invoice" -Url "/invoice/:invoiceNumber" -Blank 
 '@ -Content {
         New-UDElement -Tag 'div' -Attributes @{class = 'invoice-container' } -Content {
             # Header
-            $invoiceDate = [DateTime]::Parse($invoiceData.InvoiceDate)
+            $invoiceDate = Parse-Date $invoiceData.InvoiceDate
             $dueDate = $invoiceDate.AddDays(30)
+
+            # Use system-level info if configured
+            $system = Get-SystemInfo
+            $companyName = if ($system -and $system.FarmName) { $system.FarmName } else { 'Acme Fictitious Ranch' }
+            $companyAddress1 = if ($system -and $system.Address) { $system.Address } else { '42 Imaginary Way' }
+            $companyCityStateZip = if ($system -and ($system.City -or $system.State -or $system.ZipCode)) { "$($system.City) $($system.State) $($system.ZipCode)" } else { 'Nowhere, ZZ 00000' }
+            $companyPhone = if ($system -and $system.PhoneNumber) { $system.PhoneNumber } else { '(000) 000-0000' }
+            $companyEmail = if ($system -and $system.Email) { $system.Email } else { 'billing@example.invalid' }
+
             $headerHtml = @"
 <div class="invoice-header">
     <div style="display: flex; justify-content: space-between;">
         <div>
-            <h2 style="color: #2e7d32; font-weight: bold; margin: 0;">🐄 Gundy Ridge Farms</h2>
+            <h2 style="color: #2e7d32; font-weight: bold; margin: 0;">$companyName</h2>
         </div>
         <div style="text-align: right;">
-            <p style="margin: 2px 0;">123 Farm Road</p>
-            <p style="margin: 2px 0;">Gundy Ridge, State 12345</p>
-            <p style="margin: 2px 0;">Phone: (555) 123-4567</p>
-            <p style="margin: 2px 0;">Email: billing@gundyridge.farm</p>
+            <p style="margin: 2px 0;">$companyAddress1</p>
+            <p style="margin: 2px 0;">$companyCityStateZip</p>
+            <p style="margin: 2px 0;">Phone: $companyPhone</p>
+            <p style="margin: 2px 0;">Email: $companyEmail</p>
         </div>
     </div>
     <div style="display: flex; justify-content: space-between; margin-top: 20px;">
         <div>
             <p style="font-size: 1.1em; font-weight: bold; margin: 5px 0;">Invoice #: $($invoiceData.InvoiceNumber)</p>
-            <p style="margin: 5px 0;">Date: $($invoiceDate.ToString('MMMM dd, yyyy'))</p>
+            <p style="margin: 5px 0;">Date: $(Format-Date $invoiceDate 'MMMM dd, yyyy')</p>
             <p style="margin: 5px 0; font-size: 0.9em;">Created By: $($invoiceData.CreatedBy)</p>
         </div>
         <div style="text-align: right;">
             <p style="font-weight: bold; margin: 5px 0;">Payment Terms: NET 30</p>
-            <p style="margin: 5px 0;">Due Date: $($dueDate.ToString('MMMM dd, yyyy'))</p>
+            <p style="margin: 5px 0;">Due Date: $(Format-Date $dueDate 'MMMM dd, yyyy')</p>
         </div>
     </div>
 </div>
@@ -233,21 +240,8 @@ $invoicePage = New-UDPage -Name "Invoice" -Url "/invoice/:invoiceNumber" -Blank 
                     # Get cattle details
                     $cattle = Get-CattleById -CattleID $lineItem.CattleID
                     
-                    # Get health records
-                    $healthQuery = @"
-SELECT 
-    CAST(RecordDate AS TEXT) AS RecordDate,
-    RecordType,
-    Title,
-    Description,
-    Cost
-FROM HealthRecords
-WHERE CattleID = @CattleID AND Cost > 0
-ORDER BY RecordDate
-"@
-                    $healthRecords = Invoke-SqliteQuery -DataSource $dbPath -Query $healthQuery -SqlParameters @{
-                        CattleID = $lineItem.CattleID
-                    } -As PSObject
+                    # Get health records with costs for this animal
+                    $healthRecords = Get-HealthRecordsWithCost -CattleID $lineItem.CattleID 
                     
                     # Build line item HTML
                     $lineItemsHtml += @"
@@ -269,7 +263,7 @@ ORDER BY RecordDate
         <div style="margin-left: 20px;">
             <div class="invoice-info-row">
                 <span>Period: </span>
-                <span>$([DateTime]::Parse($lineItem.StartDate).ToString('MM/dd/yyyy')) - $([DateTime]::Parse($lineItem.EndDate).ToString('MM/dd/yyyy'))</span>
+                <span>$(Format-Date $lineItem.StartDate) - $(Format-Date $lineItem.EndDate)</span>
             </div>
             <div class="invoice-info-row">
                 <span>Days on Feed: </span>
@@ -277,11 +271,11 @@ ORDER BY RecordDate
             </div>
             <div class="invoice-info-row">
                 <span>Rate: </span>
-                <span>$([math]::Round($lineItem.PricePerDay, 2).ToString('C2')) per day</span>
+                <span>$(Format-Currency ([math]::Round($lineItem.PricePerDay, 2))) per day</span>
             </div>
             <div class="invoice-info-row">
                 <span style="font-weight: bold;">Feeding Subtotal: </span>
-                <span style="font-weight: bold;">$([math]::Round($lineItem.FeedingCost, 2).ToString('C2'))</span>
+                <span style="font-weight: bold;">$(Format-Currency ([math]::Round($lineItem.FeedingCost, 2)))</span>
             </div>
         </div>
 "@
@@ -303,10 +297,10 @@ ORDER BY RecordDate
             <tbody>
 "@
                         foreach ($record in $healthRecords) {
-                            $date = [DateTime]::Parse($record.RecordDate).ToString('MM/dd/yyyy')
+                            $date = Format-Date $record.RecordDate
                             $type = $record.RecordType
                             $desc = if ($record.Title) { $record.Title } else { $record.Description }
-                            $cost = ([math]::Round($record.Cost, 2)).ToString('C2')
+                            $cost = Format-Currency ([math]::Round($record.Cost, 2))
                             
                             $lineItemsHtml += @"
                 <tr>
@@ -321,7 +315,7 @@ ORDER BY RecordDate
                         $lineItemsHtml += @"
             </tbody>
         </table>
-        <div style="text-align: right; font-weight: bold; margin-top: 10px;">Health Subtotal: $([math]::Round($lineItem.HealthCost, 2).ToString('C2'))</div>
+    <div style="text-align: right; font-weight: bold; margin-top: 10px;">Health Subtotal: $(Format-Currency ([math]::Round($lineItem.HealthCost, 2)))</div>
         </div>
 "@
                     } else {
@@ -332,7 +326,7 @@ ORDER BY RecordDate
                     
                     $lineItemsHtml += @"
         <div style="text-align: right; font-weight: bold; font-size: 1.2em; margin-top: 15px; padding-top: 10px; border-top: 2px solid #2e7d32; color: #2e7d32;">
-            Animal Total: $([math]::Round($lineItem.LineItemTotal, 2).ToString('C2'))
+            Animal Total: $(Format-Currency ([math]::Round($lineItem.LineItemTotal, 2)))
         </div>
     </div>
 "@
@@ -348,21 +342,8 @@ ORDER BY RecordDate
                 # Single-cattle invoice (legacy format)
                 $cattle = Get-CattleById -CattleID $invoiceData.CattleID
                 
-                # Get health records
-                $healthQuery = @"
-SELECT 
-    CAST(RecordDate AS TEXT) AS RecordDate,
-    RecordType,
-    Title,
-    Description,
-    Cost
-FROM HealthRecords
-WHERE CattleID = @CattleID AND Cost > 0
-ORDER BY RecordDate
-"@
-                $healthRecords = Invoke-SqliteQuery -DataSource $dbPath -Query $healthQuery -SqlParameters @{
-                    CattleID = $invoiceData.CattleID
-                } -As PSObject
+                # Get health records with costs for this animal
+                $healthRecords = Get-HealthRecordsWithCost -CattleID $invoiceData.CattleID 
                 
                 # Cattle Information Section
                 New-UDElement -Tag 'div' -Attributes @{class = 'invoice-section' } -Content {
@@ -405,14 +386,14 @@ ORDER BY RecordDate
                         paddingBottom = '5px'
                     }
                     
-                    New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
+                        New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
                         New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Start Date:" }
-                        New-UDElement -Tag 'span' -Content { [DateTime]::Parse($invoiceData.StartDate).ToString('MM/dd/yyyy') }
+                        New-UDElement -Tag 'span' -Content { Format-Date $invoiceData.StartDate }
                     }
                     
-                    New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
+                        New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
                         New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "End Date:" }
-                        New-UDElement -Tag 'span' -Content { [DateTime]::Parse($invoiceData.EndDate).ToString('MM/dd/yyyy') }
+                        New-UDElement -Tag 'span' -Content { Format-Date $invoiceData.EndDate }
                     }
                     
                     New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
@@ -423,12 +404,12 @@ ORDER BY RecordDate
                     New-UDElement -Tag 'div' -Attributes @{class = 'invoice-info-row' } -Content {
                         New-UDElement -Tag 'span' -Attributes @{class = 'invoice-label' } -Content { "Price per Day:" }
                         $ppdValue = [math]::Round($invoiceData.PricePerDay, 2)
-                        $PricePerDay = $ppdValue.ToString('C2')
+                        $PricePerDay = Format-Currency $ppdValue
                         New-UDElement -Tag 'span' -Content { $PricePerDay }
                     }
 
                     $totalFeedingCost = [math]::Round($invoiceData.FeedingCost, 2)
-                    New-UDTypography -Text "Total Feed Cost: $($totalFeedingCost.ToString('C2'))" -Variant body1 -Style @{
+                    New-UDTypography -Text "Total Feed Cost: $(Format-Currency $totalFeedingCost)" -Variant body1 -Style @{
                         fontWeight = 'bold'
                         fontSize   = '1.1em'
                         marginTop  = '15px'
@@ -462,11 +443,11 @@ ORDER BY RecordDate
 "@
                         # Add each health record as a row
                         foreach ($record in $healthRecords) {
-                            $date = [DateTime]::Parse($record.RecordDate).ToString('MM/dd/yyyy')
+                            $date = Format-Date $record.RecordDate
                             $type = $record.RecordType
                             $desc = if ($record.Title) { $record.Title } else { $record.Description }
                             $costValue = [math]::Round($record.Cost, 2)
-                            $cost = $costValue.ToString('C2')
+                            $cost = Format-Currency $costValue
                             
                             $tableHtml += @"
         <tr>
@@ -486,7 +467,7 @@ ORDER BY RecordDate
                         New-UDHtml -Markup $tableHtml
                         
                         $totalHealthCost = [math]::Round($invoiceData.HealthCost, 2)
-                        New-UDTypography -Text "Total Health Cost: $($totalHealthCost.ToString('C2'))" -Variant body1 -Style @{
+                        New-UDTypography -Text "Total Health Cost: $(Format-Currency $totalHealthCost)" -Variant body1 -Style @{
                             fontWeight = 'bold'
                             fontSize   = '1.1em'
                             marginTop  = '15px'
@@ -509,7 +490,7 @@ ORDER BY RecordDate
             # Total Section
             New-UDElement -Tag 'div' -Attributes @{class = 'invoice-total' } -Content {
                 $totalCost = [math]::Round($invoiceData.TotalCost, 2)
-                "TOTAL COST: $($totalCost.ToString('C2'))"
+                "TOTAL COST: $(Format-Currency $totalCost)"
             }
             
             # Notes Section
@@ -540,3 +521,9 @@ ORDER BY RecordDate
         }
     }
 }
+
+
+
+
+
+
