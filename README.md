@@ -195,35 +195,29 @@ Optimized indexes on frequently queried fields for fast performance
 1. **Clone the Repository**
 
    ```powershell
-   git clone https://github.com/steviecoaster/HerdManager.git
-   cd HerdManager
+   git clone https://github.com/steviecoaster/PowerShellUniversal.Apps.HerdMgr.git
+   cd PowerShellUniversal.Apps.HerdMgr
    ```
 
-2. **Install Required Modules**
-
-   ```powershell
-   Install-Module -Name PSSQLite -Scope CurrentUser
-   ```
-
-3. **Import the Module**
+2. **Import the Module**
 
    ```powershell
    Import-Module .\src\PowerShellUniversal.Apps.HerdManager\PowerShellUniversal.Apps.HerdManager.psd1
    ```
 
-4. **Initialize Database** (if starting fresh)
+3. **Initialize Database** (if starting fresh)
 
    ```powershell
    Initialize-HerdDatabase
    ```
 
-5. **Register with PowerShell Universal**
+4. **Register with PowerShell Universal**
 
    - Copy the module to your PSU modules directory, or
    - Use the `.universal\dashboards.ps1` configuration
    - Restart PowerShell Universal service
 
-6. **Access the Dashboard**
+5. **Access the Dashboard**
 
    - Navigate to: `http://localhost:5000/herdmanager` (or your PSU URL)
 
