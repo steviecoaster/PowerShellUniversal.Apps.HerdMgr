@@ -1,10 +1,10 @@
-# 🐄 Gundy Ridge Herd Manager
+# 🐄 PowerShell Universal Herd Management App
 
 A comprehensive cattle management application built with PowerShell Universal, designed to streamline livestock tracking, weight monitoring, health records, and performance analytics for cattle operations.
 
 ## 📋 Overview
 
-Gundy Ridge Herd Manager is a web-based application that provides ranchers and livestock managers with powerful tools to track and analyze their cattle herd. Built on PowerShell Universal Dashboard, it offers an intuitive interface for managing all aspects of cattle operations from a single platform.
+Herd Manager is a web-based application that provides ranchers and livestock managers with powerful tools to track and analyze their cattle herd. Built on PowerShell Universal Dashboard, it offers an intuitive interface for managing all aspects of cattle operations from a single platform.
 
 ## ✨ Key Features
 
@@ -116,7 +116,7 @@ More screenshots available in the [screenshots](/src/PowerShellUniversal.Apps.He
 ## 📁 Project Structure
 
 ```text
-GundyRidgeHerdManager/
+PowerShellUniversal.Apps.HerdManager/
 ├── src/
 │   └── PowerShellUniversal.Apps.HerdManager/
 │       ├── dashboards/
