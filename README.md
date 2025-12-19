@@ -91,6 +91,28 @@ Gundy Ridge Herd Manager is a web-based application that provides ranchers and l
 - **UI Framework**: Material-UI components via Universal Dashboard
 - **Data Access**: PSSQLite module for database operations
 
+## 📷 Screenshots
+
+Below are some screenshots of the application
+
+* Homepage
+
+![Herd Manager Homepage](src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/homepage.png)
+
+* Cattle Management
+
+![Cattle Management](src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/cattlemgmt.PNG)
+
+* Weight Management
+
+![Weight Management](src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/weight.PNG)
+
+* Health Records
+
+![Health Records](src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/healthrecord.PNG)
+
+More screenshots available in the [screenshots](/src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/) folder.
+
 ## 📁 Project Structure
 
 ```text
