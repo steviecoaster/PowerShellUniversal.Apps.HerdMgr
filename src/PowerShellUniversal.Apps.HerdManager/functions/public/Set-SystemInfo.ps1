@@ -26,46 +26,60 @@ function Set-SystemInfo {
     [CmdletBinding()]
     param(
         [Parameter()]
-        [int]$SystemID,
+        [int]
+        $SystemID,
 
         [Parameter()]
-        [string]$FarmName,
+        [string]
+        $FarmName,
 
         [Parameter()]
-        [string]$Address,
+        [string]
+        $Address,
 
         [Parameter()]
-        [string]$City,
+        [string]
+        $City,
 
         [Parameter()]
-        [string]$State,
+        [string]
+        $State,
 
         [Parameter()]
-        [string]$ZipCode,
+        [string]
+        $ZipCode,
 
         [Parameter()]
-        [string]$PhoneNumber,
+        [string]
+        $PhoneNumber,
 
         [Parameter()]
-        [string]$Email,
+        [string]
+        $Email,
 
         [Parameter()]
-        [string]$ContactPerson,
+        [string]
+        $ContactPerson,
 
         [Parameter()]
-        [string]$Notes,
+        [string]
+        $Notes,
 
         [Parameter()]
-        [object]$Established,
+        [object]
+        $Established,
 
         [Parameter()]
-        [string]$DefaultCurrency = 'USD',
+        [string]
+        $DefaultCurrency = 'USD',
 
         [Parameter()]
-        [string]$DefaultCulture = 'en-US',
+        [string]
+        $DefaultCulture = 'en-US',
 
         [Parameter()]
-        [string]$DatabasePath = $script:DatabasePath
+        [string]
+        $DatabasePath = $script:DatabasePath
 
     )
 

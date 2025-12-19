@@ -1,7 +1,7 @@
 $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
     New-UDCard -Title 'System Settings' -Content {
         # Load current settings
-        $sys = Get-SystemInfo
+        $session:sys = Get-SystemInfo
 
         New-UDForm -Id 'system-settings-form' -OnSubmit {
             $farmName = $EventData.'farm-name'
@@ -15,20 +15,9 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
             $notes = $EventData.'notes'
             $currency = $EventData.'default-currency'
             $culture = $EventData.'default-culture'
+            $established = $EventData.established
                         
             try {
-                # Normalize established input; UD may send arrays for some controls, so unwrap first element if needed
-                $establishedRaw = $EventData.'established'
-                if ($establishedRaw -is [System.Array]) { 
-                    $establishedRaw = $establishedRaw[0] 
-                }
-
-                $established = if ($establishedRaw -ne $null -and $establishedRaw.ToString().Trim() -ne '') { 
-                    $establishedRaw.ToString().Trim() 
-                }
-                else { 
-                    $null 
-                }
 
                 # Build parameters and only include Established when provided
                 $params = @{
@@ -43,9 +32,9 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
                     Notes           = $notes
                     DefaultCurrency = $currency
                     DefaultCulture  = $culture
+                    Established     = $established
                 }
 
-                if ($established) { $params.Established = $established }
 
                 Set-SystemInfo @params | Out-Null
                 Show-UDToast -Message 'System settings saved' -MessageColor green
@@ -55,30 +44,30 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
                 Show-UDToast -Message "Failed to save system settings: $($_.Exception.Message)" -MessageColor red -Duration 5000
             }
         } -Content {
-            New-UDTextbox -Id 'farm-name' -Label 'Farm Name' -Value $sys.FarmName -FullWidth
-            New-UDTextbox -Id 'address' -Label 'Address' -Value $sys.Address -FullWidth
+            New-UDTextbox -Id 'farm-name' -Label 'Farm Name' -Value $session:sys.FarmName -FullWidth
+            New-UDTextbox -Id 'address' -Label 'Address' -Value $session:sys.Address -FullWidth
             New-UDGrid -Container -Spacing 2 -Content {
-                New-UDGrid -Item -SmallSize 6 -Content { New-UDTextbox -Id 'city' -Label 'City' -Value $sys.City }
-                New-UDGrid -Item -SmallSize 6 -Content { New-UDTextbox -Id 'state' -Label 'State' -Value $sys.State }
+                New-UDGrid -Item -SmallSize 6 -Content { New-UDTextbox -Id 'city' -Label 'City' -Value $session:sys.City }
+                New-UDGrid -Item -SmallSize 6 -Content { New-UDTextbox -Id 'state' -Label 'State' -Value $session:sys.State }
             }
             New-UDGrid -Container -Spacing 2 -Content {
-                New-UDGrid -Item -SmallSize 6 -Content { New-UDTextbox -Id 'zip' -Label 'Zip Code' -Value $sys.ZipCode }
-                New-UDGrid -Item -SmallSize 6 -Content { New-UDTextbox -Id 'phone' -Label 'Phone' -Value $sys.PhoneNumber }
+                New-UDGrid -Item -SmallSize 6 -Content { New-UDTextbox -Id 'zip' -Label 'Zip Code' -Value $session:sys.ZipCode }
+                New-UDGrid -Item -SmallSize 6 -Content { New-UDTextbox -Id 'phone' -Label 'Phone' -Value $session:sys.PhoneNumber }
             }
-            New-UDTextbox -Id 'email' -Label 'Email' -Value $sys.Email -FullWidth
-            New-UDTextbox -Id 'contact' -Label 'Contact Person' -Value $sys.ContactPerson -FullWidth
-            $parsedEstablished = if ($sys.Established) { 
-                (Parse-Date $sys.Established).Year.ToString() 
+            New-UDTextbox -Id 'email' -Label 'Email' -Value $session:sys.Email -FullWidth
+            New-UDTextbox -Id 'contact' -Label 'Contact Person' -Value $session:sys.ContactPerson -FullWidth
+            $parsedEstablished = if ($session:sys.Established) { 
+                (Parse-Date $session:sys.Established).Year.ToString() 
             } 
             else {
-                '' 
+                (Get-Date).Year
             } 
-            New-UDTextbox -Id 'established' -Label 'Established (Optional, year)' -Value $parsedEstablished  -FullWidth
-            New-UDTextbox -Id 'notes' -Label 'Notes' -Value $sys.Notes -FullWidth -Multiline -Rows 3
+            New-UDTextbox -Id 'established' -Label 'Established' -Value $parsedEstablished  -FullWidth
+            New-UDTextbox -Id 'notes' -Label 'Notes' -Value $session:sys.Notes -FullWidth -Multiline -Rows 3
 
             New-UDGrid -Container -Spacing 2 -Content {
                 New-UDGrid -Item -SmallSize 6 -Content {
-                    New-UDSelect -Id 'default-currency' -Label 'Default Currency' -DefaultValue ($sys.DefaultCurrency -or 'USD') -Option {
+                    New-UDSelect -Id 'default-currency' -Label 'Default Currency' -DefaultValue ($session:sys.DefaultCurrency -or 'USD') -Option {
                         New-UDSelectOption -Name 'USD ($)' -Value 'USD'
                         New-UDSelectOption -Name 'GBP (£)' -Value 'GBP'
                         New-UDSelectOption -Name 'EUR (€)' -Value 'EUR'
@@ -87,7 +76,7 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
                     }
                 }
                 New-UDGrid -Item -SmallSize 6 -Content {
-                    New-UDSelect -Id 'default-culture' -Label 'Default Culture' -DefaultValue ($sys.DefaultCulture -or 'en-US') -Option {
+                    New-UDSelect -Id 'default-culture' -Label 'Default Culture' -DefaultValue ($session:sys.DefaultCulture -or 'en-US') -Option {
                         New-UDSelectOption -Name 'en-US' -Value 'en-US'
                         New-UDSelectOption -Name 'en-GB' -Value 'en-GB'
                         New-UDSelectOption -Name 'fr-FR' -Value 'fr-FR'
@@ -103,13 +92,13 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
         New-UDElement -Tag 'br'
 
         # Reset / Clear System Settings
-        New-UDButton -Text 'Reset System Settings' -Variant outlined -Style @{color = '#d32f2f'; borderColor = '#d32f2f'} -OnClick {
+        New-UDButton -Text 'Reset System Settings' -Variant outlined -Style @{color = '#d32f2f'; borderColor = '#d32f2f' } -OnClick {
             Show-UDModal -Content {
-                New-UDTypography -Text '⚠️ Reset System Settings' -Variant h5 -Style @{color = '#d32f2f'; marginBottom = '12px'}
+                New-UDTypography -Text '⚠️ Reset System Settings' -Variant h5 -Style @{color = '#d32f2f'; marginBottom = '12px' }
                 New-UDTypography -Text 'This will clear all global system settings and return the application to an unconfigured state. This action cannot be undone.' -Variant body2
             } -Footer {
                 New-UDButton -Text 'Cancel' -OnClick { Hide-UDModal }
-                New-UDButton -Text 'Reset' -Variant contained -Style @{backgroundColor = '#d32f2f'; color = 'white'} -OnClick {
+                New-UDButton -Text 'Reset' -Variant contained -Style @{backgroundColor = '#d32f2f'; color = 'white' } -OnClick {
                     try {
                         Clear-SystemInfo -Force | Out-Null
                         Show-UDToast -Message 'System settings cleared' -MessageColor green
@@ -137,18 +126,20 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
             }
         }
 
-        New-UDCard -Title 'Current System Info' -Id 'system-info-display' -Content {
-            $s = Get-SystemInfo
-            if ($s) {
-                New-UDTypography -Text "Farm: $($s.FarmName)" -Variant body1
-                New-UDTypography -Text "Address: $($s.Address) $($s.City) $($s.State) $($s.ZipCode)" -Variant body2
-                New-UDTypography -Text "Phone: $($s.PhoneNumber) | Email: $($s.Email)" -Variant body2
-                New-UDTypography -Text "Contact: $($s.ContactPerson)" -Variant body2
-                New-UDTypography -Text "Established: $(if ($s.Established) { (Parse-Date $s.Established).Year } else { '' })" -Variant body2
-                New-UDTypography -Text "Currency/Culture: $($s.DefaultCurrency)/$($s.DefaultCulture)" -Variant body2
-            }
-            else {
-                New-UDTypography -Text 'No system settings configured yet.' -Variant body2
+        New-UDDynamic -Id 'system-info-display' -Content {
+            New-UDCard -Title 'Current System Info' -Content {
+                $s = Get-SystemInfo
+                if ($s) {
+                    New-UDTypography -Text "Farm: $($s.FarmName)" -Variant body1
+                    New-UDTypography -Text "Address: $($s.Address) $($s.City) $($s.State) $($s.ZipCode)" -Variant body2
+                    New-UDTypography -Text "Phone: $($s.PhoneNumber) | Email: $($s.Email)" -Variant body2
+                    New-UDTypography -Text "Contact: $($s.ContactPerson)" -Variant body2
+                    New-UDTypography -Text "Established: $(if ($s.Established) { (Parse-Date $s.Established).Year } else { '' })" -Variant body2
+                    New-UDTypography -Text "Currency/Culture: $($s.DefaultCurrency)/$($s.DefaultCulture)" -Variant body2
+                }
+                else {
+                    New-UDTypography -Text 'No system settings configured yet.' -Variant body2
+                }
             }
         }
     }

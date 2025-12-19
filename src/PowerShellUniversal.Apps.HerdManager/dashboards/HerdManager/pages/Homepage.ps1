@@ -1,5 +1,5 @@
 $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
-    
+    $session:system = Get-SystemInfo -DbPath $script:DatabasePath
     # Hero Section with Farm Theme
     New-UDCard -Style @{
         backgroundColor = '#2e7d32'
@@ -12,9 +12,8 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
     } -Content {
         New-UDGrid -Container -Content {
             New-UDGrid -Item -ExtraSmallSize 12 -Content {
-                $system = Get-SystemInfo
-                $headerTypography = if($system -and $system.FarmName){
-                    '🐂 {0}' -f $system.FarmName
+                $headerTypography = if($session:system -and $session:system.FarmName){
+                    '🐂 {0}' -f $session:system.FarmName
                 }
                 else {
                     "🐂 Herd Management Platform"
@@ -26,8 +25,8 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
                     marginBottom = '15px'
                 }
 
-                $establishedTypography = if($system -and $system.Established) {
-                    'Since {0}' -f ((Parse-Date $system.Established).Year)
+                $establishedTypography = if($session:system -and $session:system.Established) {
+                    'Since {0}' -f ((Parse-Date $session:system.Established).Year)
                 }
                 else {
                     'Copyright 2025'
@@ -39,8 +38,8 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
                     marginBottom = '10px'
                 }
 
-                $missionTypography = if($system -and $system.MissionStatement){
-                    '{0}' -f $system.MissionStatement
+                $missionTypography = if($session:system -and $session:system.MissionStatement){
+                    '{0}' -f $session:system.MissionStatement
                 }
                 else {
                     'Quality cattle, even better management'
@@ -55,12 +54,12 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
     }
     
     # First-run banner: prompt to run Setup if system settings are not configured
-    $system = Get-SystemInfo
-    if (-not $system -or -not $system.FarmName) {
+    
+    if (-not $session:system -or -not $session:system.FarmName) {
         New-UDCard -Style @{backgroundColor = '#fff3f3'; borderLeft = '4px solid #d32f2f'; marginBottom = '20px'} -Content {
             New-UDTypography -Text '⚠️ Setup required' -Variant h6 -Style @{color = '#d32f2f'; fontWeight = 'bold'}
             New-UDTypography -Text 'This Herd Manager instance is not yet configured. Please run the setup wizard to configure farm name, currency, and preferences.' -Variant body2 -Style @{marginBottom = '12px'}
-            New-UDButton -Text 'Run Setup' -Variant contained -Style @{backgroundColor = '#d32f2f'; color = 'white'} -OnClick { Invoke-UDRedirect -Url '/setup' }
+            New-UDButton -Text 'Run Setup' -Variant contained -Style @{backgroundColor = '#d32f2f'; color = 'white'} -OnClick { Invoke-UDRedirect -Url '/settings' }
         }
     }
 

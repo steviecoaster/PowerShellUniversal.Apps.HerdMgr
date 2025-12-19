@@ -99,9 +99,8 @@ end {
         New-UDListItem -Label "Animal Report" -Icon (New-UDIcon -Icon FileAlt) -OnClick { Invoke-UDRedirect -Url '/animal-report' }
         New-UDListItem -Label "Accounting" -Icon (New-UDIcon -Icon Calculator) -OnClick { Invoke-UDRedirect -Url '/accounting' }
         New-UDListItem -Label "Reports" -Icon (New-UDIcon -Icon ChartBar) -OnClick { Invoke-UDRedirect -Url '/reports' }
-        New-UDListItem -Label "Settings" -Icon (New-UDIcon -Icon Cog) -OnClick { Invoke-UDRedirect -Url '/settings' }
-    New-UDListItem -Label "Help" -Icon (New-UDIcon -Icon QuestionCircle) -OnClick { Invoke-UDRedirect -Url '/help' }
-    New-UDListItem -Label "Setup" -Icon (New-UDIcon -Icon Tools) -OnClick { Invoke-UDRedirect -Url '/setup' }
+        New-UDListItem -Label "Help" -Icon (New-UDIcon -Icon QuestionCircle) -OnClick { Invoke-UDRedirect -Url '/help' }
+        New-UDListItem -Label "Setup" -Icon (New-UDIcon -Icon Tools) -OnClick { Invoke-UDRedirect -Url '/settings' }
     }
 
     $HeaderContent = {
@@ -125,9 +124,9 @@ end {
         } -AutoRefresh -AutoRefreshInterval 300
         # First-run redirect: if SystemInfo is not configured, redirect users to the setup page using server-driven redirect
         try { $sysCheck = Get-SystemInfo } catch { $sysCheck = $null }
-            # No forced redirect here — first-run banner is shown on the Home page instead
-    # Delegated click handler for in-page help TOC links (data-toc-target)
-    New-UDHtml -Markup "<script>(function(){function __herd_toc_handler(e){var el=e.target; while(el && el!==document){ try{ if(el.matches && el.matches('[data-toc-target]')){ e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) { e.stopImmediatePropagation(); } var id=el.getAttribute('data-toc-target') || (el.dataset && el.dataset.tocTarget); if(!id && el.hasAttribute('href')){ var href=el.getAttribute('href'); if(href && href.indexOf('#')===0){ id=href.substring(1); } } if(id){ var t=document.getElementById(id); if(t){ t.scrollIntoView({behavior:'smooth', block:'start'}); try{ history.pushState(null, '', window.location.pathname + '#' + id); }catch(e){} } } break; } } catch(err){ console && console.debug && console.debug('TOC handler error', err); } el=el.parentNode;} }
+        # No forced redirect here — first-run banner is shown on the Home page instead
+        # Delegated click handler for in-page help TOC links (data-toc-target)
+        New-UDHtml -Markup "<script>(function(){function __herd_toc_handler(e){var el=e.target; while(el && el!==document){ try{ if(el.matches && el.matches('[data-toc-target]')){ e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) { e.stopImmediatePropagation(); } var id=el.getAttribute('data-toc-target') || (el.dataset && el.dataset.tocTarget); if(!id && el.hasAttribute('href')){ var href=el.getAttribute('href'); if(href && href.indexOf('#')===0){ id=href.substring(1); } } if(id){ var t=document.getElementById(id); if(t){ t.scrollIntoView({behavior:'smooth', block:'start'}); try{ history.pushState(null, '', window.location.pathname + '#' + id); }catch(e){} } } break; } } catch(err){ console && console.debug && console.debug('TOC handler error', err); } el=el.parentNode;} }
     try{ document.addEventListener('pointerdown', __herd_toc_handler, true); document.addEventListener('click', __herd_toc_handler, true); window.__herd_toc_handler_attached = true; console && console.debug && console.debug('HerdManager TOC handler attached'); }catch(err){ console && console.debug && console.debug('Failed to attach TOC handler', err); }
     try{ window.addEventListener('hashchange', function(){ try{ var id = (window.location.hash && window.location.hash.length>1) ? window.location.hash.substring(1) : null; if(id){ var t = document.getElementById(id); if(t){ t.scrollIntoView({behavior:'smooth', block:'start'}); } } }catch(e){ console && console.debug && console.debug('hashchange handler error', e); } }, false); }catch(err){ console && console.debug && console.debug('Failed to attach hashchange handler', err); }
     try{ setTimeout(function(){ try{ var id = (window.location.hash && window.location.hash.length>1) ? window.location.hash.substring(1) : null; if(id){ var t = document.getElementById(id); if(t){ t.scrollIntoView({behavior:'smooth', block:'start'}); } } }catch(e){ console && console.debug && console.debug('initial hash scroll error', e); } }, 250); }catch(e){ console && console.debug && console.debug('Failed to schedule initial hash check', e); }
@@ -136,7 +135,7 @@ end {
 
     $app = @{
         Title            = '🐄 Herd Manager'
-    Pages            = @($homepage, $notifications, $cattleMgmt, $weightMgmt, $healthMgmt, $feedRecords, $farmsPage, $rog, $reports, $animalreport, $accounting, $invoicePage, $systemSettings, $helpPage, $setupPage)
+        Pages            = @($homepage, $notifications, $cattleMgmt, $weightMgmt, $healthMgmt, $feedRecords, $farmsPage, $rog, $reports, $animalreport, $accounting, $invoicePage, $systemSettings, $helpPage)
         Navigation       = $Navigation
         NavigationLayout = 'Temporary'
         HeaderContent    = $HeaderContent
