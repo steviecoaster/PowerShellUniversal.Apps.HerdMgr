@@ -97,7 +97,7 @@ Below are some screenshots of the application
 
 * Homepage
 
-![Herd Manager Homepage](src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/homepage.png)
+![Herd Manager Homepage](src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/homepage.PNG)
 
 * Cattle Management
 
