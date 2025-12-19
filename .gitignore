@@ -2,3 +2,6 @@
 *.png
 *.ico
 .DS_STORE
+
+# Local module database (should not be committed)
+/src/PowerShellUniversal.Apps.HerdManager/data/HerdManager.db
