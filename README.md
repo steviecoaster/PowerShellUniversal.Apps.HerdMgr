@@ -2,11 +2,47 @@
 
 A comprehensive cattle management application built with PowerShell Universal, designed to streamline livestock tracking, weight monitoring, health records, and performance analytics for cattle operations.
 
+<a id="overview"></a>
 ## 📋 Overview
 
 Herd Manager is a web-based application that provides ranchers and livestock managers with powerful tools to track and analyze their cattle herd. Built on PowerShell Universal Dashboard, it offers an intuitive interface for managing all aspects of cattle operations from a single platform.
 
+## 📚 Table of Contents
+
+- [Overview](#overview)
+- [Key Features](#key-features)
+   - [Cattle Management](#cattle-management)
+   - [Farm Management](#farm-management)
+   - [Weight Management](#weight-management)
+   - [Rate of Gain Analysis](#rate-of-gain-analysis)
+   - [Health Records](#health-records)
+   - [Feed Records](#feed-records)
+   - [Reporting & Analytics](#reporting--analytics)
+   - [Notifications Dashboard](#notifications-dashboard)
+   - [Accounting & Invoicing](#accounting--invoicing)
+- [Technical Stack](#technical-stack)
+- [Screenshots](#screenshots)
+- [Project Structure](#project-structure)
+- [Database Schema](#database-schema)
+- [Installation](#installation)
+   - [Prerequisites](#prerequisites)
+   - [Setup Steps](#setup-steps)
+- [Features in Detail](#features-in-detail)
+   - [Smart Date Handling](#smart-date-handling)
+   - [Location Management](#location-management)
+   - [Print Functionality](#print-functionality)
+   - [Responsive UI](#responsive-ui)
+- [Development](#development)
+- [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [Support](#support)
+
+<a id="key-features"></a>
+
 ## ✨ Key Features
+
+<a id="cattle-management"></a>
 
 ### 🐮 Cattle Management
 
@@ -18,6 +54,8 @@ Herd Manager is a web-based application that provides ranchers and livestock man
 - **Searchable Database**: Quick search and filter capabilities across all cattle records
 - **Dynamic Dropdowns**: Smart form fields that adapt based on available farm data
 
+<a id="farm-management"></a>
+
 ### 🏡 Farm Management
 
 - **Farm Registry**: Maintain complete farm/ranch contact information
@@ -28,6 +66,8 @@ Herd Manager is a web-based application that provides ranchers and livestock man
 - **Active/Inactive Status**: Manage farm lifecycle without data loss
 - **Edit Capabilities**: Update farm information including origin status anytime
 
+<a id="weight-management"></a>
+
 ### ⚖️ Weight Management
 
 - **Weight Recording**: Log weight measurements with dates and measurement methods
@@ -35,12 +75,16 @@ Herd Manager is a web-based application that provides ranchers and livestock man
 - **Automatic Calculations**: Track weight gain over time
 - **Multiple Units**: Support for pounds (lbs) and kilograms (kg)
 
+<a id="rate-of-gain-analysis"></a>
+
 ### 📈 Rate of Gain Analysis
 
 - **Average Daily Gain (ADG)**: Calculate and track ADG between any two weight measurements
 - **Historical Tracking**: View complete ROG calculation history for performance analysis
 - **Period Comparisons**: Compare performance across different time periods
 - **Automated Calculations**: Compute total gain, days between measurements, and daily averages
+
+<a id="health-records"></a>
 
 ### 🏥 Health Records
 
@@ -50,12 +94,16 @@ Herd Manager is a web-based application that provides ranchers and livestock man
 - **Due Date Reminders**: Track next vaccination or treatment due dates
 - **Overdue Alerts**: Automatic notifications for overdue health events
 
+<a id="feed-records"></a>
+
 ### 🍽️ Feed Records
 
 - **Daily Feed Tracking**: Record daily feed mix quantities (haylage, silage, high moisture corn)
 - **Feed History**: View complete feeding history with searchable records
 - **Total Calculations**: Automatic calculation of total feed pounds per day
 - **Notes Support**: Add contextual notes for each feeding record
+
+<a id="reporting--analytics"></a>
 
 ### 📊 Reporting & Analytics
 
@@ -64,12 +112,16 @@ Herd Manager is a web-based application that provides ranchers and livestock man
 - **Print-Friendly Reports**: Generate printable reports for record-keeping
 - **Data Visualization**: Charts and graphs for weight trends and performance metrics
 
+<a id="notifications-dashboard"></a>
+
 ### 🔔 Notifications Dashboard
 
 - **Centralized Alerts**: View all important notifications in one place
 - **Overdue Health Events**: Immediate visibility of past-due vaccinations and treatments
 - **Weight Check Reminders**: Alerts for cattle needing weight measurements
 - **Upcoming Events**: Color-coded display of events by urgency (red: ≤7 days, orange: ≤14 days, blue: >14 days)
+
+<a id="accounting--invoicing"></a>
 
 ### 💰 Accounting & Invoicing
 
@@ -83,6 +135,8 @@ Herd Manager is a web-based application that provides ranchers and livestock man
 - **Cost Breakdown**: Detailed itemization of feeding costs and health/veterinary expenses per animal
 - **Owner Billing**: Associate cattle with farm owners for accurate billing
 
+<a id="technical-stack"></a>
+
 ## 🛠️ Technical Stack
 
 - **Platform**: PowerShell Universal Dashboard v5
@@ -91,19 +145,21 @@ Herd Manager is a web-based application that provides ranchers and livestock man
 - **UI Framework**: Material-UI components via Universal Dashboard
 - **Data Access**: PSSQLite module for database operations
 
+<a id="screenshots"></a>
+
 ## 📷 Screenshots
 
 Below are some screenshots of the application
 
-* Homepage
+- Homepage
 
 ![Herd Manager Homepage](src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/homepage.PNG)
 
-* Cattle Management
+- Cattle Management
 
 ![Cattle Management](src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/cattlemgmt.PNG)
 
-* Weight Management
+- Weight Management
 
 ![Weight Management](src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/weight.PNG)
 
@@ -112,6 +168,8 @@ Below are some screenshots of the application
 ![Health Records](src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/healthrecord.PNG)
 
 More screenshots available in the [screenshots](/src/PowerShellUniversal.Apps.HerdManager/docs/screenshots/) folder.
+
+<a id="project-structure"></a>
 
 ## 📁 Project Structure
 
@@ -162,6 +220,8 @@ PowerShellUniversal.Apps.HerdManager/
 └── tests/                                       # Test files (if applicable)
 ```
 
+<a id="database-schema"></a>
+
 ## 🗄️ Database Schema
 
 ### Core Tables
@@ -182,13 +242,19 @@ PowerShellUniversal.Apps.HerdManager/
 
 Optimized indexes on frequently queried fields for fast performance
 
+<a id="installation"></a>
+
 ## 🚀 Installation
+
+<a id="prerequisites"></a>
 
 ### Prerequisites
 
 - PowerShell 7 or later
 - PowerShell Universal (licensed or trial)
 - PSSQLite PowerShell module
+
+<a id="setup-steps"></a>
 
 ### Setup Steps
 
@@ -225,13 +291,19 @@ Optimized indexes on frequently queried fields for fast performance
 
    - The full Usage Guide is available inside the application under the **Help** menu (Help → Usage Guide) once the module is installed/reloaded.
 
+<a id="features-in-detail"></a>
+
 ## 🎨 Features in Detail
+
+<a id="smart-date-handling"></a>
 
 ### Smart Date Handling
 
 - Automatic date format conversion (MM/dd/yyyy HH:mm:ss)
 - CAST AS TEXT in SQL queries prevents parsing errors
 - Consistent date storage across all tables
+
+<a id="location-management"></a>
 
 ### Location Management
 
@@ -240,12 +312,16 @@ Optimized indexes on frequently queried fields for fast performance
 - Filter and sort by location
 - Quick location updates via edit modal
 
+<a id="print-functionality"></a>
+
 ### Print Functionality
 
 - CSS `@media print` rules for clean printouts
 - Hides navigation and buttons
 - Optimized layout for paper
 - Professional-looking reports
+
+<a id="responsive-ui"></a>
 
 ### Responsive UI
 
@@ -301,6 +377,8 @@ $app = @{
 
 ## 🧪 Development
 
+<a id="development"></a>
+
 ### Adding New Features
 
 1. Create function in `functions\public\` or `functions\private\`
@@ -324,6 +402,8 @@ Migrations included
 Note: After running migrations that change function parameters, restart PowerShell Universal so the runspace picks up the updated code (or copy the module into the installed modules directory and restart the service).
 
 ### Testing
+
+<a id="testing"></a>
 
 - Test all CRUD operations after changes
 - Verify date handling in forms and tables
@@ -356,7 +436,9 @@ Set-SystemInfo -Established '2000-05-06'
 Set-SystemInfo -Established @('2001')
 ```
 
-Troubleshooting
+<a id="troubleshooting"></a>
+
+## Troubleshooting
 
 - Error "Cannot convert the System.Object[] value ... to type System.DateTime" when saving Established: this can happen when a DatePicker-style control returns an array instead of a single value. The System Settings UI now uses a simple year textbox and the CLI `Set-SystemInfo` function unwraps arrays and normalizes the value.
 
@@ -398,6 +480,8 @@ Import-Module -Force "C:\Path\To\PowerShellUniversal.Apps.HerdManager.psd1"
 - **Form not saving**: Verify SqlParameters match @Param names in query
 - **Modal not opening**: Check Show-UDModal syntax and element IDs
 
+<a id="contributing"></a>
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please:
@@ -407,6 +491,8 @@ Contributions are welcome! Please:
 3. Make your changes
 4. Test thoroughly
 5. Submit a pull request
+
+<a id="support"></a>
 
 ## 📞 Support
 
