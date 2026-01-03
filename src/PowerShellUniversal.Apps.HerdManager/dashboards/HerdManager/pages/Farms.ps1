@@ -64,12 +64,18 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
             $phone = (Get-UDElement -Id 'new-farm-phone').value
             $email = (Get-UDElement -Id 'new-farm-email').value
             $notes = (Get-UDElement -Id 'new-farm-notes').value
-            $isOrigin = (Get-UDElement -Id 'new-farm-is-origin').checked
+            $isOrigin = [Boolean]::Parse($(Get-UDElement -Id 'new-farm-is-origin').checked)
             
             if (-not $farmName) {
                 Show-UDToast -Message "Farm name is required" -MessageColor red
                 return
             }
+
+            # Ensure we don't emit stray values to the pipeline and only
+            # include the IsOrigin switch when checked. Passing a raw
+            # boolean or text into a switch parameter via splatting can
+            # sometimes produce unexpected parsing behavior when the
+            # scriptblock is serialized by the dashboard engine.
             
             try {
                 $farmParams = @{
@@ -82,7 +88,14 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
                     PhoneNumber   = $phone
                     Email         = $email
                     Notes         = $notes
-                    IsOrigin        = if ($isOrigin) { $true } else { $false }
+                    # IsOrigin will be added below only when true
+                }
+
+                if ($isOrigin -eq $true) {
+                    # Add switch key only when checked so Add-Farm receives
+                    # the switch as a SwitchParameter object (so .IsPresent
+                    # is available inside the function).
+                    $farmParams['IsOrigin'] = [System.Management.Automation.SwitchParameter]::new($true)
                 }
                 
                 Add-Farm @farmParams
@@ -194,8 +207,8 @@ $farmsPage = New-UDPage -Name "Farms" -Content {
                                     $phone = (Get-UDElement -Id 'edit-farm-phone').value
                                     $email = (Get-UDElement -Id 'edit-farm-email').value
                                     $notes = (Get-UDElement -Id 'edit-farm-notes').value
-                                    $isOrigin = if ((Get-UDElement -Id 'edit-farm-is-origin').checked) { 1 } else { 0 }
-                                    $isActive = if ((Get-UDElement -Id 'edit-farm-active').checked) { 1 } else { 0 }
+                                    $isOrigin = $(if ((Get-UDElement -Id 'edit-farm-is-origin').checked) { 1 } else { 0 })
+                                    $isActive = $(if ((Get-UDElement -Id 'edit-farm-active').checked) { 1 } else { 0 })
                                     
                                     try {
                                         Update-Farm -FarmID $farm.FarmID -FarmName $farmName -ContactPerson $contactPerson `

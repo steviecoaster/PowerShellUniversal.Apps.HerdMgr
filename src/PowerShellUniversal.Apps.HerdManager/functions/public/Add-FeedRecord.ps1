@@ -5,24 +5,28 @@ function Add-FeedRecord {
     
     .DESCRIPTION
     Records daily feed consumption for the entire herd operation.
-    Tracks different feed types (haylage, silage, high moisture corn) and total pounds fed.
+    Supports both legacy column-based ingredients and new dynamic recipe-based ingredients.
     Only one feed record can exist per day.
     
     .PARAMETER FeedDate
     Date of the feeding record (required)
     
+    .PARAMETER IngredientAmounts
+    Hashtable of ingredient names and amounts (supports dynamic recipes)
+    Example: @{ 'Corn Silage' = 5000; 'High Moisture Corn' = 3000 }
+    
     .PARAMETER HaylagePounds
-    Pounds of haylage fed (optional, defaults to 0)
+    Pounds of haylage fed (legacy parameter, optional, defaults to 0)
     
     .PARAMETER SilagePounds
-    Pounds of silage fed (optional, defaults to 0)
+    Pounds of silage fed (legacy parameter, optional, defaults to 0)
     
     .PARAMETER HighMoistureCornPounds
-    Pounds of high moisture corn fed (optional, defaults to 0)
+    Pounds of high moisture corn fed (legacy parameter, optional, defaults to 0)
     
     .PARAMETER TotalPounds
-    Total pounds of feed consumed (required)
-    If not provided, will be calculated from individual feed types
+    Total pounds of feed consumed (optional)
+    If not provided, will be calculated from ingredient amounts
     
     .PARAMETER Notes
     Additional notes about the feeding (optional)
@@ -34,28 +38,26 @@ function Add-FeedRecord {
     None
     
     .EXAMPLE
-    Add-FeedRecord -FeedDate (Get-Date) -HaylagePounds 5000 -SilagePounds 8000 -HighMoistureCornPounds 3000 -TotalPounds 16000 -RecordedBy "Ranch Manager"
+    Add-FeedRecord -FeedDate (Get-Date) -IngredientAmounts @{ 'Corn Silage' = 5000; 'Supplement' = 200 } -RecordedBy "Ranch Manager"
     
-    Records today's feed consumption with breakdown by feed type
-    
-    .EXAMPLE
-    Add-FeedRecord -FeedDate "2024-12-01" -TotalPounds 15500 -Notes "Reduced feed due to weather"
-    
-    Records a simple total feed amount without breakdown
+    Records today's feed using dynamic recipe ingredients
     
     .EXAMPLE
-    Add-FeedRecord -FeedDate (Get-Date) -HaylagePounds 4500 -SilagePounds 7200 -RecordedBy "John Smith"
+    Add-FeedRecord -FeedDate (Get-Date) -HaylagePounds 5000 -SilagePounds 8000 -HighMoistureCornPounds 3000 -RecordedBy "Ranch Manager"
     
-    Records feed with automatic total calculation (11,700 lbs)
+    Records today's feed using legacy parameters (backward compatible)
     
     .NOTES
     Only one feed record is allowed per day. Attempting to add a duplicate will result in an error.
-    If TotalPounds is not provided, it will be calculated from the sum of individual feed types.
+    New records should use -IngredientAmounts for flexibility with recipe changes.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [DateTime]$FeedDate,
+        
+        [Parameter()]
+        [hashtable]$IngredientAmounts,
         
         [Parameter()]
         [decimal]$HaylagePounds = 0,
@@ -79,7 +81,14 @@ function Add-FeedRecord {
     
     # Calculate total if not provided
     if (-not $PSBoundParameters.ContainsKey('TotalPounds')) {
-        $TotalPounds = $HaylagePounds + $SilagePounds + $HighMoistureCornPounds
+        if ($IngredientAmounts) {
+            # Sum from dynamic ingredients
+            $TotalPounds = ($IngredientAmounts.Values | Measure-Object -Sum).Sum
+        }
+        else {
+            # Sum from legacy parameters
+            $TotalPounds = $HaylagePounds + $SilagePounds + $HighMoistureCornPounds
+        }
     }
     
     # Validate that total is greater than zero
@@ -96,8 +105,15 @@ function Add-FeedRecord {
     $notesValue = ConvertTo-SqlValue -Value $Notes
     $recordedByValue = ConvertTo-SqlValue -Value $RecordedBy
     $createdDateValue = ConvertTo-SqlValue -Value (Get-Date)
+    
+    # Convert ingredient amounts to JSON if provided
+    $ingredientAmountsValue = 'NULL'
+    if ($IngredientAmounts) {
+        $jsonString = $IngredientAmounts | ConvertTo-Json -Compress
+        $ingredientAmountsValue = ConvertTo-SqlValue -Value $jsonString
+    }
 
-    $query = "INSERT INTO FeedRecords (FeedDate, HaylagePounds, SilagePounds, HighMoistureCornPounds, TotalPounds, Notes, RecordedBy, CreatedDate) VALUES ($feedDateValue, $haylageValue, $silageValue, $cornValue, $totalValue, $notesValue, $recordedByValue, $createdDateValue)"
+    $query = "INSERT INTO FeedRecords (FeedDate, HaylagePounds, SilagePounds, HighMoistureCornPounds, TotalPounds, IngredientAmounts, Notes, RecordedBy, CreatedDate) VALUES ($feedDateValue, $haylageValue, $silageValue, $cornValue, $totalValue, $ingredientAmountsValue, $notesValue, $recordedByValue, $createdDateValue)"
 
     try {
     Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query

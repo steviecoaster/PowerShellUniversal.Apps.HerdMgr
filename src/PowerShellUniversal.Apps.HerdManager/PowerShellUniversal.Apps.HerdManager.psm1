@@ -14,30 +14,40 @@ foreach ($import in @($Public + $Private)) {
     }
 }
 
-# Set the database path at module scope (cross-platform)
-$script:DatabasePath = Join-Path $PSScriptRoot 'data' 'HerdManager.db'
-
-# Initialize database if it doesn't exist
-if (-not (Test-Path $script:DatabasePath)) {
-    Write-Verbose "Database not found. Initializing new database at $script:DatabasePath"
-    
-    # Ensure data directory exists
-    $dataDir = Split-Path $script:DatabasePath -Parent
-    if (-not (Test-Path $dataDir)) {
-        New-Item -ItemType Directory -Path $dataDir -Force | Out-Null
-    }
-    
-    # Create database with schema
-    $schemaPath = Join-Path $PSScriptRoot 'data' 'Database-Schema.sql'
-    if (Test-Path $schemaPath) {
-        $schema = Get-Content $schemaPath -Raw
-        Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $schema
-        Write-Verbose "Database initialized successfully"
-    }
-    else {
-        Write-Warning "Database schema file not found at $schemaPath. Database created but not initialized."
-    }
+# Load Schema.sql from module package
+$SchemaPath = Join-Path $PSScriptRoot 'data' 'Database-Schema.sql'
+if (-not (Test-Path $SchemaPath)) {
+    throw "Database-Schema.sql not found at: $SchemaPath"
 }
+
+# Pick a simple, stable data path based on OS
+# Windows: $env:ProgramData\HerdManager
+# Linux:   $env:HOME/herdmanager  (PSU runs under the service user; writable)
+if ($IsWindows) {
+    $BasePath = Join-Path $env:ProgramData 'HerdManager'
+}
+elseif ($IsLinux) {
+    if (-not $env:HOME) {
+        throw "Linux detected but `$env:HOME is not set. Cannot determine HerdManager data folder."
+    }
+    $BasePath = Join-Path $env:HOME 'herdmanager'
+}
+else {
+    # Fallback for other platforms
+    $BasePath = Join-Path ([System.IO.Path]::GetTempPath()) 'herdmanager'
+}
+
+# Define stable database path
+$script:DatabasePath = Join-Path $BasePath 'HerdManager.db'
+
+# Create directories if missing
+if (-not (Test-Path $BasePath)) {
+    $null = New-Item -Path $BasePath -ItemType Directory -Force
+}
+
+# Initialize DB + schema (idempotent)
+Initialize-HerdDbFile -Database $script:DatabasePath
+Initialize-HerdDatabase -Schema $SchemaPath -Database $script:DatabasePath
 
 # Ensure sensible PRAGMA settings for concurrency/ durability even if DB already existed
 try {

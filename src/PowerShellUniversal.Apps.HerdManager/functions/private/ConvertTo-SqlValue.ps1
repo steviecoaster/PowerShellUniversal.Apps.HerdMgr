@@ -40,7 +40,8 @@ function ConvertTo-SqlValue {
     
     # Handle boolean values
     if ($Value -is [bool]) {
-        return if ($Value) { '1' } else { '0' }
+        $value = if ($Value) { '1' } else { '0' }
+        return $Value
     }
     
     # Handle numeric values (don't quote)

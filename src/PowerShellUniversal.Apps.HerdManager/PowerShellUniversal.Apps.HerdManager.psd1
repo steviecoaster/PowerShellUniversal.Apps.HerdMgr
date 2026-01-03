@@ -12,7 +12,7 @@
     RootModule        = '.\PowerShellUniversal.Apps.HerdManager.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0.1'
+    ModuleVersion     = '1.0.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -21,13 +21,13 @@
     GUID              = '65936524-5697-4167-8938-b296d9698090'
 
     # Author of this module
-    Author            = 'stephen'
+    Author            = 'Stephen Valdinger'
 
     # Company or vendor of this module
     CompanyName       = 'Unknown'
 
     # Copyright statement for this module
-    Copyright         = '(c) stephen. All rights reserved.'
+    Copyright         = '(c) Stephen Valdinger. All rights reserved.'
 
     # Description of the functionality provided by this module
     # Description = ''
@@ -73,6 +73,8 @@
         # Util
         'New-UDHerdManagerApp',
         'Initialize-HerdDatabase',
+        'Initialize-HerdDbFile',
+        'Initialize-HerdData',
         'Get-DatabasePath',
         'Invoke-UniversalSQLiteQuery',
         'Parse-Date',
@@ -117,6 +119,9 @@
         'Add-FeedRecord',
         'Update-FeedRecord',
         'Remove-FeedRecord',
+        'Get-FeedRecipe',
+        'Set-FeedRecipe',
+        'Get-FeedTonnageReport'
         # API
         'Invoke-CattleApi',
         'Invoke-FeedApi',
@@ -159,10 +164,10 @@
             Tags = @('PowerShellUniversal')
 
             # A URL to the license for this module.
-            # LicenseUri = ''
+            LicenseUri = 'https://github.com/steviecoaster/PowerShellUniversal.Apps.HerdMgr/blob/main/LICENSE'
 
             # A URL to the main website for this project.
-            # ProjectUri = ''
+            ProjectUri = 'https://github.com/steviecoaster/PowerShellUniversal.Apps.HerdMgr'
 
             # A URL to an icon representing this module.
             # IconUri = ''

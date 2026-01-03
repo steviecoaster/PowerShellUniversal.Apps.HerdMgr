@@ -1,4 +1,4 @@
--- Gundy Ridge Herd Manager Database Schema
+-- Herd Manager Database Schema
 -- SQLite Database for Cattle Weight Management and Rate of Gain Tracking
 
 -- Table: Farms
@@ -167,6 +167,7 @@ CREATE TABLE IF NOT EXISTS FeedRecords (
     HaylagePounds DECIMAL(10,2) DEFAULT 0,
     SilagePounds DECIMAL(10,2) DEFAULT 0,
     HighMoistureCornPounds DECIMAL(10,2) DEFAULT 0,
+    IngredientAmounts TEXT, -- JSON format for dynamic recipe ingredients
     TotalPounds DECIMAL(10,2) NOT NULL,
     Notes TEXT,
     RecordedBy VARCHAR(100),
@@ -176,6 +177,37 @@ CREATE TABLE IF NOT EXISTS FeedRecords (
 
 -- Index for feed records
 CREATE INDEX IF NOT EXISTS idx_feed_date ON FeedRecords(FeedDate);
+
+-- Table: FeedRecipes
+-- Stores feed recipe definitions (multiple recipes, one active)
+CREATE TABLE IF NOT EXISTS FeedRecipes (
+    RecipeID INTEGER PRIMARY KEY AUTOINCREMENT,
+    RecipeName VARCHAR(200) UNIQUE NOT NULL,
+    Description TEXT,
+    IsActive INTEGER DEFAULT 0,
+    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ModifiedDate DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: FeedIngredients
+-- Stores ingredients for each recipe with display order and constraints
+CREATE TABLE IF NOT EXISTS FeedIngredients (
+    IngredientID INTEGER PRIMARY KEY AUTOINCREMENT,
+    RecipeID INTEGER NOT NULL,
+    IngredientName VARCHAR(100) NOT NULL,
+    DisplayOrder INTEGER NOT NULL,
+    MinValue DECIMAL(10,2) DEFAULT 0,
+    MaxValue DECIMAL(10,2) DEFAULT 10000,
+    DefaultValue DECIMAL(10,2) DEFAULT 0,
+    Unit VARCHAR(20) DEFAULT 'lbs',
+    FOREIGN KEY (RecipeID) REFERENCES FeedRecipes(RecipeID) ON DELETE CASCADE,
+    UNIQUE(RecipeID, IngredientName)
+);
+
+-- Indexes for feed recipe system
+CREATE INDEX IF NOT EXISTS idx_recipe_active ON FeedRecipes(IsActive);
+CREATE INDEX IF NOT EXISTS idx_ingredient_recipe ON FeedIngredients(RecipeID);
+CREATE INDEX IF NOT EXISTS idx_ingredient_order ON FeedIngredients(RecipeID, DisplayOrder);
 
 -- Table: Invoices
 -- Stores invoice header information (can now include multiple cattle via line items)
@@ -246,3 +278,16 @@ CREATE TABLE IF NOT EXISTS SystemInfo (
 
 CREATE INDEX IF NOT EXISTS idx_systeminfo_id ON SystemInfo(SystemID);
 
+-- Seed default feed recipe
+-- Insert default 'Standard Feed Mix' recipe if it doesn't exist
+INSERT OR IGNORE INTO FeedRecipes (RecipeName, Description, IsActive) 
+VALUES ('Standard Feed Mix', 'Default recipe with five ingredients', 1);
+
+-- Insert default ingredients for 'Standard Feed Mix' (RecipeID will be 1 for first insert)
+INSERT OR IGNORE INTO FeedIngredients (RecipeID, IngredientName, DisplayOrder, MinValue, MaxValue, DefaultValue, Unit)
+VALUES 
+    (1, 'Corn Silage', 1, 0, 10000, 0, 'lbs'),
+    (1, 'High Moisture Corn', 2, 0, 5000, 0, 'lbs'),
+    (1, 'Supplement', 3, 0, 2000, 0, 'lbs'),
+    (1, 'Dry Hay', 4, 0, 5000, 0, 'lbs'),
+    (1, 'Haylage', 5, 0, 10000, 0, 'lbs');

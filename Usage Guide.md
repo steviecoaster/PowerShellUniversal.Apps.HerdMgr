@@ -465,7 +465,7 @@ Invoices display in a professional format with:
 
 **Header Section**:
 
-- Company name: Gundy Ridge Farms
+- Company name: Farm Name
 - Company address and contact information
 - Invoice number and date
 - Payment terms (NET 30)

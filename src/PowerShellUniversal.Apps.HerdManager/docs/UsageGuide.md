@@ -1,7 +1,7 @@
 <!-- Copy of Usage Guide for in-app help -->
 <!-- This file is intended to be displayed inside the dashboard Help page -->
 
-# 📖 Gundy Ridge Herd Manager - Usage Guide
+# 📖 Herd Manager - Usage Guide
 
 A comprehensive guide to using all features of the Herd Manager application.
 

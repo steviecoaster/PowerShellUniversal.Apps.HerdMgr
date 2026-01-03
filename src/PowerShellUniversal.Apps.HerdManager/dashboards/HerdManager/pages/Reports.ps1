@@ -40,8 +40,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                             borderLeft      = '4px solid #2e7d32'
                             padding         = '20px'
                         } -Content {
-                            New-UDTypography -Text "🐄 Active Cattle" -Variant h6 -Style @{color = '#2e7d32'; marginBottom = '10px'}
-                            New-UDTypography -Text $activeCattle.Count -Variant h3 -Style @{fontWeight = 'bold'; color = '#2e7d32'}
+                            New-UDTypography -Text "🐄 Active Cattle" -Variant h6 -Style @{color = '#2e7d32'; marginBottom = '10px' }
+                            New-UDTypography -Text $activeCattle.Count -Variant h3 -Style @{fontWeight = 'bold'; color = '#2e7d32' }
                         }
                     }
                     
@@ -53,8 +53,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                             borderLeft      = '4px solid #1976d2'
                             padding         = '20px'
                         } -Content {
-                            New-UDTypography -Text "🐂 Steers" -Variant h6 -Style @{color = '#1976d2'; marginBottom = '10px'}
-                            New-UDTypography -Text $steers -Variant h3 -Style @{fontWeight = 'bold'; color = '#1976d2'}
+                            New-UDTypography -Text "🐂 Steers" -Variant h6 -Style @{color = '#1976d2'; marginBottom = '10px' }
+                            New-UDTypography -Text $steers -Variant h3 -Style @{fontWeight = 'bold'; color = '#1976d2' }
                         }
                     }
                     
@@ -66,8 +66,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                             borderLeft      = '4px solid #c2185b'
                             padding         = '20px'
                         } -Content {
-                            New-UDTypography -Text "🐮 Heifers" -Variant h6 -Style @{color = '#c2185b'; marginBottom = '10px'}
-                            New-UDTypography -Text $heifers -Variant h3 -Style @{fontWeight = 'bold'; color = '#c2185b'}
+                            New-UDTypography -Text "🐮 Heifers" -Variant h6 -Style @{color = '#c2185b'; marginBottom = '10px' }
+                            New-UDTypography -Text $heifers -Variant h3 -Style @{fontWeight = 'bold'; color = '#c2185b' }
                         }
                     }
                     
@@ -79,8 +79,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                             borderLeft      = '4px solid #f57c00'
                             padding         = '20px'
                         } -Content {
-                            New-UDTypography -Text "⚖️ Avg Weight" -Variant h6 -Style @{color = '#f57c00'; marginBottom = '10px'}
-                            New-UDTypography -Text "$([Math]::Round($avgWeight, 0)) lbs" -Variant h3 -Style @{fontWeight = 'bold'; color = '#f57c00'}
+                            New-UDTypography -Text "⚖️ Avg Weight" -Variant h6 -Style @{color = '#f57c00'; marginBottom = '10px' }
+                            New-UDTypography -Text "$([Math]::Round($avgWeight, 0)) lbs" -Variant h3 -Style @{fontWeight = 'bold'; color = '#f57c00' }
                         }
                     }
                 }
@@ -93,9 +93,9 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                     # Status Breakdown
                     New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -Content {
                         New-UDCard -Content {
-                            New-UDTypography -Text "Cattle by Status" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32'}
+                            New-UDTypography -Text "Cattle by Status" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32' }
                             
-                            New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '300px'}} -Content {
+                            New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '300px' } } -Content {
                                 $statusGroups = $allCattle | Group-Object -Property Status
                                 $statusData = $statusGroups | ForEach-Object {
                                     [PSCustomObject]@{
@@ -106,7 +106,7 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 
                                 New-UDChartJS -Type doughnut -Data $statusData -DataProperty Count -LabelProperty Status -Options @{
                                     maintainAspectRatio = $false
-                                    plugins = @{
+                                    plugins             = @{
                                         legend = @{
                                             position = 'bottom'
                                         }
@@ -119,9 +119,9 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                     # Origin Farm Breakdown
                     New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -Content {
                         New-UDCard -Content {
-                            New-UDTypography -Text "Cattle by Origin Farm" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32'}
+                            New-UDTypography -Text "Cattle by Origin Farm" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32' }
                             
-                            New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '300px'}} -Content {
+                            New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '300px' } } -Content {
                                 $farmGroups = $activeCattle | Group-Object -Property OriginFarm
                                 $farmData = $farmGroups | ForEach-Object {
                                     [PSCustomObject]@{
@@ -132,8 +132,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 
                                 New-UDChartJS -Type bar -Data $farmData -DataProperty Count -LabelProperty Farm -Options @{
                                     maintainAspectRatio = $false
-                                    indexAxis = 'y'
-                                    scales = @{
+                                    indexAxis           = 'y'
+                                    scales              = @{
                                         x = @{
                                             beginAtZero = $true
                                         }
@@ -166,8 +166,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #2e7d32'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "Average ADG" -Variant h6 -Style @{color = '#2e7d32'; marginBottom = '10px'}
-                                New-UDTypography -Text "$([Math]::Round($avgADG, 2)) lbs/day" -Variant h4 -Style @{fontWeight = 'bold'; color = '#2e7d32'}
+                                New-UDTypography -Text "Average ADG" -Variant h6 -Style @{color = '#2e7d32'; marginBottom = '10px' }
+                                New-UDTypography -Text "$([Math]::Round($avgADG, 2)) lbs/day" -Variant h4 -Style @{fontWeight = 'bold'; color = '#2e7d32' }
                             }
                         }
                         
@@ -177,8 +177,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #1976d2'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "Top Performer" -Variant h6 -Style @{color = '#1976d2'; marginBottom = '10px'}
-                                New-UDTypography -Text "$([Math]::Round($maxADG, 2)) lbs/day" -Variant h4 -Style @{fontWeight = 'bold'; color = '#1976d2'}
+                                New-UDTypography -Text "Top Performer" -Variant h6 -Style @{color = '#1976d2'; marginBottom = '10px' }
+                                New-UDTypography -Text "$([Math]::Round($maxADG, 2)) lbs/day" -Variant h4 -Style @{fontWeight = 'bold'; color = '#1976d2' }
                             }
                         }
                         
@@ -188,8 +188,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #f57c00'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "Needs Attention" -Variant h6 -Style @{color = '#f57c00'; marginBottom = '10px'}
-                                New-UDTypography -Text "$([Math]::Round($minADG, 2)) lbs/day" -Variant h4 -Style @{fontWeight = 'bold'; color = '#f57c00'}
+                                New-UDTypography -Text "Needs Attention" -Variant h6 -Style @{color = '#f57c00'; marginBottom = '10px' }
+                                New-UDTypography -Text "$([Math]::Round($minADG, 2)) lbs/day" -Variant h4 -Style @{fontWeight = 'bold'; color = '#f57c00' }
                             }
                         }
                     }
@@ -200,9 +200,9 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                     New-UDGrid -Container -Spacing 3 -Content {
                         New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -Content {
                             New-UDCard -Content {
-                                New-UDTypography -Text "ADG Comparison by Gender" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32'}
+                                New-UDTypography -Text "ADG Comparison by Gender" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32' }
                                 
-                                New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '250px'}} -Content {
+                                New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '250px' } } -Content {
                                     $genderADG = $rogData | Group-Object -Property Gender | ForEach-Object {
                                         [PSCustomObject]@{
                                             Gender = $_.Name
@@ -212,12 +212,12 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                     
                                     New-UDChartJS -Type bar -Data $genderADG -DataProperty AvgADG -LabelProperty Gender -Options @{
                                         maintainAspectRatio = $false
-                                        scales = @{
+                                        scales              = @{
                                             y = @{
                                                 beginAtZero = $true
-                                                title = @{
+                                                title       = @{
                                                     display = $true
-                                                    text = 'Average Daily Gain (lbs/day)'
+                                                    text    = 'Average Daily Gain (lbs/day)'
                                                 }
                                             }
                                         }
@@ -229,9 +229,9 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                         # Performance by Origin Farm
                         New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -Content {
                             New-UDCard -Content {
-                                New-UDTypography -Text "ADG by Origin Farm" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32'}
+                                New-UDTypography -Text "ADG by Origin Farm" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32' }
                                 
-                                New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '250px'}} -Content {
+                                New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '250px' } } -Content {
                                     $farmADG = $rogData | Group-Object -Property OriginFarm | ForEach-Object {
                                         [PSCustomObject]@{
                                             Farm   = $_.Name
@@ -241,13 +241,13 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                     
                                     New-UDChartJS -Type bar -Data $farmADG -DataProperty AvgADG -LabelProperty Farm -Options @{
                                         maintainAspectRatio = $false
-                                        indexAxis = 'y'
-                                        scales = @{
+                                        indexAxis           = 'y'
+                                        scales              = @{
                                             x = @{
                                                 beginAtZero = $true
-                                                title = @{
+                                                title       = @{
                                                     display = $true
-                                                    text = 'Average Daily Gain (lbs/day)'
+                                                    text    = 'Average Daily Gain (lbs/day)'
                                                 }
                                             }
                                         }
@@ -261,7 +261,7 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                     
                     # Top and Bottom Performers Table
                     New-UDCard -Content {
-                        New-UDTypography -Text "Individual Performance" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32'}
+                        New-UDTypography -Text "Individual Performance" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32' }
                         
                         $sortedRog = $rogData | Sort-Object -Property AverageDailyGain -Descending | Select-Object -First 20
                         
@@ -275,7 +275,7 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                             New-UDTableColumn -Property AverageDailyGain -Title "ADG (lbs/day)" -Render {
                                 $adg = [Math]::Round($EventData.AverageDailyGain, 2)
                                 $color = if ($adg -gt $avgADG) { '#2e7d32' } else { '#f57c00' }
-                                New-UDTypography -Text $adg -Style @{fontWeight = 'bold'; color = $color}
+                                New-UDTypography -Text $adg -Style @{fontWeight = 'bold'; color = $color }
                             }
                             New-UDTableColumn -Property TotalWeightGain -Title "Total Gain (lbs)" -Render {
                                 [Math]::Round($EventData.TotalWeightGain, 1)
@@ -286,7 +286,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                         New-UDTable -Data $sortedRog -Columns $columns -Dense -ShowSort -ShowPagination -PageSize 10
                     }
                     
-                } else {
+                }
+                else {
                     New-UDAlert -Severity info -Text "No rate of gain calculations available yet. Add weight records and calculate ADG to see performance data."
                 }
             }
@@ -313,8 +314,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #2e7d32'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "Total Records" -Variant h6 -Style @{color = '#2e7d32'; marginBottom = '10px'}
-                                New-UDTypography -Text $totalRecords -Variant h3 -Style @{fontWeight = 'bold'; color = '#2e7d32'}
+                                New-UDTypography -Text "Total Records" -Variant h6 -Style @{color = '#2e7d32'; marginBottom = '10px' }
+                                New-UDTypography -Text $totalRecords -Variant h3 -Style @{fontWeight = 'bold'; color = '#2e7d32' }
                             }
                         }
                         
@@ -324,8 +325,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #1976d2'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "💉 Vaccinations" -Variant h6 -Style @{color = '#1976d2'; marginBottom = '10px'}
-                                New-UDTypography -Text $vaccinations -Variant h3 -Style @{fontWeight = 'bold'; color = '#1976d2'}
+                                New-UDTypography -Text "💉 Vaccinations" -Variant h6 -Style @{color = '#1976d2'; marginBottom = '10px' }
+                                New-UDTypography -Text $vaccinations -Variant h3 -Style @{fontWeight = 'bold'; color = '#1976d2' }
                             }
                         }
                         
@@ -335,8 +336,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #c2185b'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "🏥 Treatments" -Variant h6 -Style @{color = '#c2185b'; marginBottom = '10px'}
-                                New-UDTypography -Text $treatments -Variant h3 -Style @{fontWeight = 'bold'; color = '#c2185b'}
+                                New-UDTypography -Text "🏥 Treatments" -Variant h6 -Style @{color = '#c2185b'; marginBottom = '10px' }
+                                New-UDTypography -Text $treatments -Variant h3 -Style @{fontWeight = 'bold'; color = '#c2185b' }
                             }
                         }
                         
@@ -346,8 +347,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #f57c00'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "💰 Total Cost" -Variant h6 -Style @{color = '#f57c00'; marginBottom = '10px'}
-                                New-UDTypography -Text "`$$([Math]::Round($totalCost, 2))" -Variant h3 -Style @{fontWeight = 'bold'; color = '#f57c00'}
+                                New-UDTypography -Text "💰 Total Cost" -Variant h6 -Style @{color = '#f57c00'; marginBottom = '10px' }
+                                New-UDTypography -Text "`$$([Math]::Round($totalCost, 2))" -Variant h3 -Style @{fontWeight = 'bold'; color = '#f57c00' }
                             }
                         }
                     }
@@ -359,9 +360,9 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                         # Record Type Distribution
                         New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -Content {
                             New-UDCard -Content {
-                                New-UDTypography -Text "Health Records by Type" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32'}
+                                New-UDTypography -Text "Health Records by Type" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32' }
                                 
-                                New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '300px'}} -Content {
+                                New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '300px' } } -Content {
                                     $typeGroups = $healthRecords | Group-Object -Property RecordType
                                     $typeData = $typeGroups | ForEach-Object {
                                         [PSCustomObject]@{
@@ -372,7 +373,7 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                     
                                     New-UDChartJS -Type doughnut -Data $typeData -DataProperty Count -LabelProperty Type -Options @{
                                         maintainAspectRatio = $false
-                                        plugins = @{
+                                        plugins             = @{
                                             legend = @{
                                                 position = 'bottom'
                                             }
@@ -385,24 +386,24 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                         # Cost by Type
                         New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -Content {
                             New-UDCard -Content {
-                                New-UDTypography -Text "Health Costs by Type" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32'}
+                                New-UDTypography -Text "Health Costs by Type" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32' }
                                 
-                                New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '250px'}} -Content {
+                                New-UDElement -Tag 'div' -Attributes @{style = @{maxHeight = '250px' } } -Content {
                                     $costByType = $healthRecords | Where-Object { $_.Cost } | Group-Object -Property RecordType | ForEach-Object {
                                         [PSCustomObject]@{
-                                            Type       = $_.Name
+                                            Type      = $_.Name
                                             TotalCost = [Math]::Round(($_.Group | Measure-Object -Property Cost -Sum).Sum, 2)
                                         }
                                     } | Sort-Object -Property TotalCost -Descending
                                     
                                     New-UDChartJS -Type bar -Data $costByType -DataProperty TotalCost -LabelProperty Type -Options @{
                                         maintainAspectRatio = $false
-                                        scales = @{
+                                        scales              = @{
                                             y = @{
                                                 beginAtZero = $true
-                                                title = @{
+                                                title       = @{
                                                     display = $true
-                                                    text = 'Total Cost ($)'
+                                                    text    = 'Total Cost ($)'
                                                 }
                                             }
                                         }
@@ -416,7 +417,7 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                     
                     # Animals with Most Health Events
                     New-UDCard -Content {
-                        New-UDTypography -Text "Cattle Health Activity" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32'}
+                        New-UDTypography -Text "Cattle Health Activity" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32' }
                         
                         $cattleHealth = $healthRecords | Group-Object -Property CattleID | ForEach-Object {
                             $records = $_.Group
@@ -442,12 +443,13 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                         New-UDTable -Data $cattleHealth -Columns $columns -Dense
                     }
                     
-                } else {
+                }
+                else {
                     New-UDAlert -Severity info -Text "No health records available yet. Add health records to see health analytics."
                 }
             }
         }
-        
+
         # Tab 4: Cost Analysis
         New-UDTab -Text "Cost Analysis" -Icon (New-UDIcon -Icon DollarSign) -Content {
             New-UDDynamic -Content {
@@ -469,8 +471,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #f57c00'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "Total Health Costs" -Variant h6 -Style @{color = '#f57c00'; marginBottom = '10px'}
-                                New-UDTypography -Text "`$$([Math]::Round($totalHealthCost, 2))" -Variant h3 -Style @{fontWeight = 'bold'; color = '#f57c00'}
+                                New-UDTypography -Text "Total Health Costs" -Variant h6 -Style @{color = '#f57c00'; marginBottom = '10px' }
+                                New-UDTypography -Text "`$$([Math]::Round($totalHealthCost, 2))" -Variant h3 -Style @{fontWeight = 'bold'; color = '#f57c00' }
                             }
                         }
                         
@@ -480,8 +482,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #1976d2'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "Avg Cost Per Event" -Variant h6 -Style @{color = '#1976d2'; marginBottom = '10px'}
-                                New-UDTypography -Text "`$$([Math]::Round($avgCostPerEvent, 2))" -Variant h3 -Style @{fontWeight = 'bold'; color = '#1976d2'}
+                                New-UDTypography -Text "Avg Cost Per Event" -Variant h6 -Style @{color = '#1976d2'; marginBottom = '10px' }
+                                New-UDTypography -Text "`$$([Math]::Round($avgCostPerEvent, 2))" -Variant h3 -Style @{fontWeight = 'bold'; color = '#1976d2' }
                             }
                         }
                         
@@ -491,8 +493,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #2e7d32'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "Cost Per Head" -Variant h6 -Style @{color = '#2e7d32'; marginBottom = '10px'}
-                                New-UDTypography -Text "`$$([Math]::Round($costPerHead, 2))" -Variant h3 -Style @{fontWeight = 'bold'; color = '#2e7d32'}
+                                New-UDTypography -Text "Cost Per Head" -Variant h6 -Style @{color = '#2e7d32'; marginBottom = '10px' }
+                                New-UDTypography -Text "`$$([Math]::Round($costPerHead, 2))" -Variant h3 -Style @{fontWeight = 'bold'; color = '#2e7d32' }
                             }
                         }
                         
@@ -502,8 +504,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                                 borderLeft      = '4px solid #c2185b'
                                 padding         = '20px'
                             } -Content {
-                                New-UDTypography -Text "Active Cattle" -Variant h6 -Style @{color = '#c2185b'; marginBottom = '10px'}
-                                New-UDTypography -Text $activeCattle -Variant h3 -Style @{fontWeight = 'bold'; color = '#c2185b'}
+                                New-UDTypography -Text "Active Cattle" -Variant h6 -Style @{color = '#c2185b'; marginBottom = '10px' }
+                                New-UDTypography -Text $activeCattle -Variant h3 -Style @{fontWeight = 'bold'; color = '#c2185b' }
                             }
                         }
                     }
@@ -512,7 +514,7 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                     
                     # Cost Breakdown
                     New-UDCard -Content {
-                        New-UDTypography -Text "Most Expensive Health Events" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32'}
+                        New-UDTypography -Text "Most Expensive Health Events" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32' }
                         
                         $expensiveEvents = $healthCosts | Sort-Object -Property Cost -Descending | Select-Object -First 10
                         
@@ -527,23 +529,127 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                             New-UDTableColumn -Property RecordType -Title "Type"
                             New-UDTableColumn -Property Title -Title "Title"
                             New-UDTableColumn -Property Cost -Title "Cost" -Render {
-                                New-UDTypography -Text "`$$($EventData.Cost)" -Style @{fontWeight = 'bold'; color = '#f57c00'}
+                                New-UDTypography -Text "`$$($EventData.Cost)" -Style @{fontWeight = 'bold'; color = '#f57c00' }
                             }
                         )
                         
                         New-UDTable -Data $expensiveEvents -Columns $columns -Dense -ShowSort
                     }
                     
-                } else {
+                }
+                else {
                     New-UDAlert -Severity info -Text "No cost data available yet. Add health records with cost information to see financial analytics."
                 }
             }
         }
-    }
+
+        # Tab 5: Feed Tonnage
+        New-UDTab -Text "Feed Tonnage" -Icon (New-UDIcon -Icon ChartBar) -Content {
+            New-UDDynamic -Id 'feed-tonnage-report' -Content {
+                New-UDCard -Title "📊 Feed Tonnage Analysis" -Content {
+                    New-UDForm -Content {
+                        New-UDGrid -Container -Content {
+                            New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -Content {
+                                New-UDDatePicker -Id 'report-start-date' -Label 'Start Date' -Value ((Get-Date).AddMonths(-3).ToString('yyyy-MM-dd'))
+                            }
+                            New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -Content {
+                                New-UDDatePicker -Id 'report-end-date' -Label 'End Date' -Value (Get-Date).ToString('yyyy-MM-dd')
+                            }
+                        }
+                        
+                        New-UDCheckbox -Id 'group-by-month' -Label 'Group by Month' -Checked $true
+                        
+                    } -OnSubmit {
+                        try {
+                            $startDate = Parse-Date $EventData.'report-start-date'
+                            $endDate = Parse-Date $EventData.'report-end-date'
+                            $groupByMonth = $EventData.'group-by-month'
+                            
+                            $reportParams = @{
+                                StartDate = $startDate
+                                EndDate   = $endDate
+                            }
+                            
+                            if ($groupByMonth) {
+                                $reportParams['GroupByMonth'] = $true
+                            }
+                            
+                            $tonnageData = Get-FeedTonnageReport @reportParams
+                            
+                            if ($tonnageData) {
+                                # Store in session for display
+                                $Session:TonnageData = $tonnageData
+                                Sync-UDElement -Id 'tonnage-results'
+                                Show-UDToast -Message "Report generated successfully" -MessageColor green -Duration 2000
+                            }
+                            else {
+                                Show-UDToast -Message "No data found for the selected date range" -MessageColor warning -Duration 3000
+                            }
+                        }
+                        catch {
+                            Show-UDToast -Message "Error generating report: $($_.Exception.Message)" -MessageColor red -Duration 5000
+                        }
+                    }
+                    
+                    # Display tonnage results
+                    New-UDDynamic -Id 'tonnage-results' -Content {
+                        if ($Session:TonnageData) {
+                            $data = $Session:TonnageData
+                            
+                            # Summary statistics
+                            $totalTons = ($data | Measure-Object -Property TotalTons -Sum).Sum
+                            $uniqueIngredients = ($data | Select-Object -Property Ingredient -Unique).Count
+                            
+                            New-UDGrid -Container -Content {
+                                New-UDGrid -Item -ExtraSmallSize 6 -MediumSize 3 -Content {
+                                    New-UDCard -Content {
+                                        New-UDTypography -Text "Total Tonnage" -Variant body2 -Style @{color = '#666' }
+                                        New-UDTypography -Text ("{0:N2} tons" -f $totalTons) -Variant h5 -Style @{fontWeight = 'bold'; color = '#2e7d32' }
+                                    }
+                                }
+                                New-UDGrid -Item -ExtraSmallSize 6 -MediumSize 3 -Content {
+                                    New-UDCard -Content {
+                                        New-UDTypography -Text "Ingredients Tracked" -Variant body2 -Style @{color = '#666' }
+                                        New-UDTypography -Text $uniqueIngredients -Variant h5 -Style @{fontWeight = 'bold'; color = '#1976d2' }
+                                    }
+                                }
+                            }
+                            
+                            New-UDElement -Tag 'br'
+                            
+                            # Table with tonnage data
+                            $columns = @(
+                                New-UDTableColumn -Property Ingredient -Title "Ingredient" -ShowSort
+                                New-UDTableColumn -Property TotalPounds -Title "Total Pounds" -ShowSort -Render {
+                                    "{0:N0}" -f [decimal]$EventData.TotalPounds
+                                }
+                                New-UDTableColumn -Property TotalTons -Title "Total Tons" -ShowSort -Render {
+                                    New-UDElement -Tag 'strong' -Content {
+                                        "{0:N2}" -f [decimal]$EventData.TotalTons
+                                    }
+                                }
+                            )
+                            
+                            # Add Period/Month column if grouped by month
+                            if ($data[0].PSObject.Properties.Name -contains 'MonthName') {
+                                $columns = @(
+                                    New-UDTableColumn -Property MonthName -Title "Month" -ShowSort
+                                ) + $columns
+                            }
+                            elseif ($data[0].PSObject.Properties.Name -contains 'Period') {
+                                $columns = @(
+                                    New-UDTableColumn -Property Period -Title "Period" -ShowSort
+                                ) + $columns
+                            }
+                            
+                            New-UDTable -Data $data -Columns $columns -Sort -ShowPagination -PageSize 20 -Dense -ShowSearch -Title "Tonnage Breakdown"
+                        }
+                        else {
+                            New-UDAlert -Severity info -Text "Select a date range and click 'Submit' to generate a tonnage report."
+                        }
+                    }
+                }
+            }
+        }
+    }  
 }
-
-
-
-
-
-

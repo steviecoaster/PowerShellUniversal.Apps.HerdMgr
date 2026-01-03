@@ -28,7 +28,7 @@ param(
     [string]$SourcePath = (Join-Path $PSScriptRoot '..\PowerShellUniversal.Apps.HerdManager'),
     [string]$TargetModulePath = 'C:\ProgramData\UniversalAutomation\Repository\Modules\PowerShellUniversal.Apps.HerdManager',
     [switch]$RestartService,
-    [string]$ServiceName = 'UniversalAutomation'
+    [string]$ServiceName = 'POwerShellUniversal'
 )
 
 if (-not (Test-Path $SourcePath)) {

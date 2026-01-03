@@ -1,4 +1,4 @@
-# Sample Data Script for Gundy Ridge Herd Manager
+# Sample Data Script for Herd Manager
 # This script creates hyper-realistic sample data for a commercial cattle operation
 # Reflects real-world cattle ranching scenarios with proper tag numbering
 

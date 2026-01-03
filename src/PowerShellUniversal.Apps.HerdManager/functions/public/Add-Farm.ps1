@@ -83,15 +83,11 @@ function Add-Farm {
     $query = "INSERT INTO Farms (FarmName, Address, City, State, ZipCode, PhoneNumber, Email, ContactPerson, Notes, IsOrigin, IsActive) VALUES ($farmNameValue, $addressValue, $cityValue, $stateValue, $zipValue, $phoneValue, $emailValue, $contactValue, $notesValue, $isOriginValue, 1)"
 
     try {
-        Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
+        Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query -ErrorAction Stop
         Write-Verbose "Created farm: $FarmName"
     }
     catch {
-        if ($_.Exception.Message -like '*UNIQUE constraint failed*') {
-            throw "A farm with the name '$FarmName' already exists."
-        } else {
-            throw $_
-        }
+      $_.Exception.Message
     }
 }
 
