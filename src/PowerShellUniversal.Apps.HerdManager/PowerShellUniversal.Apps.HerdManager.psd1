@@ -30,7 +30,7 @@
     Copyright         = '(c) Stephen Valdinger. All rights reserved.'
 
     # Description of the functionality provided by this module
-    # Description = ''
+    Description       = 'PowerShell Universal dashboard application for cattle herd management, including weight tracking, rate of gain calculations, health records, feed records with dynamic recipe management, and invoicing capabilities.'
 
     # Minimum version of the PowerShell engine required by this module
     # PowerShellVersion = ''

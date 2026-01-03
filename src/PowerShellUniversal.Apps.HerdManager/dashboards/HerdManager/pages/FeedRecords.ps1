@@ -223,10 +223,14 @@ Haylage
                     Add-FeedRecord -FeedDate $feedDate -IngredientAmounts $ingredientAmounts -TotalPounds $totalPounds -Notes $notes -RecordedBy $recordedBy
 
                     Show-UDToast -Message ("Feed record added successfully for {0}" -f (Format-Date $feedDate)) -MessageColor green -Duration 3000
+                    
+                    # Sync both the form and the table
+                    Sync-UDElement -Id 'feed-form-card'
                     Sync-UDElement -Id 'feed-records-table'
                 }
                 catch {
                     Show-UDToast -Message "Error adding feed record: $($_.Exception.Message)" -MessageColor red -Duration 5000
+                    Write-Error "Feed record error: $_"
                 }
             }
         }

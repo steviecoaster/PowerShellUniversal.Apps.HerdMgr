@@ -111,10 +111,14 @@ function Add-FeedRecord {
     if ($IngredientAmounts) {
         $jsonString = $IngredientAmounts | ConvertTo-Json -Compress
         $ingredientAmountsValue = ConvertTo-SqlValue -Value $jsonString
+        Write-Verbose "IngredientAmounts JSON: $jsonString"
+        Write-Verbose "IngredientAmounts SQL Value: $ingredientAmountsValue"
     }
 
     $query = "INSERT INTO FeedRecords (FeedDate, HaylagePounds, SilagePounds, HighMoistureCornPounds, TotalPounds, IngredientAmounts, Notes, RecordedBy, CreatedDate) VALUES ($feedDateValue, $haylageValue, $silageValue, $cornValue, $totalValue, $ingredientAmountsValue, $notesValue, $recordedByValue, $createdDateValue)"
 
+    Write-Verbose "SQL Query: $query"
+    
     try {
     Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query $query
     Write-Verbose "Feed record added for $(Format-Date $FeedDate)"
