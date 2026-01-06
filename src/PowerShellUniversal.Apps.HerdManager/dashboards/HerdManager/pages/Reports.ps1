@@ -19,11 +19,9 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
         }
     }
     
-    # Report Selector Tabs
-    New-UDTabs -Tabs {
-        
-        # Tab 1: Herd Overview Dashboard
-        New-UDTab -Text "Herd Overview" -Icon (New-UDIcon -Icon ChartPie) -Content {
+    New-UDExpansionPanelGroup -Children {
+        # Herd Overview Dashboard
+        New-UDExpansionPanel -Title "📊 Herd Overview" -Id 'herd-overview' -Children {
             New-UDDynamic -Content {
                 
                 # Get all cattle data
@@ -146,8 +144,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
             }
         }
         
-        # Tab 2: Rate of Gain Summary
-        New-UDTab -Text "Rate of Gain" -Icon (New-UDIcon -Icon ChartLine) -Content {
+        # Rate of Gain Summary
+        New-UDExpansionPanel -Title "📈 Rate of Gain" -Id 'rate-of-gain' -Children {
             New-UDDynamic -Content {
                 
                 $rogData = Get-RateOfGainHistory -Limit 100
@@ -293,8 +291,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
             }
         }
         
-        # Tab 3: Health Summary
-        New-UDTab -Text "Health Summary" -Icon (New-UDIcon -Icon Heartbeat) -Content {
+        # Health Summary
+        New-UDExpansionPanel -Title "💊 Health Summary" -Id 'health-summary' -Children {
             New-UDDynamic -Content {
                 
                 $healthRecords = Get-HealthRecords
@@ -450,8 +448,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
             }
         }
 
-        # Tab 4: Cost Analysis
-        New-UDTab -Text "Cost Analysis" -Icon (New-UDIcon -Icon DollarSign) -Content {
+        # Cost Analysis
+        New-UDExpansionPanel -Title "💰 Cost Analysis" -Id 'cost-analysis' -Children {
             New-UDDynamic -Content {
                 
                 $healthRecords = Get-HealthRecords
@@ -543,8 +541,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
             }
         }
 
-        # Tab 5: Feed Tonnage
-        New-UDTab -Text "Feed Tonnage" -Icon (New-UDIcon -Icon ChartBar) -Content {
+        # Feed Tonnage
+        New-UDExpansionPanel -Title "🌾 Feed Tonnage" -Id 'feed-tonnage' -Children {
             New-UDDynamic -Id 'feed-tonnage-report' -Content {
                 New-UDCard -Title "📊 Feed Tonnage Analysis" -Content {
                     New-UDForm -Content {
@@ -651,5 +649,5 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                 }
             }
         }
-    }  
+    }
 }
