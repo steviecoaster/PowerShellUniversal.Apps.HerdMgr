@@ -54,7 +54,7 @@ try {
     Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query "PRAGMA journal_mode = WAL;"
     Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query "PRAGMA synchronous = 2;"
     Invoke-UniversalSQLiteQuery -Path $script:DatabasePath -Query "PRAGMA wal_autocheckpoint = 1000;"
-    Write-Verbose "Database PRAGMAs enforced: journal_mode=WAL, synchronous=2, wal_autocheckpoint=1000"
+    Write-Verbose "Database PRAGMAs enforced: journal_mode=WAL, synchronous=2, wal_autocheckpoint=1000 (busy_timeout set per-query)"
 }
 catch {
     Write-Warning "Failed to enforce database PRAGMAs: $_"

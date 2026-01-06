@@ -41,14 +41,14 @@ function Invoke-UniversalSQLiteQuery {
     # Resolve full path
     $dbPath = Resolve-Path $Path | Select-Object -ExpandProperty Path
     
+    # Use .timeout command for sqlite3 CLI (doesn't return output, just sets connection timeout)
+    # This is critical for concurrent access in web apps (5000ms = 5 seconds)
+    $timeoutCmd = ".timeout 5000"
+    $combinedInput = "$timeoutCmd`n$Query"
+    
     # Try JSON output first (best for structured data)
-    # If the query starts with a SQL comment or is multi-line, pass via stdin to avoid sqlite3 parsing it as CLI options
-    if ($Query -match "^\s*--" -or $Query -match "\n") {
-        $output = $Query | sqlite3 $dbPath -json - 2>&1
-    }
-    else {
-        $output = sqlite3 $dbPath -json $Query 2>&1
-    }
+    # Always pass via stdin to ensure .timeout command is processed first
+    $output = $combinedInput | sqlite3 $dbPath -json - 2>&1
     
     # Check for errors
     if ($LASTEXITCODE -ne 0) {
@@ -64,12 +64,7 @@ function Invoke-UniversalSQLiteQuery {
         }
         catch {
             # JSON parsing failed, try CSV mode for better compatibility
-            if ($Query -match "^\s*--" -or $Query -match "\n") {
-                $csvOutput = $Query | sqlite3 $dbPath -csv -header - 2>&1
-            }
-            else {
-                $csvOutput = sqlite3 $dbPath -csv -header $Query 2>&1
-            }
+            $csvOutput = $combinedInput | sqlite3 $dbPath -csv -header - 2>&1
             
             if ($LASTEXITCODE -eq 0 -and $csvOutput) {
                 try {
