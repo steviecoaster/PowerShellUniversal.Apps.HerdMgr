@@ -176,15 +176,102 @@ Haylage
             New-UDForm -Content {
                 New-UDDatePicker -Id 'feed-date' -Label 'Feed Date' -Value (Get-Date).ToString('yyyy-MM-dd')
                 
-                # Dynamically generate sliders for each ingredient
+                # Dynamically generate input controls with +/- buttons for each ingredient
                 foreach ($ingredient in $ingredients) {
-                    $sliderId = "ingredient-$($ingredient.IngredientID)"
+                    $inputId = "ingredient-$($ingredient.IngredientID)"
                     $min = [int]$ingredient.MinValue
                     $max = [int]$ingredient.MaxValue
                     $default = [int]$ingredient.DefaultValue
                     
-                    New-UDSlider -Id $sliderId -Min $min -Max $max -Value $default -ValueLabelDisplay 'on'
-                    New-UDTypography -Text "$($ingredient.IngredientName) ($($ingredient.Unit))" -Variant body2 -Style @{marginBottom = '10px'; color = '#666' }
+                    # Container for each ingredient row
+                    New-UDElement -Tag 'div' -Attributes @{
+                        style = @{
+                            display = 'flex'
+                            flexDirection = 'row'
+                            gap = '12px'
+                            marginBottom = '12px'
+                            alignItems = 'center'
+                            maxWidth = '600px'
+                            flexWrap = 'wrap'
+                        }
+                    } -Content {
+                        # Label section (left side)
+                        New-UDPaper -Content {
+                            New-UDTypography -Text "$($ingredient.IngredientName)" -Variant body2 -Style @{
+                                fontWeight = '500'
+                                color = '#424242'
+                                lineHeight = '1.2'
+                            }
+                            New-UDTypography -Text "($($ingredient.Unit))" -Variant caption -Style @{
+                                color = '#757575'
+                                fontSize = '0.7rem'
+                            }
+                        } -Elevation 0 -Style @{
+                            padding = '8px 12px'
+                            display = 'flex'
+                            flexDirection = 'column'
+                            justifyContent = 'center'
+                            minWidth = '120px'
+                            flex = '0 0 auto'
+                            backgroundColor = '#f5f5f5'
+                            borderRadius = '6px'
+                        }
+                        
+                        # Input controls (right side)
+                        New-UDElement -Tag 'div' -Attributes @{
+                            style = @{
+                                display = 'flex'
+                                flexDirection = 'row'
+                                gap = '8px'
+                                alignItems = 'center'
+                                flex = '1 1 auto'
+                                minWidth = '200px'
+                            }
+                        } -Content {
+                            # Minus button
+                            New-UDButton -Text "-" -OnClick {
+                                $currentValue = (Get-UDElement -Id $inputId).value
+                                if ($null -eq $currentValue -or $currentValue -eq '') {
+                                    $currentValue = $default
+                                }
+                                $newValue = [Math]::Max($min, [int]$currentValue - 100)
+                                Set-UDElement -Id $inputId -Properties @{ value = $newValue }
+                            } -Variant outlined -Style @{
+                                fontSize = '18px'
+                                fontWeight = 'bold'
+                                minWidth = '48px'
+                                width = '48px'
+                                height = '48px'
+                                padding = '8px'
+                                borderRadius = '6px'
+                            }
+                            
+                            # Number input
+                            New-UDTextbox -Id $inputId -Type number -Value $default -Style @{
+                                flex = '1 1 auto'
+                                minWidth = '80px'
+                                maxWidth = '120px'
+                            }
+                            
+                            # Plus button
+                            New-UDButton -Text "+" -OnClick {
+                                $currentValue = (Get-UDElement -Id $inputId).value
+                                if ($null -eq $currentValue -or $currentValue -eq '') {
+                                    $currentValue = $default
+                                }
+                                $newValue = [Math]::Min($max, [int]$currentValue + 100)
+                                Set-UDElement -Id $inputId -Properties @{ value = $newValue }
+                            } -Variant outlined -Style @{
+                                fontSize = '18px'
+                                fontWeight = 'bold'
+                                minWidth = '48px'
+                                width = '48px'
+                                height = '48px'
+                                padding = '8px'
+                                borderRadius = '6px'
+                            }
+                        }
+                    }
                 }
                 
                 New-UDTextbox -Id 'feed-notes' -Label 'Notes (Optional)' -Multiline -Rows 3
@@ -205,13 +292,13 @@ Haylage
                     $rawDate = $EventData.'feed-date'
                     try { $feedDate = Parse-Date $rawDate } catch { throw "Invalid date format for Feed Date: $rawDate" }
 
-                    # Build ingredient amounts hashtable from slider values
+                    # Build ingredient amounts hashtable from input values
                     $ingredientAmounts = @{}
                     $totalPounds = 0
                     
                     foreach ($ingredient in $ingredients) {
-                        $sliderId = "ingredient-$($ingredient.IngredientID)"
-                        $amount = [decimal]$EventData.$sliderId
+                        $inputId = "ingredient-$($ingredient.IngredientID)"
+                        $amount = [decimal]$EventData.$inputId
                         $ingredientAmounts[$ingredient.IngredientName] = $amount
                         $totalPounds += $amount
                     }
@@ -249,7 +336,8 @@ Haylage
             $activeRecipe = Get-FeedRecipe -Active -IncludeIngredients
             $ingredients = if ($activeRecipe) { $activeRecipe.Ingredients } else { @() }
             
-            $query = "SELECT FeedRecordID, FeedDate, HaylagePounds, SilagePounds, HighMoistureCornPounds, IngredientAmounts, TotalPounds, Notes, RecordedBy, CreatedDate FROM FeedRecords ORDER BY FeedDate DESC LIMIT 50"
+            # Simplified query - only get IngredientAmounts (JSON) and other essential fields
+            $query = "SELECT FeedRecordID, FeedDate, IngredientAmounts, TotalPounds, Notes, RecordedBy, CreatedDate FROM FeedRecords ORDER BY FeedDate DESC LIMIT 50"
             
             $feedRecords = Invoke-UniversalSQLiteQuery -Path (Get-DatabasePath) -Query $query
             
@@ -269,13 +357,14 @@ Haylage
                 if ($ingredients.Count -gt 0) {
                     foreach ($ingredient in $ingredients) {
                         $ingName = $ingredient.IngredientName
-                        $columns += New-UDTableColumn -Property "Ing_$($ingredient.IngredientID)" -Title "$ingName ($($ingredient.Unit))" -Render {
+                        # Create scriptblock with ingredient name embedded as a string literal
+                        $renderScript = [scriptblock]::Create(@"
                             try {
-                                if ($EventData.IngredientAmounts) {
-                                    $amounts = $EventData.IngredientAmounts | ConvertFrom-Json
-                                    $value = $amounts.$ingName
-                                    if ($value) {
-                                        "{0:N0}" -f [decimal]$value
+                                if (`$EventData.IngredientAmounts) {
+                                    `$amounts = `$EventData.IngredientAmounts | ConvertFrom-Json
+                                    `$value = `$amounts.'$ingName'
+                                    if (`$null -ne `$value) {
+                                        "{0:N0}" -f [decimal]`$value
                                     }
                                     else {
                                         "-"
@@ -288,20 +377,13 @@ Haylage
                             catch {
                                 "-"
                             }
-                        }
+"@)
+                        $columns += New-UDTableColumn -Property "Ing_$($ingredient.IngredientID)" -Title "$ingName ($($ingredient.Unit))" -Render $renderScript
                     }
                 }
                 else {
-                    # Fall back to legacy columns
-                    $columns += New-UDTableColumn -Property HaylagePounds -Title "Haylage (lbs)" -ShowSort -Render {
-                        "{0:N0}" -f [decimal]$EventData.HaylagePounds
-                    }
-                    $columns += New-UDTableColumn -Property SilagePounds -Title "Silage (lbs)" -ShowSort -Render {
-                        "{0:N0}" -f [decimal]$EventData.SilagePounds
-                    }
-                    $columns += New-UDTableColumn -Property HighMoistureCornPounds -Title "High Moisture Corn (lbs)" -ShowSort -Render {
-                        "{0:N0}" -f [decimal]$EventData.HighMoistureCornPounds
-                    }
+                    # No active recipe - display generic ingredient data message
+                    New-UDAlert -Severity warning -Text "No active recipe configured. Please set up a recipe to see ingredient columns."
                 }
                 
                 $columns += New-UDTableColumn -Property TotalPounds -Title "Total (lbs)" -ShowSort -Render {
