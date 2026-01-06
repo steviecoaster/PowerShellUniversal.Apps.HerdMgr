@@ -1,38 +1,23 @@
 $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
     
     # Page Header
-    New-UDCard -Style @{
+    New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.PageHeader.Hero -CustomStyle @{
         backgroundColor = '#2e7d32'
         color           = 'white'
         padding         = '30px'
-        marginBottom    = '30px'
-        borderRadius    = '8px'
         backgroundImage = 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)'
-        boxShadow       = '0 4px 6px rgba(0,0,0,0.1)'
-    } -Content {
-        New-UDTypography -Text "⚖️ Weight Management" -Variant h4 -Style @{
-            fontWeight   = 'bold'
-            marginBottom = '10px'
-        }
-        New-UDTypography -Text "Record and track weight measurements for your cattle" -Variant body1 -Style @{
-            opacity = '0.9'
-        }
+    }) -Content {
+        New-UDTypography -Text "⚖️ Weight Management" -Variant h4 -Style $HerdStyles.PageHeader.Title
+        New-UDTypography -Text "Record and track weight measurements for your cattle" -Variant body1 -Style $HerdStyles.PageHeader.Subtitle
     }
     
     # Buttons container
-    New-UDGrid -Container -Spacing 2 -Style @{marginBottom = '20px' } -Content {
+    New-UDGrid -Container -Spacing 2 -Style $HerdStyles.Layout.Container -Content {
         # Add New Weight Record Button
         New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -MediumSize 4 -Content {
-            New-UDButton -Text "➕ Add Weight Record" -Variant contained -FullWidth -Style @{
-                backgroundColor = '#2e7d32'
-                color           = 'white'
-            } -OnClick {
+            New-UDButton -Text "➕ Add Weight Record" -Variant contained -FullWidth -Style $HerdStyles.Button.Primary -OnClick {
                 Show-UDModal -Content {
-                    New-UDTypography -Text "Add Weight Record" -Variant h5 -Style @{
-                        color        = '#2e7d32'
-                        marginBottom = '20px'
-                        fontWeight   = 'bold'
-                    }
+                    New-UDTypography -Text "Add Weight Record" -Variant h5 -Style $HerdStyles.Typography.ModalTitle
             
                     # Cattle Selection
                     New-UDAutocomplete -Id 'weight-cattle-select' -Label 'Select Cattle *' -Options {
@@ -65,8 +50,8 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
                     New-UDTextbox -Id 'weight-notes' -Label 'Notes (Optional)' -Multiline -Rows 3 -FullWidth
             
                 } -Footer {
-                    New-UDButton -Text "Cancel" -OnClick { Hide-UDModal }
-                    New-UDButton -Text "Add Weight Record" -Variant contained -Style @{backgroundColor = '#2e7d32'; color = 'white' } -OnClick {
+                    New-UDButton -Text "Cancel" -OnClick { Hide-UDModal } -Variant outlined
+                    New-UDButton -Text "Add Weight Record" -Variant contained -Style $HerdStyles.Button.Primary -OnClick {
                         $cattleId = (Get-UDElement -Id 'weight-cattle-select').value
                         $weightValue = (Get-UDElement -Id 'weight-value').value
                         $weightDateValue = (Get-UDElement -Id 'weight-date').value
@@ -113,16 +98,12 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
         
         # Import Weights from CSV Button
         New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -MediumSize 4 -Content {
-            New-UDButton -Text "📂 Import from CSV" -Variant outlined -FullWidth -Style @{
+            New-UDButton -Text "📂 Import from CSV" -Variant outlined -FullWidth -Style (Merge-HerdStyle -BaseStyle $HerdStyles.Button.Secondary -CustomStyle @{
                 borderColor = '#2e7d32'
                 color       = '#2e7d32'
-            } -OnClick {
+            }) -OnClick {
                 Show-UDModal -Content {
-                    New-UDTypography -Text "Import Weight Records from CSV" -Variant h5 -Style @{
-                        color        = '#2e7d32'
-                        marginBottom = '20px'
-                        fontWeight   = 'bold'
-                    }
+                    New-UDTypography -Text "Import Weight Records from CSV" -Variant h5 -Style $HerdStyles.Typography.ModalTitle
                     
                     New-UDTypography -Text "CSV Format Requirements:" -Variant body1 -Style @{
                         fontWeight   = 'bold'
@@ -309,7 +290,7 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
                 }
             }
             New-UDTableColumn -Property Actions -Title "Actions" -Render {
-                New-UDButton -Text "📊 History" -Size small -Variant outlined -Style @{borderColor = '#2e7d32'; color = '#2e7d32' } -OnClick {
+                New-UDButton -Text "📊 History" -Size small -Variant outlined -Style (Merge-HerdStyle -BaseStyle $HerdStyles.Button.Secondary -CustomStyle @{borderColor = '#2e7d32'; color = '#2e7d32' }) -OnClick {
                     $cattleId = $EventData.CattleID
                     $tagNumber = $EventData.TagNumber
                     $cattleName = $EventData.CattleName
@@ -319,11 +300,7 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
                     
                     Show-UDModal -Content {
                         $displayName = if ($cattleName) { "$tagNumber - $cattleName" } else { $tagNumber }
-                        New-UDTypography -Text "Weight History: $displayName" -Variant h5 -Style @{
-                            color        = '#2e7d32'
-                            marginBottom = '20px'
-                            fontWeight   = 'bold'
-                        }
+                        New-UDTypography -Text "Weight History: $displayName" -Variant h5 -Style $HerdStyles.Typography.ModalTitle
                         
                         if ($weightHistory -and $weightHistory.Count -gt 0) {
                             # Chart
@@ -396,24 +373,24 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
                         }
                         
                     } -Footer {
-                        New-UDButton -Text "Close" -Variant contained -Style @{backgroundColor = '#2e7d32'; color = 'white' } -OnClick {
+                        New-UDButton -Text "Close" -Variant contained -Style $HerdStyles.Button.Primary -OnClick {
                             Hide-UDModal
                         }
                     } -FullWidth -MaxWidth 'lg'
                 }
                 
-                New-UDButton -Text "🗑️ Delete" -Size small -Variant text -Style @{color = '#d32f2f' } -OnClick {
+                New-UDButton -Text "🗑️ Delete" -Size small -Variant text -Style $HerdStyles.Button.Danger -OnClick {
                     $weightRecordId = $EventData.WeightRecordID
                     $weightValue = $EventData.Weight
                     $dateValue = Format-Date $EventData.WeightDate
                     
                     Show-UDModal -Content {
-                        New-UDTypography -Text "⚠️ Confirm Delete" -Variant h5 -Style @{color = '#d32f2f'; marginBottom = '20px' }
+                        New-UDTypography -Text "⚠️ Confirm Delete" -Variant h5 -Style (Merge-HerdStyle -BaseStyle $HerdStyles.Typography.ModalTitle -CustomStyle @{color = '#d32f2f'})
                         New-UDTypography -Text "Are you sure you want to delete this weight record?" -Variant body1
                         New-UDTypography -Text "Weight: $weightValue lbs on $dateValue" -Variant body2 -Style @{color = '#666'; marginTop = '10px' }
                     } -Footer {
                         New-UDButton -Text "Cancel" -OnClick { Hide-UDModal }
-                        New-UDButton -Text "Delete" -Variant contained -Style @{backgroundColor = '#d32f2f'; color = 'white' } -OnClick {
+                        New-UDButton -Text "Delete" -Variant contained -Style $HerdStyles.Button.Danger -OnClick {
                             try {
                                 Remove-WeightRecord -WeightRecordID $weightRecordId
                                 

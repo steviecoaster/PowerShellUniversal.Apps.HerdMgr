@@ -1,22 +1,14 @@
 $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
     
     # Page Header
-    New-UDCard -Style @{
+    New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.PageHeader.Hero -CustomStyle @{
         backgroundColor = '#2e7d32'
         color           = 'white'
         padding         = '30px'
-        marginBottom    = '30px'
-        borderRadius    = '8px'
         backgroundImage = 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)'
-        boxShadow       = '0 4px 6px rgba(0,0,0,0.1)'
-    } -Content {
-        New-UDTypography -Text "📊 Herd Reports & Analytics" -Variant h4 -Style @{
-            fontWeight   = 'bold'
-            marginBottom = '10px'
-        }
-        New-UDTypography -Text "Comprehensive insights into your herd's performance, health, and finances" -Variant body1 -Style @{
-            opacity = '0.9'
-        }
+    }) -Content {
+        New-UDTypography -Text "📊 Herd Reports & Analytics" -Variant h4 -Style $HerdStyles.PageHeader.Title
+        New-UDTypography -Text "Comprehensive insights into your herd's performance, health, and finances" -Variant body1 -Style $HerdStyles.PageHeader.Subtitle
     }
     
     New-UDExpansionPanelGroup -Children {
@@ -33,11 +25,9 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                     
                     # Total Active Cattle
                     New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -MediumSize 3 -Content {
-                        New-UDCard -Style @{
+                        New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.StatCard.Success -CustomStyle @{
                             backgroundColor = '#e8f5e9'
-                            borderLeft      = '4px solid #2e7d32'
-                            padding         = '20px'
-                        } -Content {
+                        }) -Content {
                             New-UDTypography -Text "🐄 Active Cattle" -Variant h6 -Style @{color = '#2e7d32'; marginBottom = '10px' }
                             New-UDTypography -Text $activeCattle.Count -Variant h3 -Style @{fontWeight = 'bold'; color = '#2e7d32' }
                         }
@@ -46,11 +36,10 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                     # Steers
                     New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -MediumSize 3 -Content {
                         $steers = ($activeCattle | Where-Object { $_.Gender -eq 'Steer' }).Count
-                        New-UDCard -Style @{
+                        New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.StatCard.Default -CustomStyle @{
                             backgroundColor = '#e3f2fd'
-                            borderLeft      = '4px solid #1976d2'
-                            padding         = '20px'
-                        } -Content {
+                            border          = '2px solid rgba(25, 118, 210, 0.3)'
+                        }) -Content {
                             New-UDTypography -Text "🐂 Steers" -Variant h6 -Style @{color = '#1976d2'; marginBottom = '10px' }
                             New-UDTypography -Text $steers -Variant h3 -Style @{fontWeight = 'bold'; color = '#1976d2' }
                         }
@@ -59,11 +48,10 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                     # Heifers
                     New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -MediumSize 3 -Content {
                         $heifers = ($activeCattle | Where-Object { $_.Gender -eq 'Heifer' }).Count
-                        New-UDCard -Style @{
+                        New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.StatCard.Default -CustomStyle @{
                             backgroundColor = '#fce4ec'
-                            borderLeft      = '4px solid #c2185b'
-                            padding         = '20px'
-                        } -Content {
+                            border          = '2px solid rgba(194, 24, 91, 0.3)'
+                        }) -Content {
                             New-UDTypography -Text "🐮 Heifers" -Variant h6 -Style @{color = '#c2185b'; marginBottom = '10px' }
                             New-UDTypography -Text $heifers -Variant h3 -Style @{fontWeight = 'bold'; color = '#c2185b' }
                         }
@@ -72,11 +60,9 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                     # Average Weight
                     New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -MediumSize 3 -Content {
                         $avgWeight = ($activeCattle | Where-Object { $_.LatestWeight } | Measure-Object -Property LatestWeight -Average).Average
-                        New-UDCard -Style @{
+                        New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.StatCard.Warning -CustomStyle @{
                             backgroundColor = '#fff3e0'
-                            borderLeft      = '4px solid #f57c00'
-                            padding         = '20px'
-                        } -Content {
+                        }) -Content {
                             New-UDTypography -Text "⚖️ Avg Weight" -Variant h6 -Style @{color = '#f57c00'; marginBottom = '10px' }
                             New-UDTypography -Text "$([Math]::Round($avgWeight, 0)) lbs" -Variant h3 -Style @{fontWeight = 'bold'; color = '#f57c00' }
                         }

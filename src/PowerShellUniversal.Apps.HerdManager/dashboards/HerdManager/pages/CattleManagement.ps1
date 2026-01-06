@@ -1,39 +1,25 @@
 $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
     
     # Page Header
-    New-UDCard -Style @{
+    New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.PageHeader.Hero -CustomStyle @{
         backgroundColor = '#2e7d32'
         color           = 'white'
         padding         = '30px'
-        marginBottom    = '30px'
-        borderRadius    = '8px'
         backgroundImage = 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)'
-        boxShadow       = '0 4px 6px rgba(0,0,0,0.1)'
-    } -Content {
-        New-UDTypography -Text "🐄 Cattle Management" -Variant h4 -Style @{
-            fontWeight   = 'bold'
-            marginBottom = '10px'
-        }
-        New-UDTypography -Text "Add, edit, and manage your cattle records" -Variant body1 -Style @{
-            opacity = '0.9'
-        }
+    }) -Content {
+        New-UDTypography -Text "🐄 Cattle Management" -Variant h4 -Style $HerdStyles.PageHeader.Title
+        New-UDTypography -Text "Add, edit, and manage your cattle records" -Variant body1 -Style $HerdStyles.PageHeader.Subtitle
     }
     
     New-UDGrid -Container -RowSpacing 3 -Content {
         # Add New Cattle Button
         New-UDGrid -Item -Content {
             
-            New-UDButton -Text "➕ Add New Cattle" -Variant contained -Style @{
-                backgroundColor = '#2e7d32'
-                color           = 'white'
-                marginBottom    = '20px'
-            } -OnClick {
+            New-UDButton -Text "➕ Add New Cattle" -Variant contained -Style (Merge-HerdStyle -BaseStyle $HerdStyles.Button.Primary -CustomStyle @{
+                marginBottom = '20px'
+            }) -OnClick {
                 Show-UDModal -Content {
-                    New-UDTypography -Text "Add New Cattle" -Variant h5 -Style @{
-                        color        = '#2e7d32'
-                        marginBottom = '20px'
-                        fontWeight   = 'bold'
-                    }
+                    New-UDTypography -Text "Add New Cattle" -Variant h5 -Style $HerdStyles.Typography.ModalTitle
             
                     New-UDTextbox -Id 'new-tag-number' -Label 'Tag Number *' -FullWidth
                     New-UDElement -Tag 'br'
@@ -98,7 +84,7 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
             
                 } -Footer {
                     New-UDButton -Text "Cancel" -OnClick { Hide-UDModal }
-                    New-UDButton -Text "Add Cattle" -Variant contained -Style @{backgroundColor = '#2e7d32'; color = 'white' } -OnClick {
+                    New-UDButton -Text "Add Cattle" -Variant contained -Style $HerdStyles.Button.Primary -OnClick {
                         $tagNumber = (Get-UDElement -Id 'new-tag-number').value
                         $originFarm = (Get-UDElement -Id 'new-origin-farm').value
                         $originFarmID = (Get-UDElement -Id 'new-origin-farm-id').value

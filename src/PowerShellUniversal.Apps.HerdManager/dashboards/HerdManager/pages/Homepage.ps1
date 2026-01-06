@@ -1,15 +1,12 @@
 $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
     $session:system = Get-SystemInfo -DbPath $script:DatabasePath
     # Hero Section with Farm Theme
-    New-UDCard -Style @{
+    New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.PageHeader.Hero -CustomStyle @{
         backgroundColor = '#2e7d32'
         color = 'white'
         padding = '40px'
-        marginBottom = '30px'
-        borderRadius = '8px'
         backgroundImage = 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)'
-        boxShadow = '0 4px 6px rgba(0,0,0,0.1)'
-    } -Content {
+    }) -Content {
         New-UDGrid -Container -Content {
             New-UDGrid -Item -ExtraSmallSize 12 -Content {
                 $headerTypography = if($session:system -and $session:system.FarmName){
@@ -69,11 +66,10 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
             
             # Total Cattle Card
             New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -MediumSize 3 -Content {
-                New-UDCard -Style @{
+                New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.StatCard.Warning -CustomStyle @{
                     backgroundColor = '#fff3e0'
-                    borderLeft = '4px solid #ff6f00'
                     height = '100%'
-                } -Content {
+                }) -Content {
                     New-UDElement -Tag 'div' -Content {
                         New-UDTypography -Text "🐂" -Variant h3 -Style @{textAlign = 'center'}
                         New-UDTypography -Text "Total Cattle" -Variant body2 -Style @{
@@ -103,11 +99,10 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
             
             # Weight Records Card
             New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -MediumSize 3 -Content {
-                New-UDCard -Style @{
+                New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.StatCard.Success -CustomStyle @{
                     backgroundColor = '#e8f5e9'
-                    borderLeft = '4px solid #2e7d32'
                     height = '100%'
-                } -Content {
+                }) -Content {
                     New-UDElement -Tag 'div' -Content {
                         New-UDTypography -Text "⚖️" -Variant h3 -Style @{textAlign = 'center'}
                         New-UDTypography -Text "Weight Records (30d)" -Variant body2 -Style @{
@@ -138,11 +133,11 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
             
             # Rate of Gain Card
             New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -MediumSize 3 -Content {
-                New-UDCard -Style @{
+                New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.StatCard.Default -CustomStyle @{
                     backgroundColor = '#e3f2fd'
-                    borderLeft = '4px solid #1565c0'
+                    border = '2px solid rgba(21, 101, 192, 0.3)'
                     height = '100%'
-                } -Content {
+                }) -Content {
                     New-UDElement -Tag 'div' -Content {
                         New-UDTypography -Text "📈" -Variant h3 -Style @{textAlign = 'center'}
                         New-UDTypography -Text "Avg Daily Gain" -Variant body2 -Style @{
@@ -187,11 +182,11 @@ WHERE c.Status = 'Active'
             
             # Health & Records Card
             New-UDGrid -Item -ExtraSmallSize 12 -SmallSize 6 -MediumSize 3 -Content {
-                New-UDCard -Style @{
+                New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.StatCard.Default -CustomStyle @{
                     backgroundColor = '#fce4ec'
                     borderLeft = '4px solid #c2185b'
                     height = '100%'
-                } -Content {
+                }) -Content {
                     New-UDElement -Tag 'div' -Content {
                         New-UDTypography -Text "🩺" -Variant h3 -Style @{textAlign = 'center'}
                         New-UDTypography -Text "Health Events (30d)" -Variant body2 -Style @{

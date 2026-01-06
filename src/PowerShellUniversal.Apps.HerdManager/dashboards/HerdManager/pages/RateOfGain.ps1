@@ -1,35 +1,18 @@
 $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
     
     # Page Header with Farm Theme
-    New-UDCard -Style @{
+    New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.PageHeader.Hero -CustomStyle @{
         backgroundColor = '#2e7d32'
-        color           = 'white'
         padding         = '30px'
-        marginBottom    = '30px'
-        borderRadius    = '8px'
         backgroundImage = 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)'
-        boxShadow       = '0 4px 6px rgba(0,0,0,0.1)'
-    } -Content {
-        New-UDTypography -Text "📊 Rate of Gain Calculator" -Variant h4 -Style @{
-            fontWeight   = 'bold'
-            marginBottom = '10px'
-        }
-        New-UDTypography -Text "Calculate Average Daily Gain (ADG) for your cattle between two recorded weight dates." -Variant body1 -Style @{
-            opacity = '0.9'
-        }
+    }) -Content {
+        New-UDTypography -Text "📊 Rate of Gain Calculator" -Variant h4 -Style $HerdStyles.PageHeader.Title
+        New-UDTypography -Text "Calculate Average Daily Gain (ADG) for your cattle between two recorded weight dates." -Variant body1 -Style $HerdStyles.PageHeader.Subtitle
     }
     
     # Calculator Card
-    New-UDCard -Style @{
-        marginBottom = '25px'
-        borderRadius = '8px'
-        boxShadow    = '0 2px 8px rgba(0,0,0,0.1)'
-    } -Content {
-        New-UDTypography -Text "⚖️ Calculate Rate of Gain" -Variant h5 -Style @{
-            color        = '#2e7d32'
-            fontWeight   = 'bold'
-            marginBottom = '20px'
-        }
+    New-UDCard -Style $HerdStyles.Card.Elevated -Content {
+        New-UDTypography -Text "⚖️ Calculate Rate of Gain" -Variant h5 -Style $HerdStyles.Typography.SectionHeader
         
         # Animal Selection Section
         New-UDTypography -Text "Select Animal" -Variant body2 -Style @{
@@ -83,12 +66,10 @@ $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
         New-UDElement -Tag 'br'
         
         # Calculate button
-        New-UDButton -Text "Calculate Rate of Gain" -Variant contained -Style @{
-            backgroundColor = '#2e7d32'
-            color           = 'white'
-            padding         = '10px 30px'
-            fontSize        = '16px'
-        } -OnClick {
+        New-UDButton -Text "Calculate Rate of Gain" -Variant contained -Style (Merge-HerdStyle -BaseStyle $HerdStyles.Button.Primary -CustomStyle @{
+            padding  = '10px 30px'
+            fontSize = '16px'
+        }) -OnClick {
             $cattleId = (Get-UDElement -Id 'cattle-select').value
             $startDateValue = (Get-UDElement -Id 'start-date').value
             $endDateValue = (Get-UDElement -Id 'end-date').value

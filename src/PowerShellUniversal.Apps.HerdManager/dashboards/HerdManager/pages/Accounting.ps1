@@ -1,10 +1,6 @@
 $accounting = New-UDPage -Name "Accounting" -Content {
     
-    New-UDTypography -Text "💰 Accounting & Invoices" -Variant h4 -Style @{
-        marginBottom = '20px'
-        color = '#2e7d32'
-        fontWeight = 'bold'
-    }
+    New-UDTypography -Text "💰 Accounting & Invoices" -Variant h4 -Style $HerdStyles.Typography.PageTitle
 
     # Search and Generate Section
     New-UDCard -Title "Invoice Management" -Content {

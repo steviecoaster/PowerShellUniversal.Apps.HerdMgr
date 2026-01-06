@@ -2,22 +2,13 @@
 $notifications = New-UDPage -Name 'Notifications' -Url '/notifications' -Content {
     
     # Page Header
-    New-UDCard -Style @{
+    New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.PageHeader.Hero -CustomStyle @{
         backgroundColor = '#f57c00'
-        color           = 'white'
         padding         = '30px'
-        marginBottom    = '30px'
-        borderRadius    = '8px'
         backgroundImage = 'linear-gradient(135deg, #f57c00 0%, #ff9800 100%)'
-        boxShadow       = '0 4px 6px rgba(0,0,0,0.1)'
-    } -Content {
-        New-UDTypography -Text "🔔 Notifications & Alerts" -Variant h4 -Style @{
-            fontWeight   = 'bold'
-            marginBottom = '10px'
-        }
-        New-UDTypography -Text "Stay on top of upcoming health events and important reminders" -Variant body1 -Style @{
-            opacity = '0.9'
-        }
+    }) -Content {
+        New-UDTypography -Text "🔔 Notifications & Alerts" -Variant h4 -Style $HerdStyles.PageHeader.Title
+        New-UDTypography -Text "Stay on top of upcoming health events and important reminders" -Variant body1 -Style $HerdStyles.PageHeader.Subtitle
     }
     
     New-UDDynamic -Id 'notifications-content' -Content {

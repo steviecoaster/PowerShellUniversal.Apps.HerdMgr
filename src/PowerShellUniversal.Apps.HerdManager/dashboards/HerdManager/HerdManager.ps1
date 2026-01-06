@@ -2,6 +2,9 @@
 Param()
 
 begin {
+    # Load centralized styles
+    . "$PSScriptRoot/Styles.ps1"
+    
     function Invoke-UniversalSQLiteQuery {
         <#
     .SYNOPSIS

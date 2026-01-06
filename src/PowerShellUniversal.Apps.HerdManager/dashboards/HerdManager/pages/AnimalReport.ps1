@@ -19,16 +19,8 @@ $animalreport = New-UDPage -Name "Animal Report" -Icon (New-UDIcon -Icon FileAlt
 "@
     }
     
-    New-UDCard -Style @{
-        marginBottom = '25px'
-        borderRadius = '8px'
-        boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
-    } -Content {
-        New-UDTypography -Text "🐂 Comprehensive Animal Report" -Variant h4 -Style @{
-            color = '#2e7d32'
-            fontWeight = 'bold'
-            marginBottom = '20px'
-        }
+    New-UDCard -Style $HerdStyles.Card.Elevated -Content {
+        New-UDTypography -Text "🐂 Comprehensive Animal Report" -Variant h4 -Style $HerdStyles.Typography.PageTitle
         
         New-UDTypography -Text "Select an animal to generate a detailed performance and health report." -Variant body1 -Style @{
             marginBottom = '20px'

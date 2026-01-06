@@ -1,14 +1,10 @@
 $farmsPage = New-UDPage -Name "Farms" -Content {
     $dbPath = $script:DatabasePath
     
-    New-UDTypography -Text "🚜 Farm Management" -Variant h4 -Style @{
-        marginBottom = '20px'
-        color        = '#2e7d32'
-        fontWeight   = 'bold'
-    }
+    New-UDTypography -Text "🚜 Farm Management" -Variant h4 -Style $HerdStyles.Typography.PageTitle
     
     # Add New Farm Section
-    New-UDCard -Title "Add New Farm" -Content {
+    New-UDCard -Title "Add New Farm" -Style $HerdStyles.Card.Default -Content {
         New-UDGrid -Container -Content {
             New-UDGrid -Item -ExtraSmallSize 12 -MediumSize 6 -Content {
                 New-UDTextbox -Id 'new-farm-name' -Label 'Farm Name *' -FullWidth

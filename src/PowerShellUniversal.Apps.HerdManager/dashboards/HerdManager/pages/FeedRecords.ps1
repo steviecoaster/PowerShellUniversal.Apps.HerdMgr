@@ -143,19 +143,10 @@ Haylage
                         }
                     }
                 } -Header {
-                    New-UDTypography -Text "🍽️ Manage Feed Recipe" -Variant h5 -Style @{
-                        padding = '20px'
-                        background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                        color = 'white'
-                        margin = '-20px -20px 20px -20px'
-                        borderRadius = '8px 8px 0 0'
-                    }
+                    New-UDTypography -Text "🍽️ Manage Feed Recipe" -Variant h5 -Style $HerdStyles.Modal.HeaderGradient
                 } -Footer {
                     New-UDButton -Text "Close" -OnClick { Hide-UDModal } -Variant outlined
-                } -FullWidth -MaxWidth 'md' -Persistent -Style @{
-                    borderRadius = '8px'
-                    boxShadow = '0 8px 32px rgba(0,0,0,0.3)'
-                }
+                } -FullWidth -MaxWidth 'md' -Persistent -Style $HerdStyles.Modal.Container
             } -Style @{float = 'right' }
         }
     }
@@ -321,12 +312,7 @@ Haylage
                 }
             }
         }
-    } -Style @{
-        marginBottom = '30px'
-        borderRadius = '16px'
-        boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
-        border = '1px solid #e3f2fd'
-    }
+    } -Style $HerdStyles.Card.Elevated
     
     # Feed Records Table
     New-UDCard -Title "📋 Recent Feed Records" -Content {
@@ -411,7 +397,7 @@ Haylage
                                 catch {
                                     Show-UDToast -Message "Error deleting feed record: $($_.Exception.Message)" -MessageColor red -Duration 5000
                                 }
-                            } -Style @{backgroundColor = '#d32f2f'; color = 'white'; marginLeft = '10px' }
+                            } -Style $HerdStyles.Button.Danger
                         } -FullWidth -MaxWidth 'sm'
                     }
                 }
@@ -419,9 +405,5 @@ Haylage
                 New-UDTable -Data $feedRecords -Columns $columns -Sort -ShowPagination -PageSize 15 -Dense -ShowSearch
             }
         }
-    } -Style @{
-        borderRadius = '16px'
-        boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
-        border = '1px solid #e3f2fd'
-    }
+    } -Style $HerdStyles.Card.Elevated
 }

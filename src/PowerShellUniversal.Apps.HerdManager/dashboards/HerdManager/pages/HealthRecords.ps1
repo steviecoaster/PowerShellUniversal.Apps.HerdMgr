@@ -1,32 +1,22 @@
 $healthMgmt = New-UDPage -Name 'Health Records' -Url '/health' -Content {
     
     # Page Header
-    New-UDCard -Style @{
+    New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.PageHeader.Hero -CustomStyle @{
         backgroundColor = '#2e7d32'
         color           = 'white'
         padding         = '30px'
-        marginBottom    = '30px'
-        borderRadius    = '8px'
         backgroundImage = 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)'
-        boxShadow       = '0 4px 6px rgba(0,0,0,0.1)'
-    } -Content {
-        New-UDTypography -Text "🩺 Health Records" -Variant h4 -Style @{
-            fontWeight   = 'bold'
-            marginBottom = '10px'
-        }
-        New-UDTypography -Text "Track vaccinations, treatments, and health observations for your herd" -Variant body1 -Style @{
-            opacity = '0.9'
-        }
+    }) -Content {
+        New-UDTypography -Text "🩺 Health Records" -Variant h4 -Style $HerdStyles.PageHeader.Title
+        New-UDTypography -Text "Track vaccinations, treatments, and health observations for your herd" -Variant body1 -Style $HerdStyles.PageHeader.Subtitle
     }
     
     New-UDGrid -Container -Spacing 3 -Content {
         # Add New Health Record Button
         New-UDGrid -Item -Content {
-            New-UDButton -Text "➕ Add Health Record" -Variant contained -Style @{
-                backgroundColor = '#2e7d32'
-                color           = 'white'
-                marginBottom    = '20px'
-            } -OnClick {
+            New-UDButton -Text "➕ Add Health Record" -Variant contained -Style (Merge-HerdStyle -BaseStyle $HerdStyles.Button.Primary -CustomStyle @{
+                marginBottom = '20px'
+            }) -OnClick {
                 Show-UDModal -Content {
                     New-UDTypography -Text "Add Health Record" -Variant h5 -Style @{
                         color        = '#2e7d32'

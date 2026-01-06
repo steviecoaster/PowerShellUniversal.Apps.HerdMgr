@@ -12,7 +12,7 @@
     RootModule        = '.\PowerShellUniversal.Apps.HerdManager.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '1.3.0'
+    ModuleVersion     = '2.0.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -121,11 +121,14 @@
         'Remove-FeedRecord',
         'Get-FeedRecipe',
         'Set-FeedRecipe',
-        'Get-FeedTonnageReport'
+        'Get-FeedTonnageReport',
         # API
         'Invoke-CattleApi',
         'Invoke-FeedApi',
-        'Invoke-FarmApi'
+        'Invoke-FarmApi',
+        # Style
+        'Get-HerdStyle',
+        'Merge-HerdStyle'
     )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
