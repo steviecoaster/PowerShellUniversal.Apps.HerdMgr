@@ -27,8 +27,11 @@ function Get-FeedRecord {
     
     .OUTPUTS
     Array of feed record objects with properties:
-    FeedRecordID, FeedDate, HaylagePounds, SilagePounds, HighMoistureCornPounds,
-    TotalPounds, Notes, RecordedBy, CreatedDate
+    FeedRecordID, FeedDate, IngredientAmounts (JSON), TotalPounds, 
+    Notes, RecordedBy, CreatedDate
+    
+    Note: Legacy columns (HaylagePounds, SilagePounds, HighMoistureCornPounds) 
+    are deprecated. Use IngredientAmounts (parsed JSON) instead.
     
     .EXAMPLE
     Get-FeedRecord -FeedRecordID 15
@@ -82,8 +85,8 @@ function Get-FeedRecord {
     switch ($PSCmdlet.ParameterSetName) {
         'ById' {
             $query = @"
-SELECT FeedRecordID, FeedDate, HaylagePounds, SilagePounds, HighMoistureCornPounds, 
-       TotalPounds, Notes, RecordedBy, CreatedDate
+SELECT FeedRecordID, FeedDate, IngredientAmounts, TotalPounds, 
+       Notes, RecordedBy, CreatedDate
 FROM FeedRecords
 WHERE FeedRecordID = $FeedRecordID
 "@
@@ -92,8 +95,8 @@ WHERE FeedRecordID = $FeedRecordID
         'ByDate' {
             $feedDateValue = ConvertTo-SqlValue -Value ($FeedDate.ToString('yyyy-MM-dd'))
             $query = @"
-SELECT FeedRecordID, FeedDate, HaylagePounds, SilagePounds, HighMoistureCornPounds, 
-       TotalPounds, Notes, RecordedBy, CreatedDate
+SELECT FeedRecordID, FeedDate, IngredientAmounts, TotalPounds, 
+       Notes, RecordedBy, CreatedDate
 FROM FeedRecords
 WHERE DATE(FeedDate) = DATE($feedDateValue)
 "@
@@ -103,8 +106,8 @@ WHERE DATE(FeedDate) = DATE($feedDateValue)
             $startDateValue = ConvertTo-SqlValue -Value ($StartDate.ToString('yyyy-MM-dd'))
             $endDateValue = ConvertTo-SqlValue -Value ($EndDate.ToString('yyyy-MM-dd'))
             $query = @"
-SELECT FeedRecordID, FeedDate, HaylagePounds, SilagePounds, HighMoistureCornPounds, 
-       TotalPounds, Notes, RecordedBy, CreatedDate
+SELECT FeedRecordID, FeedDate, IngredientAmounts, TotalPounds, 
+       Notes, RecordedBy, CreatedDate
 FROM FeedRecords
 WHERE DATE(FeedDate) BETWEEN DATE($startDateValue) AND DATE($endDateValue)
 ORDER BY FeedDate DESC
@@ -115,8 +118,8 @@ ORDER BY FeedDate DESC
             $cutoffDate = (Get-Date).AddDays(-$DaysBack)
             $cutoffDateValue = ConvertTo-SqlValue -Value ($cutoffDate.ToString('yyyy-MM-dd'))
             $query = @"
-SELECT FeedRecordID, FeedDate, HaylagePounds, SilagePounds, HighMoistureCornPounds, 
-       TotalPounds, Notes, RecordedBy, CreatedDate
+SELECT FeedRecordID, FeedDate, IngredientAmounts, TotalPounds, 
+       Notes, RecordedBy, CreatedDate
 FROM FeedRecords
 WHERE DATE(FeedDate) >= DATE($cutoffDateValue)
 ORDER BY FeedDate DESC
@@ -125,8 +128,8 @@ ORDER BY FeedDate DESC
         
         'All' {
             $query = @"
-SELECT FeedRecordID, FeedDate, HaylagePounds, SilagePounds, HighMoistureCornPounds, 
-       TotalPounds, Notes, RecordedBy, CreatedDate
+SELECT FeedRecordID, FeedDate, IngredientAmounts, TotalPounds, 
+       Notes, RecordedBy, CreatedDate
 FROM FeedRecords
 ORDER BY FeedDate DESC
 "@
