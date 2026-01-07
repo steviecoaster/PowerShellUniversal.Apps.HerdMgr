@@ -224,20 +224,11 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
                         }
                         
                         New-UDButton -Text "📥 Download CSV Template" -Variant outlined -OnClick {
-                            $templateContent = [pscustomobject]@{
-                                TagNumber  = $null
-                                WeightDate = $null
-                                Weight     = $null
-                                Notes      = $null
-                            } | ConvertTo-Csv | Out-String
+                            $templateContent = @"
+TagNumber,WeightDate,Weight,Notes
+"@
                            
-                            $startUDDownloadSplat = @{
-                                StringData  = $templateContent
-                                FileName    = 'weight_import_template.csv'
-                                ContentType = 'text/plain'
-                            }
-
-                            Start-UDDownload @startUDDownloadSplat
+                            Start-UDDownload -StringData $templateContent -FileName 'weight_import_template.csv' -ContentType 'text/csv'
                         }
                     }
                     

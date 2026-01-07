@@ -544,24 +544,11 @@ $($Data | ConvertTo-Json -Depth 3)
                 color        = '#1565c0'
                 marginBottom = '20px'
             } -OnClick {
-                $templateContent = [pscustomobject]@{
-                    TagNumber    = $null
-                    OriginFarm   = $null
-                    Name         = $null
-                    Breed        = $null
-                    Gender       = $null
-                    BirthDate    = $null
-                    PurchaseDate = $null
-                    Notes        = $null
-                } | ConvertTo-Csv | Out-String
+                $templateContent = @"
+TagNumber,OriginFarm,Name,Breed,Gender,BirthDate,PurchaseDate,Notes
+"@
 
-                $startUDDownloadSplat = @{
-                    StringData = $templateContent
-                    FileName = 'cattle_import_template.csv'
-                    ContentType = 'text/plain'
-                }
-
-                Start-UDDownload @startUDDownloadSplat
+                Start-UDDownload -StringData $templateContent -FileName 'cattle_import_template.csv' -ContentType 'text/csv'
             }
         }
     }
