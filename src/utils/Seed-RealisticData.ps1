@@ -134,7 +134,7 @@ ORDER BY WeightDate
         # Calculate ROG for consecutive periods
         for ($i = 0; $i -lt ($weights.Count - 1); $i++) {
             try {
-                Calculate-RateOfGain -CattleID $cattle.CattleID `
+                Measure-RateOfGain -CattleID $cattle.CattleID `
                     -StartDate $weights[$i].WeightDate `
                     -EndDate $weights[$i + 1].WeightDate | Out-Null
             } catch {

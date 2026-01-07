@@ -23,7 +23,7 @@ $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
                 }
 
                 $establishedTypography = if($session:system -and $session:system.Established) {
-                    'Since {0}' -f ((Parse-Date $session:system.Established).Year)
+                    'Since {0}' -f ((ConvertFrom-DateString $session:system.Established).Year)
                 }
                 else {
                     'Copyright 2025'

@@ -247,7 +247,7 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                                     # Parse dates if provided
                                     if ($row.BirthDate) {
                                         try {
-                                            $params.BirthDate = Parse-Date $row.BirthDate
+                                            $params.BirthDate = ConvertFrom-DateString $row.BirthDate
                                         }
                                         catch {
                                             throw "Invalid BirthDate format: $($row.BirthDate)"
@@ -256,7 +256,7 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                                     
                                     if ($row.PurchaseDate) {
                                         try {
-                                            $params.PurchaseDate = Parse-Date $row.PurchaseDate
+                                            $params.PurchaseDate = ConvertFrom-DateString $row.PurchaseDate
                                         }
                                         catch {
                                             throw "Invalid PurchaseDate format: $($row.PurchaseDate)"

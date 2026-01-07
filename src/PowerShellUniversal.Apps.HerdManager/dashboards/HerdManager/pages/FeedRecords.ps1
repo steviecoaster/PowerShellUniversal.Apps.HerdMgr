@@ -281,7 +281,7 @@ Haylage
                     
                     # Parse feed date
                     $rawDate = $EventData.'feed-date'
-                    try { $feedDate = Parse-Date $rawDate } catch { throw "Invalid date format for Feed Date: $rawDate" }
+                    try { $feedDate = ConvertFrom-DateString $rawDate } catch { throw "Invalid date format for Feed Date: $rawDate" }
 
                     # Build ingredient amounts hashtable from input values
                     $ingredientAmounts = @{}

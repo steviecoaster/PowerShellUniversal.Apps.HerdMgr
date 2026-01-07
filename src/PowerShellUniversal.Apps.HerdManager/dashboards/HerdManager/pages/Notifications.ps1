@@ -131,7 +131,7 @@ ORDER BY DaysSinceWeight DESC
                 }
                 
                 foreach ($evt in $overdueEvents) {
-                    $daysOverdue = ([DateTime]::Now - (Parse-Date $evt.NextDueDate)).Days
+                    $daysOverdue = ([DateTime]::Now - (ConvertFrom-DateString $evt.NextDueDate)).Days
                     
                     New-UDCard -Style @{
                         marginBottom = '15px'
@@ -190,7 +190,7 @@ ORDER BY DaysSinceWeight DESC
                 
                 # Add days until column to the data
                 $upcomingEventsWithDays = $upcomingEvents | ForEach-Object {
-                    $daysUntil = (Parse-Date $_.NextDueDate - [DateTime]::Now).Days
+                    $daysUntil = (ConvertFrom-DateString $_.NextDueDate - [DateTime]::Now).Days
                     $_ | Add-Member -MemberType NoteProperty -Name DaysUntil -Value $daysUntil -PassThru -Force
                 }
                 
@@ -219,7 +219,7 @@ ORDER BY DaysSinceWeight DESC
                         New-UDButton -Text "Details" -Size small -Variant outlined -OnClick {
                                 Show-UDModal -Content {
                                 $evt = $EventData
-                                $daysUntil = (Parse-Date $evt.NextDueDate - [DateTime]::Now).Days
+                                $daysUntil = (ConvertFrom-DateString $evt.NextDueDate - [DateTime]::Now).Days
                                 $urgency = if ($daysUntil -le 7) { 'high' } elseif ($daysUntil -le 14) { 'medium' } else { 'low' }
                                 $urgencyColor = switch ($urgency) {
                                     'high' { '#f57c00' }

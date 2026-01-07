@@ -545,8 +545,8 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                         
                     } -OnSubmit {
                         try {
-                            $startDate = Parse-Date $EventData.'report-start-date'
-                            $endDate = Parse-Date $EventData.'report-end-date'
+                            $startDate = ConvertFrom-DateString $EventData.'report-start-date'
+                            $endDate = ConvertFrom-DateString $EventData.'report-end-date'
                             $groupByMonth = $EventData.'group-by-month'
                             
                             $reportParams = @{

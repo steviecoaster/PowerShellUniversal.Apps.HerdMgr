@@ -134,7 +134,7 @@ $invoicePage = New-UDPage -Name "Invoice" -Url "/invoice/:invoiceNumber" -Blank 
 '@ -Content {
         New-UDElement -Tag 'div' -Attributes @{class = 'invoice-container' } -Content {
             # Header
-            $invoiceDate = Parse-Date $invoiceData.InvoiceDate
+            $invoiceDate = ConvertFrom-DateString $invoiceData.InvoiceDate
             $dueDate = $invoiceDate.AddDays(30)
 
             # Use system-level info if configured

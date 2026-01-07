@@ -30,7 +30,7 @@ $feedRecordslegacy = New-UDPage -Name 'Feed Records' -Url '/feedrecordslegacy' -
                 # Robust date parsing (accepts multiple formats)
                 $rawDate = $EventData.'feed-date'
                     # Parse feed date using helper
-                    try { $feedDate = Parse-Date $rawDate } catch { throw "Invalid date format for Feed Date: $rawDate" }
+                    try { $feedDate = ConvertFrom-DateString $rawDate } catch { throw "Invalid date format for Feed Date: $rawDate" }
 
                 $haylagePounds = [decimal]$EventData.'haylage-pounds'
                 $silagePounds = [decimal]$EventData.'silage-pounds'

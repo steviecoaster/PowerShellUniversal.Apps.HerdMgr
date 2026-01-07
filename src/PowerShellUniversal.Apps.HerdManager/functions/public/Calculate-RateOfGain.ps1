@@ -1,4 +1,4 @@
-function Calculate-RateOfGain {
+function Measure-RateOfGain {
     <#
     .SYNOPSIS
     Calculates rate of gain between two weight records
@@ -31,14 +31,14 @@ function Calculate-RateOfGain {
     - AverageDailyGain: Weight gain per day (lbs/day)
     
     .EXAMPLE
-    Calculate-RateOfGain -CattleID 5 -StartDate "2025-09-01" -EndDate "2025-12-01"
+    Measure-RateOfGain -CattleID 5 -StartDate "2025-09-01" -EndDate "2025-12-01"
     
     Calculates 90-day rate of gain for cattle ID 5
     
     .EXAMPLE
     $cattle = Get-AllCattle
     $cattle | ForEach-Object {
-        Calculate-RateOfGain -CattleID $_.CattleID -StartDate (Get-Date).AddDays(-120) -EndDate (Get-Date)
+        Measure-RateOfGain -CattleID $_.CattleID -StartDate (Get-Date).AddDays(-120) -EndDate (Get-Date)
     }
     
     Calculates 120-day ADG for all active cattle
@@ -109,8 +109,8 @@ LIMIT 1
     }
     
     # Parse dates from strings
-    $startWeightDate = Parse-Date $startRecord.WeightDate
-    $endWeightDate = Parse-Date $endRecord.WeightDate
+    $startWeightDate = ConvertFrom-DateString $startRecord.WeightDate
+    $endWeightDate = ConvertFrom-DateString $endRecord.WeightDate
     
     # Calculate metrics
     $weightGain = $endRecord.Weight - $startRecord.Weight

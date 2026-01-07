@@ -31,7 +31,7 @@ if ($PSBoundParameters.ContainsKey('Established') -and ($null -ne $Established) 
     elseif ($val -is [DateTime]) { $estDt = $val }
     else {
       $s = $val.ToString().Trim()
-      if ($s -match '^[0-9]{4}$') { $estDt = [DateTime]::new([int]$s, 1, 1) } else { $estDt = Parse-Date $s }
+      if ($s -match '^[0-9]{4}$') { $estDt = [DateTime]::new([int]$s, 1, 1) } else { $estDt = ConvertFrom-DateString $s }
     }
     $establishedValue = ConvertTo-SqlValue -Value $estDt
   }

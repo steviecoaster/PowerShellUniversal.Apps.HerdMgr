@@ -83,7 +83,7 @@ $animalreport = New-UDPage -Name "Animal Report" -Icon (New-UDIcon -Icon FileAlt
             # Calculate age if birth date available
             $age = if ($animal.BirthDate) {
                 try {
-                    $birthDate = Parse-Date $animal.BirthDate
+                    $birthDate = ConvertFrom-DateString $animal.BirthDate
                     $ageInDays = ([DateTime]::Now - $birthDate).Days
                     if ($ageInDays -lt 30) {
                         "$ageInDays days"
@@ -137,14 +137,14 @@ $animalreport = New-UDPage -Name "Animal Report" -Icon (New-UDIcon -Icon FileAlt
             
             $daysInHerd = if ($animal.PurchaseDate) {
                 try {
-                    $purchaseDate = Parse-Date $animal.PurchaseDate
+                    $purchaseDate = ConvertFrom-DateString $animal.PurchaseDate
                     ([DateTime]::Now - $purchaseDate).Days
                 } catch {
                     $null
                 }
             } elseif ($animal.BirthDate) {
                 try {
-                    $birthDate = Parse-Date $animal.BirthDate
+                    $birthDate = ConvertFrom-DateString $animal.BirthDate
                     ([DateTime]::Now - $birthDate).Days
                 } catch {
                     $null

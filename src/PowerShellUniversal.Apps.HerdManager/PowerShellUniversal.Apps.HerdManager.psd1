@@ -77,7 +77,7 @@
         'Initialize-HerdData',
         'Get-DatabasePath',
         'Invoke-UniversalSQLiteQuery',
-        'Parse-Date',
+        'ConvertFrom-DateString',
         'Format-Date',
         'Format-Currency',
         'Get-SystemInfo',
@@ -101,7 +101,7 @@
         'Get-HealthRecordsWithCost',
         'Get-TotalHealthCost',
         # ROG
-        'Calculate-RateOfGain',
+        'Measure-RateOfGain',
         'Get-RateOfGainHistory',
         # Weight
         'Add-WeightRecord',

@@ -182,7 +182,7 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
                                     
                                     # Parse date
                                     try {
-                                        $weightDate = Parse-Date $row.WeightDate
+                                        $weightDate = ConvertFrom-DateString $row.WeightDate
                                     }
                                     catch {
                                         throw "Invalid WeightDate format: $($row.WeightDate)"

@@ -40,7 +40,7 @@ function Get-RateOfGainHistory {
     Returns all calculations where ADG exceeds 2.0 lbs/day
     
     .NOTES
-    Historical calculations are stored when using the Calculate-RateOfGain function.
+    Historical calculations are stored when using the Measure-RateOfGain function.
     Results are ordered by CalculationDate DESC (most recent first).
     #>
     param(

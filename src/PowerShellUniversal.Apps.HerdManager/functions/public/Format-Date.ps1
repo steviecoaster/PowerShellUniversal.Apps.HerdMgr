@@ -4,7 +4,7 @@ function Format-Date {
     Formats a DateTime or date-like value for UI output.
 
     .DESCRIPTION
-    Accepts a [DateTime], or string that can be parsed by Parse-Date, and returns a formatted
+    Accepts a [DateTime], or string that can be parsed by ConvertFrom-DateString, and returns a formatted
     date string. If the value is null or cannot be parsed, returns a configurable default ("-").
 
     .PARAMETER Date
@@ -39,7 +39,7 @@ function Format-Date {
             }
             else {
                 # Use the project's robust parser
-                $dt = Parse-Date $Date
+                $dt = ConvertFrom-DateString $Date
             }
 
             if ($null -eq $dt) { return $Default }

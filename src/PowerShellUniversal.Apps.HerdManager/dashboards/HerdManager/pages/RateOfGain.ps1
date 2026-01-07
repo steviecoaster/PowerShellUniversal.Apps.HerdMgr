@@ -81,8 +81,8 @@ $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
                 
             # Convert date values to DateTime objects
             try {
-                $startDate = Parse-Date $startDateValue
-                $endDate = Parse-Date $endDateValue
+                $startDate = ConvertFrom-DateString $startDateValue
+                $endDate = ConvertFrom-DateString $endDateValue
             }
             catch {
                 Show-UDToast -Message "Invalid date format. Error: $($_.Exception.Message)" -MessageColor red
@@ -95,7 +95,7 @@ $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
             }
                 
             try {
-                $result = Calculate-RateOfGain -CattleID $cattleId -StartDate $startDate -EndDate $endDate
+                $result = Measure-RateOfGain -CattleID $cattleId -StartDate $startDate -EndDate $endDate
                     
                 if ($result) {
                     Set-UDElement -Id 'rog-results' -Content {
@@ -184,7 +184,7 @@ $rog = New-UDPage -Name 'Rate Of Gain' -Url '/rog' -Content {
                                 
                                 foreach ($record in $allWeights) {
                                     try {
-                                        $recordDate = Parse-Date $record.WeightDate
+                                        $recordDate = ConvertFrom-DateString $record.WeightDate
                                         if ($recordDate -ge $startDate -and $recordDate -le $endDate) {
                                             $filteredWeights += $record
                                         }

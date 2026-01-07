@@ -201,7 +201,7 @@ PowerShellUniversal.Apps.HerdManager/
 │       │       ├── Add-Farm.ps1
 │       │       ├── Get-Farm.ps1
 │       │       ├── Update-Farm.ps1
-│       │       ├── Calculate-RateOfGain.ps1
+│       │       ├── Measure-RateOfGain.ps1
 │       │       ├── Get-AllCattle.ps1
 │       │       ├── Get-CattleById.ps1
 │       │       ├── Get-Invoice.ps1

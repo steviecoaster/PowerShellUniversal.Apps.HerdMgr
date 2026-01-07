@@ -57,7 +57,7 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
             New-UDTextbox -Id 'email' -Label 'Email' -Value $session:sys.Email -FullWidth
             New-UDTextbox -Id 'contact' -Label 'Contact Person' -Value $session:sys.ContactPerson -FullWidth
             $parsedEstablished = if ($session:sys.Established) { 
-                (Parse-Date $session:sys.Established).Year.ToString() 
+                (ConvertFrom-DateString $session:sys.Established).Year.ToString() 
             } 
             else {
                 (Get-Date).Year
@@ -134,7 +134,7 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
                     New-UDTypography -Text "Address: $($s.Address) $($s.City) $($s.State) $($s.ZipCode)" -Variant body2
                     New-UDTypography -Text "Phone: $($s.PhoneNumber) | Email: $($s.Email)" -Variant body2
                     New-UDTypography -Text "Contact: $($s.ContactPerson)" -Variant body2
-                    New-UDTypography -Text "Established: $(if ($s.Established) { (Parse-Date $s.Established).Year } else { '' })" -Variant body2
+                    New-UDTypography -Text "Established: $(if ($s.Established) { (ConvertFrom-DateString $s.Established).Year } else { '' })" -Variant body2
                     New-UDTypography -Text "Currency/Culture: $($s.DefaultCurrency)/$($s.DefaultCulture)" -Variant body2
                 }
                 else {

@@ -68,7 +68,7 @@ $accounting = New-UDPage -Name "Accounting" -Content {
                             }
                             
                             # Get purchase date
-                            $purchaseDate = if ($cattle.PurchaseDate) { Parse-Date $cattle.PurchaseDate } else { $null }
+                            $purchaseDate = if ($cattle.PurchaseDate) { ConvertFrom-DateString $cattle.PurchaseDate } else { $null }
                             
                             if (-not $purchaseDate) {
                                 Show-UDToast -Message "Cattle $tagNumber must have a purchase date to generate invoice" -MessageColor red

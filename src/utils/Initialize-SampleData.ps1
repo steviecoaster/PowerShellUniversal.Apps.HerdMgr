@@ -319,16 +319,16 @@ Write-Host "Health records added successfully!" -ForegroundColor Green
 Write-Host "`nCalculating sample rate of gain..." -ForegroundColor Cyan
 
 # Calculate rate of gain for each animal using actual weight record dates
-$rog1 = Calculate-RateOfGain -CattleID 1 -StartDate ([DateTime]"2025-09-12") -EndDate ([DateTime]"2025-12-12")
-$rog2 = Calculate-RateOfGain -CattleID 2 -StartDate ([DateTime]"2025-09-12") -EndDate ([DateTime]"2025-12-12")
-$rog3 = Calculate-RateOfGain -CattleID 3 -StartDate ([DateTime]"2025-09-12") -EndDate ([DateTime]"2025-12-12")
-$rog4 = Calculate-RateOfGain -CattleID 4 -StartDate ([DateTime]"2025-08-28") -EndDate ([DateTime]"2025-11-28")
-$rog5 = Calculate-RateOfGain -CattleID 5 -StartDate ([DateTime]"2025-08-28") -EndDate ([DateTime]"2025-11-28")
-$rog6 = Calculate-RateOfGain -CattleID 6 -StartDate ([DateTime]"2025-10-15") -EndDate ([DateTime]"2025-12-15")
-$rog7 = Calculate-RateOfGain -CattleID 7 -StartDate ([DateTime]"2025-10-15") -EndDate ([DateTime]"2025-12-15")
-$rog8 = Calculate-RateOfGain -CattleID 8 -StartDate ([DateTime]"2025-10-08") -EndDate ([DateTime]"2025-12-08")
-$rog9 = Calculate-RateOfGain -CattleID 9 -StartDate ([DateTime]"2025-09-05") -EndDate ([DateTime]"2025-12-05")
-$rog10 = Calculate-RateOfGain -CattleID 10 -StartDate ([DateTime]"2025-10-08") -EndDate ([DateTime]"2025-12-08")
+$rog1 = Measure-RateOfGain -CattleID 1 -StartDate ([DateTime]"2025-09-12") -EndDate ([DateTime]"2025-12-12")
+$rog2 = Measure-RateOfGain -CattleID 2 -StartDate ([DateTime]"2025-09-12") -EndDate ([DateTime]"2025-12-12")
+$rog3 = Measure-RateOfGain -CattleID 3 -StartDate ([DateTime]"2025-09-12") -EndDate ([DateTime]"2025-12-12")
+$rog4 = Measure-RateOfGain -CattleID 4 -StartDate ([DateTime]"2025-08-28") -EndDate ([DateTime]"2025-11-28")
+$rog5 = Measure-RateOfGain -CattleID 5 -StartDate ([DateTime]"2025-08-28") -EndDate ([DateTime]"2025-11-28")
+$rog6 = Measure-RateOfGain -CattleID 6 -StartDate ([DateTime]"2025-10-15") -EndDate ([DateTime]"2025-12-15")
+$rog7 = Measure-RateOfGain -CattleID 7 -StartDate ([DateTime]"2025-10-15") -EndDate ([DateTime]"2025-12-15")
+$rog8 = Measure-RateOfGain -CattleID 8 -StartDate ([DateTime]"2025-10-08") -EndDate ([DateTime]"2025-12-08")
+$rog9 = Measure-RateOfGain -CattleID 9 -StartDate ([DateTime]"2025-09-05") -EndDate ([DateTime]"2025-12-05")
+$rog10 = Measure-RateOfGain -CattleID 10 -StartDate ([DateTime]"2025-10-08") -EndDate ([DateTime]"2025-12-08")
 
 Write-Host "`nRate of Gain Results:" -ForegroundColor Yellow
 Write-Host "===================="

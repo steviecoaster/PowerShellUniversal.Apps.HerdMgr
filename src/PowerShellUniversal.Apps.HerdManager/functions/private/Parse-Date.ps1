@@ -1,4 +1,4 @@
-function Parse-Date {
+function ConvertFrom-DateString {
     <#
     .SYNOPSIS
     Robust date/time parser that accepts multiple common formats and returns a [DateTime]
