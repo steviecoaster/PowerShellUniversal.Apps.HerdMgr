@@ -224,11 +224,20 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
                         }
                         
                         New-UDButton -Text "📥 Download CSV Template" -Variant outlined -OnClick {
-                            $templateContent = @"
-TagNumber,WeightDate,Weight,Notes
-"@
-                           
-                            Start-UDDownload -StringData $templateContent -FileName 'weight_import_template.csv' -ContentType 'text/csv'
+                            # Create CSV content
+                            $csvContent = "TagNumber,WeightDate,Weight,Notes"
+                            
+                            # Create temporary file (cross-platform)
+                            $tempFile = [System.IO.Path]::GetTempFileName()
+                            $csvFile = [System.IO.Path]::ChangeExtension($tempFile, '.csv')
+                            
+                            # Write content and trigger download
+                            Set-Content -Path $csvFile -Value $csvContent -Encoding UTF8
+                            Start-UDDownload -Path $csvFile -FileName 'weight_import_template.csv' -ContentType 'text/csv'
+                            
+                            # Clean up temp file after a delay
+                            Start-Sleep -Milliseconds 100
+                            Remove-Item -Path $csvFile -ErrorAction SilentlyContinue
                         }
                     }
                     

@@ -544,11 +544,20 @@ $($Data | ConvertTo-Json -Depth 3)
                 color        = '#1565c0'
                 marginBottom = '20px'
             } -OnClick {
-                $templateContent = @"
-TagNumber,OriginFarm,Name,Breed,Gender,BirthDate,PurchaseDate,Notes
-"@
-
-                Start-UDDownload -StringData $templateContent -FileName 'cattle_import_template.csv' -ContentType 'text/csv'
+                # Create CSV content
+                $csvContent = "TagNumber,OriginFarm,Name,Breed,Gender,BirthDate,PurchaseDate,Notes"
+                
+                # Create temporary file (cross-platform)
+                $tempFile = [System.IO.Path]::GetTempFileName()
+                $csvFile = [System.IO.Path]::ChangeExtension($tempFile, '.csv')
+                
+                # Write content and trigger download
+                Set-Content -Path $csvFile -Value $csvContent -Encoding UTF8
+                Start-UDDownload -Path $csvFile -FileName 'cattle_import_template.csv' -ContentType 'text/csv'
+                
+                # Clean up temp file after a delay (background job)
+                Start-Sleep -Milliseconds 100
+                Remove-Item -Path $csvFile -ErrorAction SilentlyContinue
             }
         }
     }
