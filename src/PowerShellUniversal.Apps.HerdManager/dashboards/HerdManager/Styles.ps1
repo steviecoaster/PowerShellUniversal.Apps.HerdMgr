@@ -194,6 +194,20 @@ $Global:HerdStyles = @{
         }
     }
     
+    # Code Block Styles - Theme-aware for examples and snippets
+    CodeBlock = @{
+        Default = @{
+            background   = 'rgba(0, 0, 0, 0.05)'
+            padding      = '10px'
+            borderRadius = '4px'
+            overflow     = 'auto'
+            fontSize     = '12px'
+            border       = '1px solid rgba(0, 0, 0, 0.12)'
+            color        = 'inherit'
+            fontFamily   = 'monospace'
+        }
+    }
+    
     # Stat/Metric Card Styles
     StatCard = @{
         Default = @{

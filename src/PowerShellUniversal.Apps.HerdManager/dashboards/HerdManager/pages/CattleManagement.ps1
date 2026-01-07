@@ -2,11 +2,11 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
     
     # Page Header
     New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.PageHeader.Hero -CustomStyle @{
-        backgroundColor = '#2e7d32'
-        color           = 'white'
-        padding         = '30px'
-        backgroundImage = 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)'
-    }) -Content {
+            backgroundColor = '#2e7d32'
+            color           = 'white'
+            padding         = '30px'
+            backgroundImage = 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)'
+        }) -Content {
         New-UDTypography -Text "🐄 Cattle Management" -Variant h4 -Style $HerdStyles.PageHeader.Title
         New-UDTypography -Text "Add, edit, and manage your cattle records" -Variant body1 -Style $HerdStyles.PageHeader.Subtitle
     }
@@ -16,8 +16,8 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
         New-UDGrid -Item -Content {
             
             New-UDButton -Text "➕ Add New Cattle" -Variant contained -Style (Merge-HerdStyle -BaseStyle $HerdStyles.Button.Primary -CustomStyle @{
-                marginBottom = '20px'
-            }) -OnClick {
+                    marginBottom = '20px'
+                }) -OnClick {
                 Show-UDModal -Content {
                     New-UDTypography -Text "Add New Cattle" -Variant h5 -Style $HerdStyles.Typography.ModalTitle
             
@@ -163,12 +163,22 @@ $cattleMgmt = New-UDPage -Name 'Cattle Management' -Url '/cattle' -Content {
                         marginBottom = '5px'
                     }
                     
-                    New-UDTypography -Text "Optional columns: Name, Breed, Gender, BirthDate, PurchaseDate, Notes" -Variant body2 -Style @{
+                    New-UDTypography -Text "Optional columns: Name, Breed, Gender, BirthDate, PurchaseDate, Location, Owner, PricePerDay, Status, Notes" -Variant body2 -Style @{
                         color        = '#666'
                         marginBottom = '15px'
                     }
                     
                     New-UDTypography -Text "Gender values: Steer, Heifer" -Variant body2 -Style @{
+                        color        = '#666'
+                        marginBottom = '5px'
+                    }
+                    
+                    New-UDTypography -Text "Location values: Pen 1, Pen 2, Pen 3, Pen 4, Pen 5, Pen 6, Quarantine, Pasture" -Variant body2 -Style @{
+                        color        = '#666'
+                        marginBottom = '5px'
+                    }
+                    
+                    New-UDTypography -Text "Status values: Active, Sold, Deceased, Transferred (defaults to Active)" -Variant body2 -Style @{
                         color        = '#666'
                         marginBottom = '5px'
                     }
@@ -366,18 +376,11 @@ $($Data | ConvertTo-Json -Depth 3)
                         marginBottom = '10px'
                     }
                     
-                    New-UDElement -Tag 'pre' -Attributes @{style = @{
-                            backgroundColor = '#f5f5f5'
-                            padding         = '10px'
-                            borderRadius    = '4px'
-                            fontSize        = '12px'
-                            overflow        = 'auto'
-                        }
-                    } -Content {
-                        "TagNumber,OriginFarm,Name,Breed,Gender,BirthDate,PurchaseDate,Notes
-004,Smith Ranch,Betsy,Angus,Cow,01/15/2020,03/20/2021,Good temperament
-005,Johnson Farm,Rocky,Hereford,Bull,05/10/2019,08/15/2020,
-006,Smith Ranch,Molly,Angus,Heifer,11/22/2021,01/10/2022,First calf heifer"
+                    New-UDElement -Tag 'pre' -Attributes @{style = $Global:HerdStyles.CodeBlock.Default } -Content {
+                        "TagNumber,OriginFarm,Name,Breed,Gender,BirthDate,PurchaseDate,Location,Owner,PricePerDay,Status,Notes
+001,Smith Ranch,Betsy,Angus,Heifer,01/15/2020,03/20/2021,Pen 1,Smith Ranch,5.50,Active,Good temperament
+002,Johnson Farm,Rocky,Hereford,Steer,05/10/2019,08/15/2020,Pen 2,Johnson Farm,6.00,Active,
+003,Smith Ranch,Molly,Angus,Heifer,11/22/2021,01/10/2022,Pasture,Smith Ranch,5.00,Active,First calf heifer"
                     }
                     
                 } -Footer {
@@ -544,21 +547,20 @@ $($Data | ConvertTo-Json -Depth 3)
                 color        = '#1565c0'
                 marginBottom = '20px'
             } -OnClick {
-                # Create CSV content
-                $csvContent = "TagNumber,OriginFarm,Name,Breed,Gender,BirthDate,PurchaseDate,Notes"
+                # Create CSV content with ALL possible fields
+                $csvContent = "TagNumber,OriginFarm,Name,Breed,Gender,BirthDate,PurchaseDate,Location,Owner,PricePerDay,Status,Notes"
                 
-                # Create temporary file (cross-platform)
-                $tempFile = [System.IO.Path]::GetTempFileName()
-                $csvFile = [System.IO.Path]::ChangeExtension($tempFile, '.csv')
-                
+                # Create template file if needed
+                $templatePath = Join-Path (Split-path -Parent (Get-DatabasePath)) 'templates'
+                $templateFile = Join-Path $templatePath 'cattle_import_template.csv'
+
+                if (-not (Test-Path $templateFile)) {
+                    $null = New-Item $templateFile -ItemType File -Force
+                }
+                            
                 # Write content and trigger download
-                Set-Content -Path $csvFile -Value $csvContent -Encoding UTF8
-                Start-UDDownload -Path $csvFile -FileName 'cattle_import_template.csv' -ContentType 'text/csv'
-                
-                # Clean up temp file after a delay (background job)
-                Start-Sleep -Milliseconds 100
-                Remove-Item -Path $csvFile -ErrorAction SilentlyContinue
-            }
+                Set-Content -Path $templateFile -Value $csvContent -Encoding UTF8
+                Start-UDDownload -Path $templateFile -FileName 'cattle_import_template.csv' -ContentType 'text/csv' }
         }
     }
    
@@ -673,7 +675,8 @@ $($Data | ConvertTo-Json -Depth 3)
                         # Birth Date - only pass Value if not null
                         if ($cattle.BirthDate) {
                             New-UDDatePicker -Id 'edit-birth-date' -Label 'Birth Date' -Value $cattle.BirthDate
-                        } else {
+                        }
+                        else {
                             New-UDDatePicker -Id 'edit-birth-date' -Label 'Birth Date'
                         }
                         
@@ -682,7 +685,8 @@ $($Data | ConvertTo-Json -Depth 3)
                         # Purchase Date - only pass Value if not null
                         if ($cattle.PurchaseDate) {
                             New-UDDatePicker -Id 'edit-purchase-date' -Label 'Purchase Date' -Value $cattle.PurchaseDate
-                        } else {
+                        }
+                        else {
                             New-UDDatePicker -Id 'edit-purchase-date' -Label 'Purchase Date'
                         }
                         

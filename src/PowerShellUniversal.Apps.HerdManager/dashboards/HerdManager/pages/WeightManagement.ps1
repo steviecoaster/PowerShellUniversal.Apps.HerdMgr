@@ -115,9 +115,19 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
                         marginBottom = '5px'
                     }
                     
-                    New-UDTypography -Text "Optional columns: Notes" -Variant body2 -Style @{
+                    New-UDTypography -Text "Optional columns: WeightUnit, MeasurementMethod, Notes, RecordedBy" -Variant body2 -Style @{
                         color        = '#666'
                         marginBottom = '15px'
+                    }
+                    
+                    New-UDTypography -Text "WeightUnit values: lbs (default), kg" -Variant body2 -Style @{
+                        color        = '#666'
+                        marginBottom = '5px'
+                    }
+                    
+                    New-UDTypography -Text "MeasurementMethod examples: Scale, Visual Estimate, Tape Measure" -Variant body2 -Style @{
+                        color        = '#666'
+                        marginBottom = '5px'
                     }
                     
                     New-UDTypography -Text "Date format: MM/dd/yyyy or yyyy-MM-dd" -Variant body2 -Style @{
@@ -224,21 +234,31 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
                         }
                         
                         New-UDButton -Text "📥 Download CSV Template" -Variant outlined -OnClick {
-                            # Create CSV content
-                            $csvContent = "TagNumber,WeightDate,Weight,Notes"
+                            # Create CSV content with ALL possible fields
+                            $csvContent = "TagNumber,WeightDate,Weight,WeightUnit,MeasurementMethod,Notes,RecordedBy"
                             
-                            # Create temporary file (cross-platform)
-                            $tempFile = [System.IO.Path]::GetTempFileName()
-                            $csvFile = [System.IO.Path]::ChangeExtension($tempFile, '.csv')
+                            # Create template file if needed
+                            $templatePath = Join-Path (Split-path -Parent (Get-DatabasePath)) 'templates'
+                            $templateFile = Join-Path $templatePath 'weight_import_template.csv'
+
+                            if(-not (Test-Path $templateFile)) {
+                                $null = New-Item $templateFile -ItemType File -Force
+                            }
                             
                             # Write content and trigger download
-                            Set-Content -Path $csvFile -Value $csvContent -Encoding UTF8
-                            Start-UDDownload -Path $csvFile -FileName 'weight_import_template.csv' -ContentType 'text/csv'
+                            Set-Content -Path $templateFile -Value $csvContent -Encoding UTF8
+                            Start-UDDownload -Path $templateFile -FileName 'weight_import_template.csv' -ContentType 'text/csv'
                             
-                            # Clean up temp file after a delay
-                            Start-Sleep -Milliseconds 100
-                            Remove-Item -Path $csvFile -ErrorAction SilentlyContinue
                         }
+                    }
+                    
+                    New-UDElement -Tag 'br'
+                    New-UDTypography -Text "Example CSV:" -Variant subtitle2 -Style @{ marginTop = '15px'; marginBottom = '5px'; fontWeight = 'bold' }
+                    New-UDElement -Tag 'pre' -Attributes @{ style = $Global:HerdStyles.CodeBlock.Default } -Content {
+                        "TagNumber,WeightDate,Weight,WeightUnit,MeasurementMethod,Notes,RecordedBy
+001,01/15/2024,850,lbs,Scale,Initial weight,John Doe
+002,01/15/2024,920,lbs,Scale,,Mary Smith
+003,02/10/2024,425,kg,Tape Measure,Estimated weight,John Doe"
                     }
                     
                 } -Header {
