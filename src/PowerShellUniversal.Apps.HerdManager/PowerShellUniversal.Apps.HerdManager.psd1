@@ -12,7 +12,7 @@
     RootModule        = '.\PowerShellUniversal.Apps.HerdManager.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '2.0.0'
+    ModuleVersion     = '2.1.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -82,7 +82,8 @@
         'Format-Currency',
         'Get-SystemInfo',
         'Set-SystemInfo',
-            'Clear-SystemInfo',
+        'Clear-SystemInfo',
+        'Backup-HerdDatabase',
         #Notifcation
         'Get-NotificationCount',
         #Cattle
@@ -164,7 +165,7 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags = @('PowerShellUniversal')
+            Tags       = @('PowerShellUniversal')
 
             # A URL to the license for this module.
             LicenseUri = 'https://github.com/steviecoaster/PowerShellUniversal.Apps.HerdMgr/blob/main/LICENSE'
