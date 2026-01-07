@@ -140,7 +140,9 @@ $accounting = New-UDPage -Name "Accounting" -Content {
                             New-UDElement -Tag 'br'
                             
                             if ($isSingleCattle) {
-                                New-UDDatePicker -Id 'new-start-date' -Label 'Start Date' -Value $cattleList[0].PurchaseDate
+                                # Start Date - use PurchaseDate if available, otherwise current date
+                                $startDateValue = if ($cattleList[0].PurchaseDate) { $cattleList[0].PurchaseDate } else { $currentDate }
+                                New-UDDatePicker -Id 'new-start-date' -Label 'Start Date' -Value $startDateValue
                                 New-UDElement -Tag 'br'
                                 New-UDDatePicker -Id 'new-end-date' -Label 'End Date' -Value $currentDate
                                 New-UDElement -Tag 'br'

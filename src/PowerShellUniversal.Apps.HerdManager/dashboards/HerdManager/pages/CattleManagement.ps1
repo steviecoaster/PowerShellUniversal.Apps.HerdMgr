@@ -673,9 +673,23 @@ $($Data | ConvertTo-Json -Depth 3)
                         New-UDElement -Tag 'br'
                         New-UDElement -Tag 'br'
                         New-UDElement -Tag 'br'
-                        New-UDDatePicker -Id 'edit-birth-date' -Label 'Birth Date' -Value $cattle.BirthDate
+                        
+                        # Birth Date - only pass Value if not null
+                        if ($cattle.BirthDate) {
+                            New-UDDatePicker -Id 'edit-birth-date' -Label 'Birth Date' -Value $cattle.BirthDate
+                        } else {
+                            New-UDDatePicker -Id 'edit-birth-date' -Label 'Birth Date'
+                        }
+                        
                         New-UDElement -Tag 'br'
-                        New-UDDatePicker -Id 'edit-purchase-date' -Label 'Purchase Date' -Value $cattle.PurchaseDate
+                        
+                        # Purchase Date - only pass Value if not null
+                        if ($cattle.PurchaseDate) {
+                            New-UDDatePicker -Id 'edit-purchase-date' -Label 'Purchase Date' -Value $cattle.PurchaseDate
+                        } else {
+                            New-UDDatePicker -Id 'edit-purchase-date' -Label 'Purchase Date'
+                        }
+                        
                         New-UDElement -Tag 'br'
                         New-UDTextbox -Id 'edit-notes' -Label 'Notes' -Value $cattle.Notes -Multiline -Rows 3 -FullWidth
                         
