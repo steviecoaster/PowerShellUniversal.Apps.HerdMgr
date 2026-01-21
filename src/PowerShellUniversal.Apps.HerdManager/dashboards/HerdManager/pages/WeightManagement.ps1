@@ -429,7 +429,7 @@ $weightMgmt = New-UDPage -Name 'Weight Management' -Url '/weights' -Content {
         
         New-UDCard -Content {
             New-UDTypography -Text "Recent Weight Records" -Variant h6 -Style @{marginBottom = '15px'; color = '#2e7d32' }
-            New-UDTable -Data $weightRecords -Columns $columns -ShowPagination -PageSize 15 -ShowSearch -Dense
+            New-UDTable -Data $weightRecords -Columns $columns -ShowPagination -PageSize 15 -ShowSearch -Dense -ShowSort -ShowExport
         }
     }
 }

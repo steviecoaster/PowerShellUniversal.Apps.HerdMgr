@@ -778,7 +778,7 @@ $($Data | ConvertTo-Json -Depth 3)
             }
         )
         
-        New-UDTable -Data $cattle -Columns $columns -ShowPagination -PageSize 10 -ShowSearch -Dense -ShowSort -ShowExport
+        New-UDTable -Data $cattle -Columns $columns -ShowPagination -PageSize 50 -ShowSearch -Dense -ShowSort -ShowExport
     }
 }
 
