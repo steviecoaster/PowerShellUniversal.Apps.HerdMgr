@@ -72,3 +72,5 @@ if ($RestartService) {
 else {
     Write-Host "Note: You must restart PowerShell Universal (or re-import the module in the dashboard runspace) to pick up updated function signatures." -ForegroundColor Yellow
 }
+
+Clear-Host
