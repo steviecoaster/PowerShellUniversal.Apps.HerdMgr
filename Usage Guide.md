@@ -312,6 +312,248 @@ The ROG History table shows all previous calculations:
 
 ---
 
+## ROG Analytics - Advanced Rate of Gain Analysis
+
+### Overview
+
+The ROG Analytics page provides comprehensive, actionable insights into your cattle's weight gain performance across multiple dimensions. Unlike the standard Rate of Gain calculator which analyzes individual animals, this advanced analytics system allows you to:
+
+- **Group Analysis**: Compare performance across locations, breeds, genders, or origin farms
+- **Statistical Insights**: View average, median, minimum, and maximum ADG values
+- **Visual Analysis**: Interactive charts showing distribution and comparisons
+- **Performance Tracking**: Identify top and bottom performers at a glance
+- **Flexible Date Ranges**: Analyze 30, 60, 90, 120-day periods or custom ranges
+
+### Features
+
+#### 1. Group-Based Analysis
+
+**Location Analysis**
+
+- Compare ADG across different pens (Pen 1-6, Quarantine, Pasture)
+- Identify which locations produce the best weight gains
+- Optimize pen assignments based on performance data
+
+**Breed Analysis**
+
+- Compare performance across different cattle breeds
+- Make informed purchasing decisions based on breed performance
+- Identify which breeds thrive in your conditions
+
+**Gender Analysis**
+
+- Compare steer vs heifer performance
+- Track expected differences in ADG
+- Optimize feeding strategies by gender
+
+**Origin Farm Analysis**
+
+- Track performance by cattle source
+- Identify reliable suppliers producing high-gaining cattle
+- Make data-driven sourcing decisions
+
+**Individual Analysis**
+
+- Detailed view of each animal's performance
+- Sort and filter by ADG
+- Drill down to specific animals
+
+#### 2. Statistical Summary
+
+The analytics page provides comprehensive statistics for each analysis:
+
+- **Overall Average ADG**: Mean weight gain across all animals
+- **Median ADG**: Middle value (less affected by outliers)
+- **Min/Max ADG**: Range of performance
+- **Total Animals Analyzed**: Sample size for the analysis
+- **Date Range**: Clear indication of analysis period
+
+#### 3. Visual Analytics
+
+**Group Comparison Chart**
+
+- Bar chart showing average ADG for each group
+- Sorted by performance for easy comparison
+- Top 15 groups displayed (for large datasets)
+
+**ADG Distribution Histogram**
+
+- Shows how many animals fall into each ADG range
+- Ranges: <1.0, 1.0-1.5, 1.5-2.0, 2.0-2.5, 2.5-3.0, 3.0-3.5, 3.5-4.0, >4.0 lbs/day
+- Helps identify if most cattle are performing well or if there's high variance
+
+#### 4. Detailed Results Table
+
+The interactive table includes:
+
+- Group name (location, breed, etc.)
+- Number of animals in group
+- Average ADG with color coding
+- Total weight gain for the group
+
+**Color-Coded ADG Values**:
+
+- 🟢 Green: ADG > 3.0 lbs/day (Excellent)
+- 🟠 Orange: ADG 2.0-3.0 lbs/day (Good)
+- 🔴 Red: ADG < 2.0 lbs/day (Needs attention)
+
+#### 5. Performance Tracking
+
+**Top 5 Performers**
+
+- Green-highlighted card showing best-gaining animals
+- Includes tag number, name, ADG, and total gain
+- Useful for identifying genetics or management practices to replicate
+
+**Bottom 5 Performers**
+
+- Red-highlighted card showing lowest-gaining animals
+- Helps identify animals that may need health checks or different feeding
+- Early warning system for performance issues
+
+### Using ROG Analytics
+
+#### Basic Workflow
+
+1. **Navigate to ROG Analytics**
+
+   - Click "ROG Analytics" in the sidebar menu
+
+2. **Configure Analysis**
+
+   - **Group By**: Select how to group your data (Location, Breed, Gender, Origin Farm, Individual)
+   - **Date Range**: Choose preset (30/60/90/120 days) or custom range
+   - **Status Filter**: Active animals only or all status
+
+3. **Run Analysis**
+
+   - Click "Run Analysis" button
+   - Results load dynamically (typically 1-2 seconds)
+
+4. **Review Results**
+
+   - Check summary statistics at the top
+   - Review the group comparison chart
+   - Examine detailed results table
+   - Check top/bottom performers
+   - Analyze ADG distribution
+
+#### Example Use Cases
+
+**Use Case 1: Comparing Pen Performance**
+
+*Goal: Determine if Pen 1 or Pen 2 produces better weight gains*
+
+1. Set "Group By" to "Location"
+2. Choose "Last 90 Days"
+3. Run Analysis
+4. Compare Pen 1 vs Pen 2 average ADG in the chart and table
+5. If one pen significantly outperforms, investigate differences (feed access, shelter, etc.)
+
+**Use Case 2: Evaluating a New Feed Strategy**
+
+*Goal: Compare weight gains before and after implementing new feed*
+
+1. Run analysis with "Last 90 Days" (includes new feed period)
+2. Note the overall average ADG
+3. Change date range to custom: 180-90 days ago (before new feed)
+4. Compare the two periods' average ADG
+5. Determine if new feed strategy is working
+
+**Use Case 3: Breed Performance Analysis**
+
+*Goal: Decide which breed to purchase more of*
+
+1. Set "Group By" to "Breed"
+2. Choose "Last 120 Days" for long-term trends
+3. Run Analysis
+4. Review average ADG for each breed
+5. Consider purchasing more of the breed(s) with highest ADG
+
+**Use Case 4: Identifying Problem Animals**
+
+*Goal: Find animals that need health attention*
+
+1. Set "Group By" to "Individual"
+2. Choose "Last 60 Days"
+3. Run Analysis
+4. Check "Bottom 5 Performers" card
+5. Review animals with very low ADG (<1.5 lbs/day)
+6. Schedule health checks for these animals
+
+### Data Requirements
+
+#### Minimum Data Needed
+
+For meaningful analysis, each animal needs:
+
+- ✅ At least **2 weight records** within the selected date range
+- ✅ Weight records should be **at least 14 days apart** for reliable ADG calculation
+- ✅ Animals should have **Status = 'Active'** (or include all status in filter)
+
+#### Best Practices
+
+1. **Regular Weighing**: Weigh cattle every 2-4 weeks for best trend data
+2. **Consistent Timing**: Weigh at the same time of day to minimize variation
+3. **Accurate Data**: Ensure weight measurements are accurate (use calibrated scales)
+4. **Complete Records**: Fill in breed, location, and origin farm fields for better grouping
+5. **Date Range Selection**: Use 60-90 day ranges for most analyses (balances recency with statistical reliability)
+
+### Interpreting Results
+
+#### What's a Good ADG?
+
+General guidelines (varies by breed, age, and feed program):
+
+- **Excellent**: > 3.0 lbs/day - Premium performance
+- **Good**: 2.5-3.0 lbs/day - Above average, profitable
+- **Average**: 2.0-2.5 lbs/day - Acceptable performance
+- **Below Average**: 1.5-2.0 lbs/day - May need investigation
+- **Poor**: < 1.5 lbs/day - Likely indicates problems
+
+#### Understanding the Statistics
+
+**Average vs Median**:
+
+- **Average (Mean)**: Sum of all ADG values divided by count. Can be skewed by outliers.
+- **Median**: Middle value when sorted. Better represents "typical" performance.
+- If average and median are similar = consistent performance across the group
+- If average is much higher/lower than median = outliers are affecting the average
+
+### Troubleshooting
+
+**"No rate of gain data available"**
+
+*Cause*: No animals have sufficient weight records in the date range
+
+*Solutions*:
+
+- Add more weight records
+- Expand the date range
+- Check that animals have Status = 'Active' (or change filter to "All Status")
+
+**Groups Showing Zero Animals**
+
+*Cause*: No animals meet the criteria (e.g., no cattle in "Pasture" location)
+
+*Solution*: This is informational - shows you don't have cattle in that category
+
+**Calculation Seems Wrong**
+
+*Possible Causes*:
+
+1. Weight records are in kg instead of lbs (check WeightUnit field)
+2. Weight entry errors (typo: 85 instead of 850)
+3. Date issues (weight recorded on wrong date)
+
+*Solutions*:
+
+- Review weight records for the animal
+- Check the unit of measurement
+- Correct any erroneous data
+
+---
+
 ## Animal Reports
 
 ### Generating a Comprehensive Report

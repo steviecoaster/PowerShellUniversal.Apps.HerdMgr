@@ -99,6 +99,7 @@ end {
         New-UDListItem -Label "Feed Records" -Icon (New-UDIcon -Icon Seedling) -OnClick { Invoke-UDRedirect -Url '/feedrecords' }
         New-UDListItem -Label "Farms" -Icon (New-UDIcon -Icon Tractor) -OnClick { Invoke-UDRedirect -Url '/farms' }
         New-UDListItem -Label "Rate of Gain" -Icon (New-UDIcon -Icon ChartLine) -OnClick { Invoke-UDRedirect -Url '/rog' }
+        New-UDListItem -Label "ROG Analytics" -Icon (New-UDIcon -Icon ChartArea) -OnClick { Invoke-UDRedirect -Url '/rog-analytics' }
         New-UDListItem -Label "Animal Report" -Icon (New-UDIcon -Icon FileAlt) -OnClick { Invoke-UDRedirect -Url '/animal-report' }
         New-UDListItem -Label "Accounting" -Icon (New-UDIcon -Icon Calculator) -OnClick { Invoke-UDRedirect -Url '/accounting' }
         New-UDListItem -Label "Reports" -Icon (New-UDIcon -Icon ChartBar) -OnClick { Invoke-UDRedirect -Url '/reports' }
@@ -138,7 +139,7 @@ end {
 
     $app = @{
         Title            = '🐄 Herd Manager'
-        Pages            = @($homepage, $notifications, $cattleMgmt, $weightMgmt, $healthMgmt, $feedRecords, $farmsPage, $rog, $reports, $animalreport, $accounting, $invoicePage, $systemSettings, $helpPage)
+        Pages            = @($homepage, $notifications, $cattleMgmt, $weightMgmt, $healthMgmt, $feedRecords, $farmsPage, $rog, $rogAnalytics, $reports, $animalreport, $accounting, $invoicePage, $systemSettings, $helpPage)
         Navigation       = $Navigation
         NavigationLayout = 'Temporary'
         HeaderContent    = $HeaderContent

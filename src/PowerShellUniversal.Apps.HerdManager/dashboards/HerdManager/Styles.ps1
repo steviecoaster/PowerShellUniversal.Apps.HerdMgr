@@ -208,6 +208,14 @@ $Global:HerdStyles = @{
         }
     }
     
+    # Skeleton Loading Styles - CSS classes for loading states
+    Skeleton = @{
+        # Standard spacing between skeleton elements
+        Spaced = 'herd-skeleton-spaced'
+        # Larger spacing for sections
+        SpacedLarge = 'herd-skeleton-spaced-lg'
+    }
+    
     # Stat/Metric Card Styles
     StatCard = @{
         Default = @{
