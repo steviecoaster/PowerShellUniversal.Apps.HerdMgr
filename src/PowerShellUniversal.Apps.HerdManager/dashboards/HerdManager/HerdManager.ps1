@@ -37,7 +37,7 @@ begin {
     
         # Verify sqlite3 is available
         if (-not (Get-Command sqlite3 -ErrorAction SilentlyContinue)) {
-            throw "sqlite3 command not found. Please install SQLite."
+            throw "sqlite3 command not found. Download sqlite3 from https://www.sqlite.org/download.html and add it to your system PATH. If running under PowerShell Universal, restart the PSU service after updating PATH."
         }
     
         # Verify database exists
