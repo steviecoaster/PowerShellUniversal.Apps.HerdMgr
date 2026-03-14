@@ -51,7 +51,9 @@
     # ProcessorArchitecture = ''
 
     # Modules that must be imported into the global environment prior to importing this module
-    # RequiredModules = @()
+    # PSSQLite is checked manually in the .psm1 so we can surface a clear
+    # error in the PSU app log before the module fails to load.
+    # RequiredModules = @('PSSQLite')
 
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()

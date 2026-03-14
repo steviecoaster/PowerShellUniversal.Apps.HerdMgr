@@ -211,8 +211,7 @@ PowerShellUniversal.Apps.HerdManager/
 │       │       ├── New-UDHerdManagerApp.ps1
 │       │       └── Update-CattleRecord.ps1
 │       ├── data/
-│       │   ├── Database-Schema.sql              # Complete database schema
-│       │   └── HerdManager.db                   # SQLite database
+│       │   └── Database-Schema.sql              # Complete database schema
 │       ├── PowerShellUniversal.Apps.HerdManager.psm1
 │       ├── PowerShellUniversal.Apps.HerdManager.psd1
 │       └── .universal/
@@ -258,6 +257,15 @@ Optimized indexes on frequently queried fields for fast performance
 
 ### Setup Steps
 
+#### Option A: PSU Gallery (Recommended)
+
+1. In the PSU admin panel, navigate to **Platform > Modules** and search for `PowerShellUniversal.Apps.HerdManager`
+2. Install the module. PSSQLite must also be installed (available from the same gallery or via `Install-Module PSSQLite -Scope AllUsers -Force`)
+3. The app auto-registers on service restart. Navigate to: `https://your-psu-url/herdmanager`
+4. On first launch, visit **Setup** to configure your farm settings. If PSSQLite is not installed, the Setup page will display instructions
+
+#### Option B: Manual / Development Setup
+
 1. **Clone the Repository**
 
    ```powershell
@@ -265,22 +273,24 @@ Optimized indexes on frequently queried fields for fast performance
    cd PowerShellUniversal.Apps.HerdMgr
    ```
 
-2. **Import the Module**
+2. **Install PSSQLite**
+
+   ```powershell
+   Install-Module PSSQLite -Scope CurrentUser -Force
+   ```
+
+3. **Import the Module**
 
    ```powershell
    Import-Module .\src\PowerShellUniversal.Apps.HerdManager\PowerShellUniversal.Apps.HerdManager.psd1
    ```
 
-3. **Initialize Database** (if starting fresh)
-
-   ```powershell
-   Initialize-HerdDatabase
-   ```
+   The database is created automatically during import at `$env:ProgramData\HerdManager\HerdManager.db` (Windows) or `$HOME/herdmanager/HerdManager.db` (Linux).
 
 4. **Register with PowerShell Universal**
 
-   - Copy the module to your PSU modules directory, or
-   - Use the `.universal\dashboards.ps1` configuration
+   - Copy the module to your PSU modules directory
+   - The `.universal\dashboards.ps1` inside the module auto-registers the app
    - Restart PowerShell Universal service
 
 5. **Access the Dashboard**
@@ -358,7 +368,11 @@ Optimized indexes on frequently queried fields for fast performance
 
 ### Database Path
 
-Configured in module: `$script:DatabasePath = Join-Path $PSScriptRoot 'data\HerdManager.db'`
+The database is stored outside the module directory to survive version upgrades:
+- **Windows**: `$env:ProgramData\HerdManager\HerdManager.db`
+- **Linux**: `$HOME/herdmanager/HerdManager.db`
+
+The database is created automatically when the module is imported.
 
 ### PowerShell Universal Settings
 
@@ -464,7 +478,6 @@ Import-Module -Force "C:\Path\To\PowerShellUniversal.Apps.HerdManager.psd1"
 - SQLite stores dates as TEXT
 - Application uses MM/dd/yyyy HH:mm:ss format
 - CAST AS TEXT in queries prevents PSSQLite auto-conversion errors
-- Always use -As PSObject with Invoke-UniversalSQLiteQuery
 
 ### Performance Tips
 

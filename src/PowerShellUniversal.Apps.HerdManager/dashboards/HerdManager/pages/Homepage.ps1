@@ -1,5 +1,5 @@
 $homepage = New-UDPage -Name 'Home' -Url '/Home' -Content {
-    $session:system = Get-SystemInfo -DbPath $script:DatabasePath
+    $session:system = if ($script:DatabaseReady) { Get-SystemInfo -DbPath $script:DatabasePath } else { $null }
     # Hero Section with Farm Theme
     New-UDCard -Style (Merge-HerdStyle -BaseStyle $HerdStyles.PageHeader.Hero -CustomStyle @{
         backgroundColor = '#2e7d32'

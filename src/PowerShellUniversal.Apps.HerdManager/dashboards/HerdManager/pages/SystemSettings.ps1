@@ -1,7 +1,23 @@
 $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
+
+    # Dependency banner: PSSQLite
+    if (-not $script:PSSQLiteAvailable) {
+        New-UDCard -Style @{backgroundColor = '#fff3f3'; borderLeft = '4px solid #d32f2f'; marginBottom = '20px'} -Content {
+            New-UDTypography -Text 'IMPORTANT: Missing Dependency' -Variant h6 -Style @{color = '#d32f2f'; fontWeight = 'bold'; marginBottom = '8px'}
+            New-UDTypography -Text 'This app requires the PSSQLite module which appears to be missing. Install it from the PSU admin panel (Platform > Modules) or by running the command below. Then restart the app and return to complete this System Settings page.' -Variant body2 -Style @{marginBottom = '8px'}
+            New-UDTypography -Text 'Install-Module PSSQLite -Scope AllUsers -Force' -Variant body1 -Style @{
+                fontFamily = 'monospace'
+                backgroundColor = '#f5f5f5'
+                padding = '12px'
+                borderRadius = '4px'
+                fontSize = '14px'
+            }
+        }
+    }
+
     New-UDCard -Title 'System Settings' -Content {
         # Load current settings
-        $session:sys = Get-SystemInfo
+        $session:sys = if ($script:DatabaseReady) { Get-SystemInfo } else { $null }
 
         New-UDForm -Id 'system-settings-form' -OnSubmit {
             $farmName = $EventData.'farm-name'
@@ -16,7 +32,7 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
             $currency = $EventData.'default-currency'
             $culture = $EventData.'default-culture'
             $established = $EventData.established
-                        
+
             try {
 
                 # Build parameters and only include Established when provided
@@ -56,12 +72,12 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
             }
             New-UDTextbox -Id 'email' -Label 'Email' -Value $session:sys.Email -FullWidth
             New-UDTextbox -Id 'contact' -Label 'Contact Person' -Value $session:sys.ContactPerson -FullWidth
-            $parsedEstablished = if ($session:sys.Established) { 
-                (ConvertFrom-DateString $session:sys.Established).Year.ToString() 
-            } 
+            $parsedEstablished = if ($session:sys.Established) {
+                (ConvertFrom-DateString $session:sys.Established).Year.ToString()
+            }
             else {
                 (Get-Date).Year
-            } 
+            }
             New-UDTextbox -Id 'established' -Label 'Established' -Value $parsedEstablished  -FullWidth
             New-UDTextbox -Id 'notes' -Label 'Notes' -Value $session:sys.Notes -FullWidth -Multiline -Rows 3
 
@@ -128,7 +144,7 @@ $systemSettings = New-UDPage -Name 'System Settings' -Url '/settings' -Content {
 
         New-UDDynamic -Id 'system-info-display' -Content {
             New-UDCard -Title 'Current System Info' -Content {
-                $s = Get-SystemInfo
+                $s = if ($script:DatabaseReady) { Get-SystemInfo } else { $null }
                 if ($s) {
                     New-UDTypography -Text "Farm: $($s.FarmName)" -Variant body1
                     New-UDTypography -Text "Address: $($s.Address) $($s.City) $($s.State) $($s.ZipCode)" -Variant body2

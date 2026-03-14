@@ -6,85 +6,20 @@ begin {
     . "$PSScriptRoot/Styles.ps1"
     
     function Invoke-UniversalSQLiteQuery {
-        <#
-    .SYNOPSIS
-    Execute SQLite queries using the sqlite3 command-line tool
-    
-    .DESCRIPTION
-    A wrapper function that executes SQLite queries using the native sqlite3 CLI.
-    This provides cross-platform compatibility without requiring PowerShell modules.
-    
-    .PARAMETER Path
-    Path to the SQLite database file
-    
-    .PARAMETER Query
-    SQL query to execute
-    
-    .EXAMPLE
-    Invoke-UniversalSQLiteQuery -Path "./data/HerdManager.db" -Query "SELECT * FROM Cattle"
-    
-    .NOTES
-    Requires sqlite3 to be installed and available in PATH
-    #>
         [CmdletBinding()]
         param(
             [Parameter(Mandatory)]
             [string]$Path,
-        
+
             [Parameter(Mandatory)]
             [string]$Query
         )
-    
-        # Verify sqlite3 is available
-        if (-not (Get-Command sqlite3 -ErrorAction SilentlyContinue)) {
-            throw "sqlite3 command not found. Please install SQLite."
-        }
-    
-        # Verify database exists
+
         if (-not (Test-Path $Path)) {
             throw "Database file not found: $Path"
         }
-    
-        # Resolve full path
-        $dbPath = Resolve-Path $Path | Select-Object -ExpandProperty Path
-    
-        # Try JSON output first (best for structured data)
-        $output = sqlite3 $dbPath -json $Query 2>&1
-    
-        # Check for errors
-        if ($LASTEXITCODE -ne 0) {
-            throw "SQLite query failed: $output"
-        }
-    
-        # Parse output
-        if ($output) {
-            try {
-                # Try to parse as JSON
-                $result = $output | ConvertFrom-Json
-                return $result
-            }
-            catch {
-                # JSON parsing failed, try CSV mode for better compatibility
-                $csvOutput = sqlite3 $dbPath -csv -header $Query 2>&1
-            
-                if ($LASTEXITCODE -eq 0 -and $csvOutput) {
-                    try {
-                        # Convert CSV to objects
-                        $result = $csvOutput | ConvertFrom-Csv
-                        return $result
-                    }
-                    catch {
-                        # If CSV also fails, return raw output
-                        return $csvOutput
-                    }
-                }
-            
-                # Fallback to raw output
-                return $output
-            }
-        }
-    
-        return $null
+
+        Invoke-SqliteQuery -DataSource $Path -Query $Query
     }
 
 }
@@ -108,26 +43,28 @@ end {
     }
 
     $HeaderContent = {
-        # Cross-platform path to database
-        $moduleBase = (Get-Module PowerShellUniversal.Apps.HerdManager).ModuleBase
-        $dbPath = Join-Path $moduleBase 'data' 'HerdManager.db'
-    
-        # Notification bell with badge
-        New-UDDynamic -Content {
-            $overdueQuery = "SELECT COUNT(*) as Count FROM HealthRecords hr INNER JOIN Cattle c ON hr.CattleID = c.CattleID WHERE hr.NextDueDate IS NOT NULL AND hr.NextDueDate < DATE('now') AND c.Status = 'Active'"
-            $overdueCount = (Invoke-UniversalSQLiteQuery -Path $dbPath -Query $overdueQuery).Count
-        
-            if ($overdueCount -gt 0) {
-                New-UDBadge -BadgeContent { $overdueCount } -Color error -Content {
+        # Notification bell with badge (only query DB if ready)
+        if ($script:DatabaseReady) {
+            $dbPath = Get-DatabasePath
+            New-UDDynamic -Content {
+                $overdueQuery = "SELECT COUNT(*) as Count FROM HealthRecords hr INNER JOIN Cattle c ON hr.CattleID = c.CattleID WHERE hr.NextDueDate IS NOT NULL AND hr.NextDueDate < DATE('now') AND c.Status = 'Active'"
+                $overdueCount = (Invoke-UniversalSQLiteQuery -Path $dbPath -Query $overdueQuery).Count
+
+                if ($overdueCount -gt 0) {
+                    New-UDBadge -BadgeContent { $overdueCount } -Color error -Content {
+                        New-UDIconButton -Icon (New-UDIcon -Icon Bell -Size lg) -OnClick { Invoke-UDRedirect -Url '/notifications' }
+                    }
+                }
+                else {
                     New-UDIconButton -Icon (New-UDIcon -Icon Bell -Size lg) -OnClick { Invoke-UDRedirect -Url '/notifications' }
                 }
-            }
-            else {
-                New-UDIconButton -Icon (New-UDIcon -Icon Bell -Size lg) -OnClick { Invoke-UDRedirect -Url '/notifications' }
-            }
-        } -AutoRefresh -AutoRefreshInterval 300
+            } -AutoRefresh -AutoRefreshInterval 300
+        }
+        else {
+            New-UDIconButton -Icon (New-UDIcon -Icon Bell -Size lg) -OnClick { Invoke-UDRedirect -Url '/notifications' }
+        }
         # First-run redirect: if SystemInfo is not configured, redirect users to the setup page using server-driven redirect
-        try { $sysCheck = Get-SystemInfo } catch { $sysCheck = $null }
+        try { $sysCheck = if ($script:DatabaseReady) { Get-SystemInfo } else { $null } } catch { $sysCheck = $null }
         # No forced redirect here — first-run banner is shown on the Home page instead
         # Delegated click handler for in-page help TOC links (data-toc-target)
         New-UDHtml -Markup "<script>(function(){function __herd_toc_handler(e){var el=e.target; while(el && el!==document){ try{ if(el.matches && el.matches('[data-toc-target]')){ e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) { e.stopImmediatePropagation(); } var id=el.getAttribute('data-toc-target') || (el.dataset && el.dataset.tocTarget); if(!id && el.hasAttribute('href')){ var href=el.getAttribute('href'); if(href && href.indexOf('#')===0){ id=href.substring(1); } } if(id){ var t=document.getElementById(id); if(t){ t.scrollIntoView({behavior:'smooth', block:'start'}); try{ history.pushState(null, '', window.location.pathname + '#' + id); }catch(e){} } } break; } } catch(err){ console && console.debug && console.debug('TOC handler error', err); } el=el.parentNode;} }

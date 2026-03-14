@@ -3,3 +3,6 @@
 
 # Local module database (should not be committed)
 /src/PowerShellUniversal.Apps.HerdManager/data/HerdManager.db
+
+# Local working notes
+/_temp/
