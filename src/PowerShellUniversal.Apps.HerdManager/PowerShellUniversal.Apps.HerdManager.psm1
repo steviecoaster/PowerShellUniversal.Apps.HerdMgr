@@ -46,8 +46,30 @@ if (-not (Test-Path $BasePath)) {
 }
 
 # Initialize DB + schema (idempotent)
-Initialize-HerdDbFile -Database $script:DatabasePath
-Initialize-HerdDatabase -Schema $SchemaPath -Database $script:DatabasePath
+try {
+    Initialize-HerdDbFile -Database $script:DatabasePath
+    Initialize-HerdDatabase -Schema $SchemaPath -Database $script:DatabasePath
+}
+catch {
+    $border = "=" * 72
+    # Wrap the error text for readability in logs
+    $innerMsg = "$_" -replace '(\.\s)', ".`n "
+    $errMsg = @"
+
+$border
+ HERD MANAGER - INITIALIZATION FAILED
+$border
+ $innerMsg
+$border
+"@
+
+    # Surface the error in the PSU app log if running inside PSU
+    if (Get-Command Write-PSULog -ErrorAction SilentlyContinue) {
+        Write-PSULog -Feature "App" -Resource "Herd Manager" -Level Error -Message $errMsg
+    }
+
+    throw $errMsg
+}
 
 # Ensure sensible PRAGMA settings for concurrency/ durability even if DB already existed
 try {
