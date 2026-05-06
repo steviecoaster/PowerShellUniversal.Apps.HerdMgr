@@ -561,8 +561,11 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                             $tonnageData = Get-FeedTonnageReport @reportParams
                             
                             if ($tonnageData) {
-                                # Store in session for display
-                                $Session:TonnageData = $tonnageData
+                                # Store in session for display and print
+                                $Session:TonnageData       = $tonnageData
+                                $Session:TonnageStartDate  = $startDate.ToString('yyyy-MM-dd')
+                                $Session:TonnageEndDate    = $endDate.ToString('yyyy-MM-dd')
+                                $Session:TonnageGroupByMonth = if ($groupByMonth) { 'true' } else { 'false' }
                                 Sync-UDElement -Id 'tonnage-results'
                                 Show-UDToast -Message "Report generated successfully" -MessageColor green -Duration 2000
                             }
@@ -627,6 +630,18 @@ $reports = New-UDPage -Name 'Reports' -Url '/reports' -Content {
                             }
                             
                             New-UDTable -Data $data -Columns $columns -Sort -ShowPagination -PageSize 20 -Dense -ShowSearch -Title "Tonnage Breakdown"
+
+                            New-UDElement -Tag 'br'
+
+                            # Print button
+                            New-UDButton -Text "🖨️ Print Report" -Variant outlined -OnClick {
+                                $url = "/herdmanager/feed-tonnage-report/$($Session:TonnageStartDate)/$($Session:TonnageEndDate)/$($Session:TonnageGroupByMonth)"
+                                Invoke-UDRedirect -Url $url -OpenInNewWindow
+                            } -Style @{
+                                borderColor = '#2e7d32'
+                                color       = '#2e7d32'
+                                marginTop   = '10px'
+                            }
                         }
                         else {
                             New-UDAlert -Severity info -Text "Select a date range and click 'Submit' to generate a tonnage report."

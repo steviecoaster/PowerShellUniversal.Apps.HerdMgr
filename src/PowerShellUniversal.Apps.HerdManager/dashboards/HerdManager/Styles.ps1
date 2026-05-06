@@ -242,4 +242,69 @@ $Global:HerdStyles = @{
             border       = '2px solid rgba(255, 152, 0, 0.3)'
         }
     }
+
+    # CSS rules for blank print-preview pages, stored as structured data.
+    # Serialize with: ConvertTo-CssString $HerdStyles.PrintCSS.Invoice
+    PrintCSS = @{
+
+        Invoice = [ordered]@{
+            '@media print' = [ordered]@{
+                '.MuiAppBar-root, .MuiDrawer-root, button, .no-print' = [ordered]@{ display = 'none !important' }
+                'body'                        = [ordered]@{ margin = '0'; padding = '10px'; 'font-size' = '11pt' }
+                '.invoice-container'          = [ordered]@{ 'max-width' = '100% !important'; margin = '0 !important'; padding = '15px !important'; 'box-shadow' = 'none !important' }
+                '.invoice-header'             = [ordered]@{ 'padding-bottom' = '10px'; 'margin-bottom' = '15px' }
+                '.invoice-header h2'          = [ordered]@{ 'font-size' = '18pt'; margin = '0' }
+                '.invoice-header h3'          = [ordered]@{ 'font-size' = '14pt' }
+                '.invoice-header p'           = [ordered]@{ 'font-size' = '9pt'; margin = '1px 0' }
+                '.invoice-section'            = [ordered]@{ 'margin-bottom' = '15px' }
+                '.invoice-section h6'         = [ordered]@{ 'font-size' = '12pt'; 'margin-bottom' = '8px' }
+                '.invoice-info-row'           = [ordered]@{ 'margin-bottom' = '5px' }
+                '.invoice-info-row p, .invoice-info-row span' = [ordered]@{ 'font-size' = '10pt' }
+                '.invoice-table'              = [ordered]@{ 'font-size' = '9pt'; 'margin-top' = '8px' }
+                '.invoice-table th'           = [ordered]@{ padding = '6px' }
+                '.invoice-table td'           = [ordered]@{ padding = '5px' }
+                '.invoice-total'              = [ordered]@{ padding = '10px'; 'margin-top' = '15px'; 'font-size' = '14pt' }
+            }
+            '.invoice-container'              = [ordered]@{ 'max-width' = '900px'; margin = '20px auto'; padding = '30px'; background = 'white'; 'box-shadow' = '0 2px 10px rgba(0,0,0,0.1)' }
+            '.invoice-header'                 = [ordered]@{ 'border-bottom' = '3px solid #2e7d32'; 'padding-bottom' = '20px'; 'margin-bottom' = '30px' }
+            '.invoice-section'                = [ordered]@{ 'margin-bottom' = '25px' }
+            '.invoice-table'                  = [ordered]@{ width = '100%'; 'border-collapse' = 'collapse'; 'margin-top' = '15px'; 'table-layout' = 'fixed' }
+            '.invoice-table th'               = [ordered]@{ 'background-color' = '#2e7d32'; color = 'white'; padding = '10px'; 'text-align' = 'left' }
+            '.invoice-table th:nth-child(1)'  = [ordered]@{ width = '15%' }
+            '.invoice-table th:nth-child(2)'  = [ordered]@{ width = '20%' }
+            '.invoice-table th:nth-child(3)'  = [ordered]@{ width = '50%' }
+            '.invoice-table th:nth-child(4)'  = [ordered]@{ width = '15%'; 'text-align' = 'right' }
+            '.invoice-table td'               = [ordered]@{ padding = '8px'; 'border-bottom' = '1px solid #ddd'; 'word-wrap' = 'break-word' }
+            '.invoice-total'                  = [ordered]@{ 'background-color' = '#e8f5e9'; padding = '15px'; 'margin-top' = '20px'; 'text-align' = 'right'; 'font-size' = '1.3em'; 'font-weight' = 'bold'; color = '#2e7d32' }
+            '.invoice-info-row'               = [ordered]@{ display = 'flex'; 'justify-content' = 'space-between'; 'margin-bottom' = '10px' }
+            '.invoice-label'                  = [ordered]@{ 'font-weight' = 'bold'; color = '#555' }
+        }
+
+        TonnageReport = [ordered]@{
+            '@media print' = [ordered]@{
+                '.MuiAppBar-root, .MuiDrawer-root, button, .no-print' = [ordered]@{ display = 'none !important' }
+                'body'                        = [ordered]@{ margin = '0'; padding = '10px'; 'font-size' = '11pt' }
+                '.report-container'           = [ordered]@{ 'max-width' = '100% !important'; margin = '0 !important'; padding = '15px !important'; 'box-shadow' = 'none !important' }
+                '.report-header'              = [ordered]@{ 'padding-bottom' = '10px'; 'margin-bottom' = '15px' }
+                '.report-header h2'           = [ordered]@{ 'font-size' = '18pt'; margin = '0' }
+                '.report-header h3'           = [ordered]@{ 'font-size' = '14pt' }
+                '.report-table'               = [ordered]@{ 'font-size' = '9pt'; 'margin-top' = '8px' }
+                '.report-table th, .report-table td' = [ordered]@{ padding = '5px 8px' }
+                '.report-summary'             = [ordered]@{ 'font-size' = '10pt'; 'margin-bottom' = '12px' }
+            }
+            '.report-container'               = [ordered]@{ 'max-width' = '900px'; margin = '20px auto'; padding = '30px'; background = 'white'; 'box-shadow' = '0 2px 10px rgba(0,0,0,0.1)' }
+            '.report-header'                  = [ordered]@{ 'border-bottom' = '3px solid #2e7d32'; 'padding-bottom' = '20px'; 'margin-bottom' = '30px' }
+            '.report-table'                   = [ordered]@{ width = '100%'; 'border-collapse' = 'collapse'; 'margin-top' = '15px' }
+            '.report-table th'                = [ordered]@{ 'background-color' = '#2e7d32'; color = 'white'; padding = '10px'; 'text-align' = 'left' }
+            '.report-table td'                = [ordered]@{ padding = '8px 10px'; 'border-bottom' = '1px solid #ddd' }
+            '.report-table tr:nth-child(even) td' = [ordered]@{ 'background-color' = '#f9f9f9' }
+            '.report-table td.num'            = [ordered]@{ 'text-align' = 'right' }
+            '.report-table th.num'            = [ordered]@{ 'text-align' = 'right' }
+            '.report-total'                   = [ordered]@{ 'background-color' = '#e8f5e9'; padding = '15px'; 'margin-top' = '20px'; 'text-align' = 'right'; 'font-size' = '1.2em'; 'font-weight' = 'bold'; color = '#2e7d32' }
+            '.summary-grid'                   = [ordered]@{ display = 'flex'; gap = '20px'; 'margin-bottom' = '25px' }
+            '.summary-card'                   = [ordered]@{ flex = '1'; border = '1px solid #c8e6c9'; 'border-radius' = '6px'; padding = '12px 18px'; 'background-color' = '#f1f8e9' }
+            '.summary-card .label'            = [ordered]@{ 'font-size' = '0.85em'; color = '#555'; 'margin-bottom' = '4px' }
+            '.summary-card .value'            = [ordered]@{ 'font-size' = '1.4em'; 'font-weight' = 'bold'; color = '#2e7d32' }
+        }
+    }
 }

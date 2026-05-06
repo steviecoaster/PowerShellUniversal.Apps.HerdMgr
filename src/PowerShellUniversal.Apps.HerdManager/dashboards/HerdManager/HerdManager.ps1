@@ -139,7 +139,7 @@ end {
 
     $app = @{
         Title            = '🐄 Herd Manager'
-        Pages            = @($homepage, $notifications, $cattleMgmt, $weightMgmt, $healthMgmt, $feedRecords, $farmsPage, $rog, $rogAnalytics, $reports, $animalreport, $accounting, $invoicePage, $systemSettings, $helpPage)
+        Pages            = @($homepage, $notifications, $cattleMgmt, $weightMgmt, $healthMgmt, $feedRecords, $farmsPage, $rog, $rogAnalytics, $reports, $animalreport, $accounting, $invoicePage, $feedTonnageReportPage, $systemSettings, $helpPage)
         Navigation       = $Navigation
         NavigationLayout = 'Temporary'
         HeaderContent    = $HeaderContent
